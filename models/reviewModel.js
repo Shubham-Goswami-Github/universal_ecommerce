@@ -28,3 +28,6 @@ const reviewSchema = new mongoose.Schema(
 );
 //eveve
 // single user per product only one review
+reviewSchema.index({ product: 1, user: 1 }, { unique: true });
+
+module.exports = mongoose.model('Review', reviewSchema);
