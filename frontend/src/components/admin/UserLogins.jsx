@@ -3,24 +3,28 @@ import { useEffect, useState } from 'react';
 import axiosClient from '../../api/axiosClient';
 
 export default function UserLogins({ token }) {
-  const [items, setItems] = useState([]); // users (only role === 'user')
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // modal state
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null); // null => create, object => edit
-  const [form, setForm] = useState({ name: '', email: '', password: '', isActive: true });
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    isActive: true,
+  });
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axiosClient.get('/api/admin/users', { headers: { Authorization: `Bearer ${token}` } });
-      // Filter to show only users with role === 'user'
+      const res = await axiosClient.get('/api/admin/users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const all = res.data.users || [];
-      const onlyUsers = all.filter(u => u.role === 'user');
-      setItems(onlyUsers);
+      setItems(all.filter((u) => u.role === 'user'));
     } catch (err) {
-      console.error('fetch users', err);
+      console.error(err);
       setItems([]);
     } finally {
       setLoading(false);
@@ -28,8 +32,7 @@ export default function UserLogins({ token }) {
   };
 
   useEffect(() => {
-    if (!token) return;
-    fetchUsers();
+    if (token) fetchUsers();
   }, [token]);
 
   const openCreate = () => {
@@ -40,7 +43,12 @@ export default function UserLogins({ token }) {
 
   const openEdit = (u) => {
     setEditing(u);
-    setForm({ name: u.name || '', email: u.email || '', password: '', isActive: u.isActive ?? true });
+    setForm({
+      name: u.name || '',
+      email: u.email || '',
+      password: '',
+      isActive: u.isActive ?? true,
+    });
     setShowModal(true);
   };
 
@@ -48,95 +56,166 @@ export default function UserLogins({ token }) {
     e.preventDefault();
     try {
       if (editing) {
-        // PATCH /api/admin/users/:id
-        await axiosClient.patch(`/api/admin/users/${editing._id}`, form, { headers: { Authorization: `Bearer ${token}` } });
+        await axiosClient.patch(`/api/admin/users/${editing._id}`, form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         alert('User updated');
       } else {
-        // POST /api/admin/users (force role:user)
-        await axiosClient.post('/api/admin/users', { ...form, role: 'user' }, { headers: { Authorization: `Bearer ${token}` } });
+        await axiosClient.post(
+          '/api/admin/users',
+          { ...form, role: 'user' },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         alert('User created');
       }
       setShowModal(false);
       fetchUsers();
     } catch (err) {
-      console.error('save user error', err);
+      console.error(err);
       alert(err.response?.data?.message || 'Save failed');
     }
   };
 
   const handleDelete = async (u) => {
-    if (!confirm(`Delete user "${u.name}" (${u.email})? This cannot be undone.`)) return;
+    if (!confirm(`Delete user "${u.name}"?`)) return;
     try {
-      await axiosClient.delete(`/api/admin/users/${u._id}`, { headers: { Authorization: `Bearer ${token}` } });
-      alert('Deleted');
+      await axiosClient.delete(`/api/admin/users/${u._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       fetchUsers();
     } catch (err) {
-      console.error('delete user', err);
+      console.error(err);
       alert(err.response?.data?.message || 'Delete failed');
     }
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-slate-400">Manage application users</p>
-        <button onClick={openCreate} className="px-3 py-1 rounded bg-teal-400 text-black text-sm">+ Add User</button>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-slate-500">Manage application users</p>
+        <button
+          onClick={openCreate}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500"
+        >
+          + Add User
+        </button>
       </div>
 
       {loading ? (
-        <div className="text-slate-400">Loading...</div>
+        <div className="text-slate-500">Loading…</div>
       ) : items.length === 0 ? (
-        <div className="text-slate-400">No users found.</div>
+        <div className="text-slate-500">No users found.</div>
       ) : (
-        <div className="space-y-2">
-          {items.map(u => (
-            <div key={u._id} className="p-3 bg-slate-950 border border-slate-800 rounded flex items-center justify-between">
+        <div className="space-y-3">
+          {items.map((u) => (
+            <div
+              key={u._id}
+              className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm"
+            >
               <div>
-                <div className="text-sm text-slate-100 font-semibold">{u.name}</div>
+                <div className="text-sm font-semibold text-slate-900">
+                  {u.name}
+                </div>
                 <div className="text-xs text-slate-500">{u.email}</div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="text-xs text-slate-400">{u.isActive ? 'Active' : 'Blocked'}</div>
-                <button onClick={() => openEdit(u)} className="px-2 py-1 rounded border text-xs">Edit</button>
-                <button onClick={() => handleDelete(u)} className="px-2 py-1 rounded border text-xs text-red-400">Delete</button>
+
+              <div className="flex items-center gap-3">
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    u.isActive
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {u.isActive ? 'Active' : 'Blocked'}
+                </span>
+
+                <button
+                  onClick={() => openEdit(u)}
+                  className="px-3 py-1.5 rounded-md bg-slate-100 text-slate-700 text-xs hover:bg-slate-200"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => handleDelete(u)}
+                  className="px-3 py-1.5 rounded-md bg-red-50 text-red-600 text-xs hover:bg-red-100"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded w-full max-w-md">
-            <h3 className="text-sm text-slate-100 mb-2">{editing ? 'Edit User' : 'Create User'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-2">
-              <div>
-                <label className="text-xs text-slate-300">Name</label>
-                <input required name="name" value={form.name} onChange={(e)=>setForm(f=>({...f, name:e.target.value}))}
-                  className="w-full rounded bg-slate-950 border border-slate-700 px-2 py-1 text-slate-100" />
-              </div>
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl w-full max-w-md shadow-lg">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              {editing ? 'Edit User' : 'Create User'}
+            </h3>
 
-              <div>
-                <label className="text-xs text-slate-300">Email</label>
-                <input required name="email" value={form.email} onChange={(e)=>setForm(f=>({...f, email:e.target.value}))}
-                  type="email" className="w-full rounded bg-slate-950 border border-slate-700 px-2 py-1 text-slate-100" />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                required
+                placeholder="Name"
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              />
 
-              <div>
-                <label className="text-xs text-slate-300">{editing ? 'Change Password (leave blank to keep)' : 'Password'}</label>
-                <input name="password" value={form.password} onChange={(e)=>setForm(f=>({...f, password:e.target.value}))}
-                  type="password" className="w-full rounded bg-slate-950 border border-slate-700 px-2 py-1 text-slate-100" />
-              </div>
+              <input
+                required
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, email: e.target.value }))
+                }
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              />
 
-              <div className="flex items-center gap-2">
-                <input id="active" type="checkbox" checked={form.isActive} onChange={(e)=>setForm(f=>({...f, isActive:e.target.checked}))} />
-                <label htmlFor="active" className="text-xs text-slate-300">Active</label>
-              </div>
+              <input
+                type="password"
+                placeholder={
+                  editing ? 'Change password (optional)' : 'Password'
+                }
+                value={form.password}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, password: e.target.value }))
+                }
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              />
 
-              <div className="flex justify-end gap-2 mt-3">
-                <button type="button" onClick={()=>setShowModal(false)} className="px-3 py-1 rounded border text-sm">Cancel</button>
-                <button type="submit" className="px-3 py-1 rounded bg-teal-400 text-black text-sm">{editing ? 'Save' : 'Create'}</button>
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={form.isActive}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, isActive: e.target.checked }))
+                  }
+                />
+                Active
+              </label>
+
+              <div className="flex justify-end gap-2 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-md border text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm"
+                >
+                  {editing ? 'Save' : 'Create'}
+                </button>
               </div>
             </form>
           </div>

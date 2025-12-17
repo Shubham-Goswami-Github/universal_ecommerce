@@ -17,16 +17,11 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     primaryColor: '',
     secondaryColor: '',
     isMaintenanceMode: false,
-    // appearance
-    backgroundColor: '',
     backgroundImage: '',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
-    fontFamily: '',
-    fontColor: '',
-    headingFontSize: '',
-    headingColor: ''
   });
+
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -46,14 +41,9 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         primaryColor: initialSettings.primaryColor || '',
         secondaryColor: initialSettings.secondaryColor || '',
         isMaintenanceMode: initialSettings.isMaintenanceMode || false,
-        backgroundColor: initialSettings.backgroundColor || '',
         backgroundImage: initialSettings.backgroundImage || '',
         backgroundRepeat: initialSettings.backgroundRepeat || 'no-repeat',
         backgroundSize: initialSettings.backgroundSize || 'cover',
-        fontFamily: initialSettings.fontFamily || '',
-        fontColor: initialSettings.fontColor || '',
-        headingFontSize: initialSettings.headingFontSize || '',
-        headingColor: initialSettings.headingColor || ''
       });
     }
   }, [initialSettings]);
@@ -66,17 +56,19 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
   const handleUpload = async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
+
     const fd = new FormData();
     fd.append('image', file);
+
     try {
       setUploading(true);
       const res = await axiosClient.post('/api/upload/image', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      const url = res.data.url; // e.g. /uploads/123.jpg
-      const full = `${window.location.origin}${url}`;
-      setForm((f) => ({ ...f, [field]: full }));
-      alert('Uploaded');
+
+      const url = `${window.location.origin}${res.data.url}`;
+      setForm((f) => ({ ...f, [field]: url }));
+      alert('Uploaded successfully');
     } catch (err) {
       console.error('Upload error', err);
       alert(err.response?.data?.message || 'Upload failed');
@@ -93,7 +85,6 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       onSaved && onSaved(res.data.settings);
-      // dispatch event so navbar updates instantly
       window.dispatchEvent(new Event('settings:updated'));
       alert('Settings updated');
     } catch (err) {
@@ -105,89 +96,179 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 text-sm">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <form onSubmit={handleSubmit} className="space-y-6 text-sm">
+      {/* BASIC INFO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-slate-300 mb-1">Site Name</label>
-          <input name="siteName" value={form.siteName} onChange={handleChange}
-                 className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-slate-100" />
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Site Name
+          </label>
+          <input
+            name="siteName"
+            value={form.siteName}
+            onChange={handleChange}
+            className="w-full rounded-md border border-slate-300 px-3 py-2"
+          />
         </div>
 
         <div>
-          <label className="block text-xs text-slate-300 mb-1">Homepage Title</label>
-          <input name="homepageTitle" value={form.homepageTitle} onChange={handleChange}
-                 className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-slate-100" />
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Homepage Title
+          </label>
+          <input
+            name="homepageTitle"
+            value={form.homepageTitle}
+            onChange={handleChange}
+            className="w-full rounded-md border border-slate-300 px-3 py-2"
+          />
         </div>
       </div>
 
-      {/* Logo upload */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-        <div>
-          <label className="block text-xs text-slate-300 mb-1">Logo (upload)</label>
-          <div className="flex gap-2 items-center">
-            <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'logoUrl')} className="text-sm" />
-            {uploading && <div className="text-xs text-slate-400">Uploading...</div>}
-          </div>
-        </div>
-        <div>
-          {form.logoUrl && <img src={form.logoUrl} alt="logo" className="h-12 object-contain" />}
-        </div>
-      </div>
-
-      {/* Background upload */}
       <div>
-        <label className="block text-xs text-slate-300 mb-1">Background Image (upload)</label>
-        <div className="flex gap-2 items-center">
-          <input type="file" accept="image/*" onChange={(e) => handleUpload(e, 'backgroundImage')} className="text-sm" />
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          Homepage Subtitle
+        </label>
+        <input
+          name="homepageSubtitle"
+          value={form.homepageSubtitle}
+          onChange={handleChange}
+          className="w-full rounded-md border border-slate-300 px-3 py-2"
+        />
+      </div>
+
+      {/* LOGO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+        <div>
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Site Logo
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleUpload(e, 'logoUrl')}
+          />
+          {uploading && (
+            <div className="text-xs text-slate-500 mt-1">Uploading…</div>
+          )}
         </div>
-        {form.backgroundImage && (
-          <div className="mt-2">
-            <img src={form.backgroundImage} alt="bg" className="w-full max-h-28 object-cover rounded-md" />
-          </div>
+
+        {form.logoUrl && (
+          <img
+            src={form.logoUrl}
+            alt="logo"
+            className="h-14 object-contain border rounded-md p-1"
+          />
         )}
       </div>
 
-      {/* colors / fonts */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* BACKGROUND IMAGE */}
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          Background Image (optional)
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleUpload(e, 'backgroundImage')}
+        />
+
+        {form.backgroundImage && (
+          <img
+            src={form.backgroundImage}
+            alt="background"
+            className="mt-2 w-full max-h-32 object-cover rounded-md border"
+          />
+        )}
+      </div>
+
+      {/* FEATURED TEXT */}
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          Featured Text
+        </label>
+        <input
+          name="featuredText"
+          value={form.featuredText}
+          onChange={handleChange}
+          className="w-full rounded-md border border-slate-300 px-3 py-2"
+        />
+      </div>
+
+      {/* CONTACT */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-slate-300 mb-1">Background Color</label>
-          <input type="color" name="backgroundColor" value={form.backgroundColor} onChange={handleChange} className="w-full h-10 p-1 rounded-md" />
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Contact Email
+          </label>
+          <input
+            name="contactEmail"
+            value={form.contactEmail}
+            onChange={handleChange}
+            className="w-full rounded-md border border-slate-300 px-3 py-2"
+          />
         </div>
 
         <div>
-          <label className="block text-xs text-slate-300 mb-1">Font Color</label>
-          <input type="color" name="fontColor" value={form.fontColor} onChange={handleChange} className="w-full h-10 p-1 rounded-md" />
-        </div>
-
-        <div>
-          <label className="block text-xs text-slate-300 mb-1">Heading Color</label>
-          <input type="color" name="headingColor" value={form.headingColor} onChange={handleChange} className="w-full h-10 p-1 rounded-md" />
+          <label className="block text-xs font-medium text-slate-600 mb-1">
+            Contact Phone
+          </label>
+          <input
+            name="contactPhone"
+            value={form.contactPhone}
+            onChange={handleChange}
+            className="w-full rounded-md border border-slate-300 px-3 py-2"
+          />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs text-slate-300 mb-1">Font Family (CSS)</label>
-        <input name="fontFamily" value={form.fontFamily} onChange={handleChange}
-               placeholder='e.g. "Inter, system-ui, Arial"' className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-slate-100" />
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          Address
+        </label>
+        <textarea
+          name="address"
+          value={form.address}
+          onChange={handleChange}
+          rows={2}
+          className="w-full rounded-md border border-slate-300 px-3 py-2"
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs text-slate-300 mb-1">Heading Font Size (e.g. 1.875rem)</label>
-          <input name="headingFontSize" value={form.headingFontSize} onChange={handleChange}
-                 className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-slate-100" />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <input id="maintenance" type="checkbox" checked={form.isMaintenanceMode} onChange={(e) => setForm(f => ({ ...f, isMaintenanceMode: e.target.checked }))} />
-          <label htmlFor="maintenance" className="text-xs text-slate-300">Maintenance mode</label>
-        </div>
+      <div>
+        <label className="block text-xs font-medium text-slate-600 mb-1">
+          Footer Text
+        </label>
+        <input
+          name="footerText"
+          value={form.footerText}
+          onChange={handleChange}
+          className="w-full rounded-md border border-slate-300 px-3 py-2"
+        />
       </div>
 
-      <div className="flex items-center gap-3">
-        <button type="submit" disabled={saving}
-                className="rounded-md bg-teal-400 text-slate-900 px-4 py-2 text-sm font-semibold">
-          {saving ? 'Saving...' : 'Save Settings'}
+      {/* MAINTENANCE */}
+      <div className="flex items-center gap-2">
+        <input
+          id="maintenance"
+          type="checkbox"
+          checked={form.isMaintenanceMode}
+          onChange={(e) =>
+            setForm((f) => ({ ...f, isMaintenanceMode: e.target.checked }))
+          }
+        />
+        <label htmlFor="maintenance" className="text-sm text-slate-700">
+          Enable maintenance mode
+        </label>
+      </div>
+
+      {/* SAVE */}
+      <div>
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-md bg-blue-600 text-white px-5 py-2 text-sm font-semibold hover:bg-blue-500 disabled:opacity-60"
+        >
+          {saving ? 'Saving…' : 'Save Settings'}
         </button>
       </div>
     </form>

@@ -21,10 +21,7 @@ export default function AdminDashboard() {
   const { auth } = useAuth();
   const token = auth.token;
 
-  // page state
-  const [activeTab, setActiveTab] = useState('settings');
-
-  // settings
+  const [activeTab, setActiveTab] = useState(null); // 👈 all hidden by default
   const [settings, setSettings] = useState(null);
   const [loadingSettings, setLoadingSettings] = useState(false);
 
@@ -50,78 +47,112 @@ export default function AdminDashboard() {
 
   const handleSettingsSaved = (newSettings) => {
     setSettings(newSettings);
-    // notify other components (navbar) to reload settings instantly
     window.dispatchEvent(new Event('settings:updated'));
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-      {/* Sidebar */}
-      <aside className="lg:col-span-1 bg-slate-900 border border-slate-800 p-4 rounded-lg">
-        <h3 className="text-sm font-semibold text-slate-100 mb-3">Admin Panel</h3>
+      {/* ================= SIDEBAR ================= */}
+      <aside className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-4">
+        {/* Admin Header */}
+        <div className="mb-6 border-b border-slate-200 pb-4">
+          <div className="text-xs text-slate-500 uppercase tracking-wide">
+            Admin Panel
+          </div>
+          <div className="mt-2 text-lg font-bold text-slate-900">
+            {auth.user?.name}
+          </div>
+          <div className="text-sm text-slate-500">
+            {auth.user?.email}
+          </div>
+        </div>
 
+        {/* Navigation (collapsed by default) */}
         <nav className="space-y-1">
           {TABS.map((t) => (
             <button
               key={t.key}
-              onClick={() => setActiveTab(t.key)}
+              onClick={() =>
+                setActiveTab(activeTab === t.key ? null : t.key)
+              }
               className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition ${
                 activeTab === t.key
-                  ? 'bg-teal-400 text-slate-900'
-                  : 'text-slate-300 hover:bg-slate-800'
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
               {t.label}
             </button>
           ))}
         </nav>
-
-        <div className="mt-6 text-xs text-slate-400">
-          <div>Logged in as:</div>
-          <div className="mt-1 text-sm font-semibold text-slate-100">{auth.user?.name}</div>
-          <div className="text-xs text-slate-500">{auth.user?.email}</div>
-        </div>
       </aside>
 
-      {/* Main content */}
+      {/* ================= MAIN CONTENT ================= */}
       <main className="lg:col-span-5 space-y-6">
-        {/* Settings */}
-        {activeTab === 'settings' && (
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold text-slate-100 mb-3">Site Settings</h2>
-            <SettingsForm token={token} settings={settings} onSaved={handleSettingsSaved} />
+        {!activeTab && (
+          <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-10 text-center">
+            <h2 className="text-xl font-semibold text-slate-900">
+              Welcome, {auth.user?.name} 👋
+            </h2>
+            <p className="text-sm text-slate-500 mt-2">
+              Select an option from the left panel to manage the platform.
+            </p>
           </div>
         )}
 
-        {/* Approvals */}
+        {/* SETTINGS */}
+        {activeTab === 'settings' && (
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              Site Settings
+            </h2>
+            <SettingsForm
+              token={token}
+              settings={settings}
+              onSaved={handleSettingsSaved}
+            />
+          </div>
+        )}
+
+        {/* APPROVALS */}
         {activeTab === 'approvals' && (
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold text-slate-100 mb-3">Pending Approvals</h2>
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              Pending Approvals
+            </h2>
             <AdminApprovals token={token} />
           </div>
         )}
 
-        {/* Vendor logins */}
+        {/* VENDORS */}
         {activeTab === 'vendors' && (
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold text-slate-100 mb-3">Vendor Logins</h2>
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              Vendor Logins
+            </h2>
             <VendorLogins token={token} />
           </div>
         )}
 
-        {/* User logins */}
+        {/* USERS */}
         {activeTab === 'users' && (
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold text-slate-100 mb-3">User Logins</h2>
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4">
+              User Logins
+            </h2>
             <UserLogins token={token} />
           </div>
         )}
 
-        {/* All Products (admin) */}
+        {/* ALL PRODUCTS */}
         {activeTab === 'allproducts' && (
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold text-slate-100 mb-3">All Products (Vendor-wise)</h2>
-            <p className="text-xs text-slate-400 mb-4">Products are grouped by vendor. You can edit, delete or hide/show items here.</p>
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+            <h2 className="text-lg font-semibold text-slate-900 mb-1">
+              All Products (Vendor-wise)
+            </h2>
+            <p className="text-xs text-slate-500 mb-4">
+              Products are grouped by vendor. You can edit, delete or manage items here.
+            </p>
             <AdminProducts token={token} />
           </div>
         )}

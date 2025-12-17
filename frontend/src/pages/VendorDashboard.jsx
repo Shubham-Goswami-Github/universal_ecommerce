@@ -56,10 +56,11 @@ const VendorDashboard = () => {
   };
 
   const handleFormSaved = (savedProduct) => {
-    // If updated or created, update list
     const exists = products.some((p) => p._id === savedProduct._id);
     if (exists) {
-      setProducts((p) => p.map((x) => (x._id === savedProduct._id ? savedProduct : x)));
+      setProducts((p) =>
+        p.map((x) => (x._id === savedProduct._id ? savedProduct : x))
+      );
     } else {
       setProducts((p) => [savedProduct, ...p]);
     }
@@ -69,30 +70,51 @@ const VendorDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-100">Vendor Dashboard</h1>
-        <button onClick={handleCreateClick} className="rounded-md bg-teal-400 text-slate-900 px-3 py-2">+ Add Product</button>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Vendor Dashboard
+          </h1>
+          <p className="text-sm text-slate-500">
+            Manage your products and listings
+          </p>
+        </div>
+
+        <button
+          onClick={handleCreateClick}
+          className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-500"
+        >
+          + Add Product
+        </button>
       </div>
 
+      {/* Form */}
       {showForm && (
-        <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
           <ProductForm
             token={token}
             product={editingProduct}
             onSaved={(p) => {
-              // when vendor creates/updates, product.status will be 'pending'
               alert('Product saved. It is now pending admin approval.');
               handleFormSaved(p);
             }}
-            onCancel={() => { setShowForm(false); setEditingProduct(null); }}
+            onCancel={() => {
+              setShowForm(false);
+              setEditingProduct(null);
+            }}
           />
         </div>
       )}
 
-      <div className="bg-slate-900 border border-slate-800 p-4 rounded-lg">
-        <h2 className="text-lg text-slate-100 mb-3">My Products</h2>
+      {/* Product List */}
+      <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">
+          My Products
+        </h2>
+
         {loading ? (
-          <div className="text-slate-400">Loading...</div>
+          <div className="text-slate-500">Loading...</div>
         ) : (
           <VendorProductsList
             products={products}

@@ -16,35 +16,63 @@ const Products = () => {
   }, []);
 
   return (
-    <div>
-      <h1 className="text-xl font-semibold text-slate-100 mb-4">
-        All Products
-      </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            All Products
+          </h1>
+          <p className="text-sm text-slate-500">
+            Browse all available products
+          </p>
+        </div>
+      </div>
+
+      {/* Products grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((p) => (
           <Link
             key={p._id}
             to={`/products/${p._id}`}
-            className="group rounded-xl bg-slate-900 border border-slate-800 p-4 shadow-sm hover:border-teal-400/60 hover:shadow-md transition"
+            className="group rounded-2xl bg-white border border-slate-200 p-4 shadow-sm hover:shadow-lg transition"
           >
-            <div className="text-sm font-semibold text-slate-100 mb-1 line-clamp-1">
+            {/* Category badge */}
+            <div className="mb-2">
+              <span className="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase tracking-wide text-slate-600">
+                {p.category || 'General'}
+              </span>
+            </div>
+
+            {/* Product name */}
+            <h3 className="text-sm font-semibold text-slate-900 mb-1 line-clamp-1">
               {p.name}
-            </div>
-            <div className="text-xs text-slate-400 mb-2 line-clamp-2">
-              {p.description || 'No description.'}
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-teal-300 font-semibold text-sm">
+            </h3>
+
+            {/* Description */}
+            <p className="text-xs text-slate-500 mb-3 line-clamp-2">
+              {p.description || 'No description available.'}
+            </p>
+
+            {/* Price + CTA */}
+            <div className="flex items-center justify-between mt-auto">
+              <span className="text-lg font-bold text-blue-600">
                 ₹{p.price}
               </span>
-              <span className="text-[10px] uppercase text-slate-500">
-                {p.category || 'General'}
+              <span className="text-xs font-medium text-slate-400 group-hover:text-blue-600 transition">
+                View →
               </span>
             </div>
           </Link>
         ))}
+
+        {/* Empty state */}
         {products.length === 0 && (
-          <p className="text-sm text-slate-400">No products found.</p>
+          <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+            <p className="text-sm text-slate-500">
+              No products found.
+            </p>
+          </div>
         )}
       </div>
     </div>

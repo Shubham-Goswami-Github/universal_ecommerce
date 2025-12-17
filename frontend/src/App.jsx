@@ -116,16 +116,19 @@ export default function ThemedApp() {
     : {};
 
   // minimal fallback classes so Tailwind styles still apply for unknown props
-  return (
-    <div style={style} className="min-h-screen bg-slate-950 text-slate-100">
-      {/* You can show a small loader while appearance loads, but it's optional */}
-      {loadingAppearance ? (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-slate-400">Loading...</div>
-        </div>
-      ) : (
-        <AppInner />
-      )}
-    </div>
-  );
+ return (
+  <div
+    style={style}
+    className="min-h-screen bg-white text-slate-900"
+  >
+    {loadingAppearance ? (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-slate-400">Loading...</div>
+      </div>
+    ) : (
+      <AppInner />
+    )}
+  </div>
+);
+
 }

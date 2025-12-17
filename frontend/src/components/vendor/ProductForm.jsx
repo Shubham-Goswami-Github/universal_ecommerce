@@ -24,16 +24,6 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
         stock: product.stock ?? 0,
         isActive: product.isActive ?? true,
       });
-    } else {
-      setForm({
-        name: '',
-        description: '',
-        price: '',
-        category: '',
-        images: [''],
-        stock: 0,
-        isActive: true,
-      });
     }
   }, [product]);
 
@@ -55,7 +45,10 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
   };
 
   const removeImageField = (index) => {
-    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+    setForm((f) => ({
+      ...f,
+      images: f.images.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -75,20 +68,20 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
       };
 
       if (product && product._id) {
-        // update
-        const res = await axiosClient.put(`/api/products/${product._id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axiosClient.put(
+          `/api/products/${product._id}`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         onSaved(res.data.product);
       } else {
-        // create
         const res = await axiosClient.post('/api/products', payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         onSaved(res.data.product);
       }
     } catch (err) {
-      console.error('Save product error:', err);
+      console.error(err);
       alert(err.response?.data?.message || 'Save failed');
     } finally {
       setSubmitting(false);
@@ -96,99 +89,106 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {product && (
-        <div className="text-xs text-yellow-300 mb-1">
-          Note: Editing will send the product back to <strong>pending</strong> for admin review.
+        <div className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded">
+          Editing will send this product back to <strong>pending</strong> for admin review.
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-slate-300">Name</label>
+          <label className="text-xs font-medium text-slate-600">Name</label>
           <input
             name="name"
             value={form.name}
             onChange={handleChange}
-            className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
 
         <div>
-          <label className="text-xs text-slate-300">Price (₹)</label>
+          <label className="text-xs font-medium text-slate-600">Price (₹)</label>
           <input
             name="price"
             type="number"
             min="0"
             value={form.price}
             onChange={handleChange}
-            className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="text-xs text-slate-300">Description</label>
+          <label className="text-xs font-medium text-slate-600">
+            Description
+          </label>
           <textarea
             name="description"
+            rows={3}
             value={form.description}
             onChange={handleChange}
-            className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
-            rows={3}
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div>
-          <label className="text-xs text-slate-300">Category</label>
+          <label className="text-xs font-medium text-slate-600">Category</label>
           <input
             name="category"
             value={form.category}
             onChange={handleChange}
-            className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
-            placeholder="e.g. Clothing, Electronics"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
           />
         </div>
 
         <div>
-          <label className="text-xs text-slate-300">Stock</label>
+          <label className="text-xs font-medium text-slate-600">Stock</label>
           <input
             name="stock"
             type="number"
             min="0"
             value={form.stock}
             onChange={handleChange}
-            className="w-full rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="text-xs text-slate-300">Visible (isActive)</label>
-          <div className="mt-1">
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} className="rounded" />
-              <span className="text-slate-300">Product visible to users when approved</span>
-            </label>
-          </div>
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="isActive"
+              checked={form.isActive}
+              onChange={handleChange}
+            />
+            Product visible to users when approved
+          </label>
         </div>
       </div>
 
+      {/* Images */}
       <div>
-        <label className="text-xs text-slate-300">Images (URLs)</label>
+        <label className="text-xs font-medium text-slate-600">
+          Image URLs
+        </label>
+
         <div className="space-y-2 mt-2">
           {form.images.map((img, idx) => (
-            <div key={idx} className="flex gap-2 items-center">
+            <div key={idx} className="flex gap-2">
               <input
                 value={img}
                 onChange={(e) => handleImageChange(idx, e.target.value)}
-                className="flex-1 rounded-md bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
                 placeholder="https://example.com/image.jpg"
               />
               {form.images.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeImageField(idx)}
-                  className="px-3 py-2 rounded-md bg-red-500/10 text-red-400 text-sm"
+                  className="px-3 py-2 rounded-md bg-red-50 text-red-600 text-sm"
                 >
                   Remove
                 </button>
@@ -200,34 +200,42 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
             <button
               type="button"
               onClick={addImageField}
-              className="mt-1 px-3 py-2 rounded-md bg-slate-800 text-slate-200 text-sm"
+              className="px-3 py-2 rounded-md bg-slate-100 text-slate-700 text-sm hover:bg-slate-200"
             >
-              + Add Image URL
+              + Add Image
             </button>
 
-            {/* Small preview of first image */}
             {form.images[0] && (
-              <div className="ml-3 h-12 w-20 bg-slate-800 rounded overflow-hidden flex items-center justify-center">
-                <img src={form.images[0]} alt="preview" className="object-cover h-full w-full" />
+              <div className="h-12 w-20 bg-slate-100 rounded overflow-hidden">
+                <img
+                  src={form.images[0]}
+                  alt="preview"
+                  className="object-cover h-full w-full"
+                />
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {/* Actions */}
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-teal-400 text-slate-900 px-4 py-2 text-sm font-semibold hover:bg-teal-300 disabled:opacity-60"
+          className="rounded-md bg-blue-600 text-white px-5 py-2 text-sm font-semibold hover:bg-blue-500 disabled:opacity-60"
         >
-          {submitting ? 'Saving...' : (product ? 'Update Product' : 'Create Product')}
+          {submitting
+            ? 'Saving...'
+            : product
+            ? 'Update Product'
+            : 'Create Product'}
         </button>
 
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-md border border-slate-700 px-3 py-2 text-sm text-slate-300"
+          className="rounded-md border border-slate-300 px-4 py-2 text-sm text-slate-700"
         >
           Cancel
         </button>

@@ -1,7 +1,7 @@
 // src/pages/Home.jsx
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import axiosClient from '../api/axiosClient';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axiosClient from "../api/axiosClient";
 
 const Home = () => {
   const [settings, setSettings] = useState(null);
@@ -11,8 +11,8 @@ const Home = () => {
     const loadData = async () => {
       try {
         const [settingsRes, productsRes] = await Promise.all([
-          axiosClient.get('/api/settings/public'),
-          axiosClient.get('/api/products'),
+          axiosClient.get("/api/settings/public"),
+          axiosClient.get("/api/products"),
         ]);
         setSettings(settingsRes.data);
         setProducts(productsRes.data.products || productsRes.data || []);
@@ -24,70 +24,110 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <section className="rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-5 sm:p-7 shadow-lg">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-50">
-          {settings?.homepageTitle || 'Welcome to our store'}
-        </h1>
-        <p className="mt-3 text-slate-300 text-sm sm:text-base max-w-2xl">
-          {settings?.homepageSubtitle || 'Your one-stop shop for everything.'}
-        </p>
-        {settings?.featuredText && (
-          <p className="mt-3 text-teal-300 text-sm font-semibold">
-            {settings.featuredText}
+    <div className="space-y-14 bg-slate-50">
+      {/* ================= HERO ================= */}
+      <section className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 sm:p-12 shadow-md">
+        <div className="max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white">
+            {settings?.homepageTitle || "Shop Smarter, Shop Better"}
+          </h1>
+
+          <p className="mt-4 text-blue-100 text-sm sm:text-base">
+            {settings?.homepageSubtitle ||
+              "Discover quality products from trusted sellers at the best prices."}
           </p>
-        )}
-        <div className="mt-5">
-          <Link
-            to="/products"
-            className="inline-flex items-center px-4 py-2 rounded-lg bg-teal-400 text-slate-900 font-semibold text-sm hover:bg-teal-300"
-          >
-            Browse Products
-          </Link>
+
+          {settings?.featuredText && (
+            <div className="mt-4 inline-block rounded-full bg-white/20 px-4 py-1 text-xs font-semibold text-white">
+              {settings.featuredText}
+            </div>
+          )}
+
+          <div className="mt-6 flex gap-3">
+            <Link
+              to="/products"
+              className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition"
+            >
+              Browse Products
+            </Link>
+
+            <Link
+              to="/products"
+              className="rounded-xl border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
+            >
+              Today’s Deals
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Featured products */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-slate-100">
-            Featured Products
-          </h2>
+      {/* ================= FEATURED PRODUCTS ================= */}
+      <section className="px-1">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">
+              Featured Products
+            </h2>
+            <p className="text-xs text-slate-500">
+              Popular picks you shouldn’t miss
+            </p>
+          </div>
+
           <Link
             to="/products"
-            className="text-xs text-teal-300 hover:text-teal-200"
+            className="text-sm font-semibold text-blue-600 hover:underline"
           >
-            View all
+            View all →
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.slice(0, 6).map((p) => (
             <Link
               key={p._id}
               to={`/products/${p._id}`}
-              className="group rounded-xl bg-slate-900 border border-slate-800 p-4 shadow-sm hover:border-teal-400/60 hover:shadow-md transition"
+              className="group rounded-2xl bg-white border border-slate-200 p-4 shadow-sm hover:shadow-lg transition-all duration-300"
             >
-              <div className="text-sm font-semibold text-slate-100 mb-1 line-clamp-1">
+              {/* Category */}
+              <div className="mb-2">
+                <span className="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase tracking-wide text-slate-600">
+                  {p.category || "General"}
+                </span>
+              </div>
+
+              {/* Product Info */}
+              <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">
                 {p.name}
-              </div>
-              <div className="text-xs text-slate-400 mb-2 line-clamp-2">
-                {p.description || 'No description.'}
-              </div>
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-teal-300 font-semibold text-sm">
+              </h3>
+
+              <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+                {p.description || "No description available."}
+              </p>
+
+              {/* Price */}
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-lg font-bold text-blue-600">
                   ₹{p.price}
                 </span>
-                <span className="text-[10px] uppercase text-slate-500">
-                  {p.category || 'General'}
+
+                <span className="text-xs font-medium text-slate-400 group-hover:text-blue-600 transition">
+                  View →
                 </span>
               </div>
             </Link>
           ))}
+
+          {/* Empty State */}
           {products.length === 0 && (
-            <p className="text-sm text-slate-400">
-              No products yet. Vendors can add products from their dashboard.
-            </p>
+            <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <p className="text-sm text-slate-500">
+                No products available right now.
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Vendors can add products from their dashboard.
+              </p>
+            </div>
           )}
         </div>
       </section>
