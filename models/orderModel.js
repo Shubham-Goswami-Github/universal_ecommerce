@@ -1,26 +1,74 @@
 const mongoose = require('mongoose');
 
+/* ================================
+   STATUS HISTORY SCHEMA (FIRST)
+================================ */
+const orderStatusHistorySchema = new mongoose.Schema(
+  {
+    changedBy: {
+      type: String,
+      enum: ['vendor', 'admin'],
+      required: true,
+    },
+
+    previousStatus: {
+      type: String,
+      required: true,
+    },
+
+    newStatus: {
+      type: String,
+      required: true,
+    },
+
+    previousPaymentStatus: {
+      type: String,
+    },
+
+    newPaymentStatus: {
+      type: String,
+    },
+
+    note: {
+      type: String,
+      required: true, // 🔥 mandatory review / reason
+    },
+
+    changedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
+/* ================================
+   ORDER ITEM SCHEMA
+================================ */
 const orderItemSchema = new mongoose.Schema({
   product: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
-    required: true
+    required: true,
   },
   productName: {
     type: String,
-    required: true
+    required: true,
   },
   productPrice: {
     type: Number,
-    required: true
+    required: true,
   },
   quantity: {
     type: Number,
     required: true,
-    min: 1
-  }
+    min: 1,
+  },
 });
 
+/* ================================
+   SHIPPING ADDRESS
+================================ */
 const shippingAddressSchema = new mongoose.Schema({
   fullName: String,
   phone: String,
@@ -31,63 +79,74 @@ const shippingAddressSchema = new mongoose.Schema({
   postalCode: String,
   country: {
     type: String,
-    default: 'India'
-  }
+    default: 'India',
+  },
 });
 
+/* ================================
+   MAIN ORDER SCHEMA
+================================ */
 const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: true,
     },
 
     vendor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: true,
     },
 
     items: [orderItemSchema],
 
     subtotal: {
       type: Number,
-      required: true
+      required: true,
     },
 
     shippingFee: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     totalAmount: {
       type: Number,
-      required: true
+      required: true,
     },
 
     paymentMethod: {
       type: String,
       enum: ['cod', 'online'],
-      default: 'cod'
+      default: 'cod',
     },
 
     paymentStatus: {
       type: String,
       enum: ['pending', 'paid', 'failed', 'refunded'],
-      default: 'pending'
+      default: 'pending',
     },
 
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
-      default: 'pending'
+      default: 'pending',
     },
 
-    shippingAddress: shippingAddressSchema
+    vendorNote: {
+      type: String,
+      default: '',
+    },
+
+    // ✅ COMPLETE STATUS + PAYMENT + COMMENT HISTORY
+    statusHistory: [orderStatusHistorySchema],
+
+    shippingAddress: shippingAddressSchema,
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

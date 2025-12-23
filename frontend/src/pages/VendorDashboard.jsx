@@ -3,15 +3,21 @@ import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
 import ProductForm from '../components/vendor/ProductForm';
 import VendorProductsList from '../components/vendor/VendorProductsList';
+import VendorOrders from '../components/vendor/VendorOrders';
 
 const VendorDashboard = () => {
   const { auth } = useAuth();
   const token = auth.token;
+  const vendor = auth.user;
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showForm, setShowForm] = useState(false);
+
+  // 👇 NEW: dashboard section control
+  const [activeSection, setActiveSection] = useState('profile');
+  // profile | products | orders
 
   const fetchProducts = async () => {
     try {
@@ -29,8 +35,10 @@ const VendorDashboard = () => {
   };
 
   useEffect(() => {
-    if (token) fetchProducts();
-  }, [token]);
+    if (token && activeSection === 'products') {
+      fetchProducts();
+    }
+  }, [token, activeSection]);
 
   const handleCreateClick = () => {
     setEditingProduct(null);
@@ -50,7 +58,6 @@ const VendorDashboard = () => {
       });
       setProducts((p) => p.filter((x) => x._id !== productId));
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.message || 'Delete failed');
     }
   };
@@ -69,60 +76,155 @@ const VendorDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* HEADER */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
             Vendor Dashboard
           </h1>
           <p className="text-sm text-slate-500">
-            Manage your products and listings
+            Welcome back, {vendor?.name}
           </p>
         </div>
+      </div>
+
+      {/* TOP NAV SECTIONS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button
+          onClick={() => setActiveSection('profile')}
+          className={`p-4 rounded-xl border text-left transition ${
+            activeSection === 'profile'
+              ? 'bg-blue-50 border-blue-500'
+              : 'bg-white hover:bg-slate-50'
+          }`}
+        >
+          <h3 className="font-semibold text-slate-900">Vendor Profile</h3>
+          <p className="text-xs text-slate-500">
+            View your account details
+          </p>
+        </button>
 
         <button
-          onClick={handleCreateClick}
-          className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-500"
+          onClick={() => setActiveSection('products')}
+          className={`p-4 rounded-xl border text-left transition ${
+            activeSection === 'products'
+              ? 'bg-blue-50 border-blue-500'
+              : 'bg-white hover:bg-slate-50'
+          }`}
         >
-          + Add Product
+          <h3 className="font-semibold text-slate-900">My Products</h3>
+          <p className="text-xs text-slate-500">
+            Manage your product listings
+          </p>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('orders')}
+          className={`p-4 rounded-xl border text-left transition ${
+            activeSection === 'orders'
+              ? 'bg-blue-50 border-blue-500'
+              : 'bg-white hover:bg-slate-50'
+          }`}
+        >
+          <h3 className="font-semibold text-slate-900">Orders</h3>
+          <p className="text-xs text-slate-500">
+            Track customer orders
+          </p>
         </button>
       </div>
 
-      {/* Form */}
-      {showForm && (
-        <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-          <ProductForm
-            token={token}
-            product={editingProduct}
-            onSaved={(p) => {
-              alert('Product saved. It is now pending admin approval.');
-              handleFormSaved(p);
-            }}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingProduct(null);
-            }}
-          />
+      {/* ================= PROFILE ================= */}
+      {activeSection === 'profile' && (
+        <div className="bg-white border rounded-2xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Vendor Details
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-slate-500">Name</span>
+              <p className="font-medium text-slate-900">
+                {vendor?.name}
+              </p>
+            </div>
+            <div>
+              <span className="text-slate-500">Email</span>
+              <p className="font-medium text-slate-900">
+                {vendor?.email}
+              </p>
+            </div>
+            <div>
+              <span className="text-slate-500">Role</span>
+              <p className="font-medium text-slate-900 capitalize">
+                {vendor?.role}
+              </p>
+            </div>
+            <div>
+              <span className="text-slate-500">Status</span>
+              <p className="font-medium text-emerald-600">
+                Active
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Product List */}
-      <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
-          My Products
-        </h2>
+      {/* ================= PRODUCTS ================= */}
+      {activeSection === 'products' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-slate-900">
+              My Products
+            </h2>
+            <button
+              onClick={handleCreateClick}
+              className="rounded-lg bg-blue-600 text-white px-4 py-2 text-sm font-semibold hover:bg-blue-500"
+            >
+              + Add Product
+            </button>
+          </div>
 
-        {loading ? (
-          <div className="text-slate-500">Loading...</div>
-        ) : (
-          <VendorProductsList
-            products={products}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        )}
-      </div>
+          {showForm && (
+            <div className="bg-white border rounded-2xl p-5 shadow-sm">
+              <ProductForm
+                token={token}
+                product={editingProduct}
+                onSaved={(p) => {
+                  alert('Product saved. Pending admin approval.');
+                  handleFormSaved(p);
+                }}
+                onCancel={() => {
+                  setShowForm(false);
+                  setEditingProduct(null);
+                }}
+              />
+            </div>
+          )}
+
+          <div className="bg-white border rounded-2xl p-5 shadow-sm">
+            {loading ? (
+              <div className="text-slate-500">Loading...</div>
+            ) : (
+              <VendorProductsList
+                products={products}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ================= ORDERS ================= */}
+      {activeSection === 'orders' && (
+        <div className="bg-white border rounded-2xl p-5 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900 mb-4">
+            Orders
+          </h2>
+          <VendorOrders token={token} />
+        </div>
+      )}
     </div>
   );
 };

@@ -1,11 +1,11 @@
-// src/pages/Home.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 
 const Home = () => {
   const [settings, setSettings] = useState(null);
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
@@ -14,17 +14,30 @@ const Home = () => {
           axiosClient.get("/api/settings/public"),
           axiosClient.get("/api/products"),
         ]);
-        setSettings(settingsRes.data);
-        setProducts(productsRes.data.products || productsRes.data || []);
+
+        setSettings(settingsRes.data || null);
+        setProducts(productsRes.data?.products || []);
       } catch (err) {
-        console.error(err);
+        console.error("Home load error:", err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
+
     loadData();
   }, []);
 
+  /* ================= GROUP BY SUPER CATEGORY ================= */
+  const grouped = products.reduce((acc, p) => {
+    const superCat = p.category?.parent?.name || "Others";
+    if (!acc[superCat]) acc[superCat] = [];
+    acc[superCat].push(p);
+    return acc;
+  }, {});
+
   return (
-    <div className="space-y-14 bg-slate-50">
+    <div className="space-y-16 min-h-screen">
       {/* ================= HERO ================= */}
       <section className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-8 sm:p-12 shadow-md">
         <div className="max-w-3xl">
@@ -37,12 +50,6 @@ const Home = () => {
               "Discover quality products from trusted sellers at the best prices."}
           </p>
 
-          {settings?.featuredText && (
-            <div className="mt-4 inline-block rounded-full bg-white/20 px-4 py-1 text-xs font-semibold text-white">
-              {settings.featuredText}
-            </div>
-          )}
-
           <div className="mt-6 flex gap-3">
             <Link
               to="/products"
@@ -50,88 +57,123 @@ const Home = () => {
             >
               Browse Products
             </Link>
-
-            <Link
-              to="/products"
-              className="rounded-xl border border-white/40 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
-            >
-              Today’s Deals
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* ================= FEATURED PRODUCTS ================= */}
-      <section className="px-1">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">
-              Featured Products
-            </h2>
-            <p className="text-xs text-slate-500">
-              Popular picks you shouldn’t miss
-            </p>
-          </div>
-
-          <Link
-            to="/products"
-            className="text-sm font-semibold text-blue-600 hover:underline"
-          >
-            View all →
-          </Link>
+      {/* ================= CATEGORY ROWS ================= */}
+      {loading && (
+        <div className="text-center text-sm text-slate-500">
+          Loading products...
         </div>
+      )}
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.slice(0, 6).map((p) => (
+      {!loading &&
+        Object.keys(grouped).map((superCat) => (
+          <CategoryRow
+            key={superCat}
+            title={superCat}
+            products={grouped[superCat]}
+          />
+        ))}
+
+      {!loading && products.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+          <p className="text-sm text-slate-600">
+            No products available right now.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ================= CATEGORY ROW COMPONENT ================= */
+const CategoryRow = ({ title, products }) => {
+  const rowRef = useRef(null);
+
+  const scroll = (dir) => {
+    if (!rowRef.current) return;
+    rowRef.current.scrollBy({
+      left: dir === "left" ? -320 : 320,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <section className="space-y-4">
+      {/* HEADER */}
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-xl font-bold text-slate-900">
+          {title}
+        </h2>
+
+        <Link
+          to={`/products?category=${title}`}
+          className="text-sm font-semibold text-blue-600 hover:underline"
+        >
+          View All →
+        </Link>
+      </div>
+
+      {/* ROW */}
+      <div className="relative">
+        {/* LEFT BUTTON */}
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full w-9 h-9 flex items-center justify-center hover:bg-slate-100"
+        >
+          ◀
+        </button>
+
+        {/* PRODUCTS */}
+        <div
+          ref={rowRef}
+          className="flex gap-5 overflow-x-auto scrollbar-hide px-10"
+        >
+          {products.map((p) => (
             <Link
               key={p._id}
               to={`/products/${p._id}`}
-              className="group rounded-2xl bg-white border border-slate-200 p-4 shadow-sm hover:shadow-lg transition-all duration-300"
+              className="min-w-[240px] max-w-[240px] bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-lg transition"
             >
-              {/* Category */}
-              <div className="mb-2">
-                <span className="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase tracking-wide text-slate-600">
-                  {p.category || "General"}
-                </span>
-              </div>
+              {/* CATEGORY */}
+              <span className="inline-block mb-2 rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase text-slate-600">
+                {p.category?.name || "General"}
+              </span>
 
-              {/* Product Info */}
+              {/* NAME */}
               <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">
                 {p.name}
               </h3>
 
+              {/* DESC */}
               <p className="mt-1 text-xs text-slate-500 line-clamp-2">
                 {p.description || "No description available."}
               </p>
 
-              {/* Price */}
+              {/* PRICE */}
               <div className="mt-4 flex items-center justify-between">
                 <span className="text-lg font-bold text-blue-600">
                   ₹{p.price}
                 </span>
-
-                <span className="text-xs font-medium text-slate-400 group-hover:text-blue-600 transition">
+                <span className="text-xs text-slate-400">
                   View →
                 </span>
               </div>
             </Link>
           ))}
-
-          {/* Empty State */}
-          {products.length === 0 && (
-            <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-              <p className="text-sm text-slate-500">
-                No products available right now.
-              </p>
-              <p className="text-xs text-slate-400 mt-1">
-                Vendors can add products from their dashboard.
-              </p>
-            </div>
-          )}
         </div>
-      </section>
-    </div>
+
+        {/* RIGHT BUTTON */}
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow rounded-full w-9 h-9 flex items-center justify-center hover:bg-slate-100"
+        >
+          ▶
+        </button>
+      </div>
+    </section>
   );
 };
 

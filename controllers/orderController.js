@@ -2,7 +2,9 @@ const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
 
-// USER: Checkout from cart
+/* ================================
+   USER: CHECKOUT FROM CART
+================================ */
 exports.checkoutFromCart = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -29,14 +31,15 @@ exports.checkoutFromCart = async (req, res) => {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
-    // Group items by vendor
     const itemsByVendor = {};
 
     for (const item of cart.items) {
       const product = item.product;
 
       if (!product || !product.vendor || !product.isActive) {
-        return res.status(400).json({ message: `Product is not available: ${product ? product.name : 'Unknown'}` });
+        return res.status(400).json({
+          message: `Product not available: ${product ? product.name : 'Unknown'}`
+        });
       }
 
       const vendorId = product.vendor.toString();
@@ -55,7 +58,6 @@ exports.checkoutFromCart = async (req, res) => {
 
     const createdOrders = [];
 
-    // For each vendor, create separate order
     for (const vendorId of Object.keys(itemsByVendor)) {
       const vendorItems = itemsByVendor[vendorId];
 
@@ -64,7 +66,7 @@ exports.checkoutFromCart = async (req, res) => {
         subtotal += it.productPrice * it.quantity;
       });
 
-      const shippingFee = 0; // abhi ke liye 0, future me logic dal sakte
+      const shippingFee = 0;
       const totalAmount = subtotal + shippingFee;
 
       const order = await Order.create({
@@ -80,8 +82,18 @@ exports.checkoutFromCart = async (req, res) => {
         shippingFee,
         totalAmount,
         paymentMethod: paymentMethod || 'cod',
-        paymentStatus: paymentMethod === 'online' ? 'pending' : 'pending',
+        paymentStatus: 'pending',
         status: 'pending',
+        statusHistory: [
+          {
+            changedBy: 'vendor',
+            previousStatus: 'created',
+            newStatus: 'pending',
+            previousPaymentStatus: 'created',
+            newPaymentStatus: 'pending',
+            note: 'Order placed successfully'
+          }
+        ],
         shippingAddress: {
           fullName,
           phone,
@@ -97,7 +109,6 @@ exports.checkoutFromCart = async (req, res) => {
       createdOrders.push(order);
     }
 
-    // Clear cart after order placed
     cart.items = [];
     await cart.save();
 
@@ -111,7 +122,9 @@ exports.checkoutFromCart = async (req, res) => {
   }
 };
 
-// USER: Get my orders
+/* ================================
+   USER: MY ORDERS
+================================ */
 exports.getMyOrders = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -122,86 +135,106 @@ exports.getMyOrders = async (req, res) => {
 
     res.json({ orders });
   } catch (error) {
-    console.error('Get my orders error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// USER: Get my single order
+/* ================================
+   USER: SINGLE ORDER
+================================ */
 exports.getMyOrderById = async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const orderId = req.params.id;
-
-    const order = await Order.findOne({ _id: orderId, user: userId })
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user.userId
+    })
       .populate('vendor', 'name email')
       .populate('items.product');
 
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
     res.json({ order });
   } catch (error) {
-    console.error('Get my order by id error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// VENDOR: Get orders for this vendor
+/* ================================
+   VENDOR: GET ORDERS
+================================ */
 exports.getVendorOrders = async (req, res) => {
   try {
-    const vendorId = req.user.userId;
-
-    const orders = await Order.find({ vendor: vendorId })
+    const orders = await Order.find({ vendor: req.user.userId })
       .populate('user', 'name email')
       .sort({ createdAt: -1 });
 
     res.json({ orders });
   } catch (error) {
-    console.error('Get vendor orders error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// VENDOR: Update order status (only for his orders)
+/* ================================
+   VENDOR: UPDATE STATUS / PAYMENT
+================================ */
 exports.vendorUpdateOrderStatus = async (req, res) => {
   try {
-    const vendorId = req.user.userId;
-    const orderId = req.params.id;
-    const { status } = req.body;
+    const { status, paymentStatus, note } = req.body;
+
+    if (!note || note.trim().length < 3) {
+      return res.status(400).json({ message: 'Reason / review is mandatory' });
+    }
 
     const allowedStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-    if (!allowedStatuses.includes(status)) {
+    const allowedPayments = ['pending', 'paid', 'failed', 'refunded'];
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      vendor: req.user.userId
+    });
+
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (status && !allowedStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
-    const order = await Order.findOne({ _id: orderId, vendor: vendorId });
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found for this vendor' });
+    if (paymentStatus && !allowedPayments.includes(paymentStatus)) {
+      return res.status(400).json({ message: 'Invalid payment status' });
     }
 
-    order.status = status;
+    const prevStatus = order.status;
+    const prevPayment = order.paymentStatus;
 
-    // delivered + COD => mark paid
-    if (status === 'delivered' && order.paymentMethod === 'cod') {
-      order.paymentStatus = 'paid';
-    }
+    if (status) order.status = status;
+    if (paymentStatus) order.paymentStatus = paymentStatus;
+
+    order.vendorNote = note;
+
+    order.statusHistory.push({
+      changedBy: 'vendor',
+      previousStatus: prevStatus,
+      newStatus: order.status,
+      previousPaymentStatus: prevPayment,
+      newPaymentStatus: order.paymentStatus,
+      note: note.trim()
+    });
 
     await order.save();
 
-    res.json({
-      message: 'Order status updated',
-      order
-    });
+    res.json({ message: 'Order updated', order });
   } catch (error) {
-    console.error('Vendor update order error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// ADMIN: Get all orders
+/* ================================
+   ADMIN: GET ALL ORDERS
+================================ */
 exports.getAllOrdersAdmin = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -211,47 +244,45 @@ exports.getAllOrdersAdmin = async (req, res) => {
 
     res.json({ orders });
   } catch (error) {
-    console.error('Get all orders admin error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// ADMIN: Update any order status/paymentStatus
+/* ================================
+   ADMIN: UPDATE ORDER
+================================ */
 exports.adminUpdateOrder = async (req, res) => {
   try {
-    const orderId = req.params.id;
-    const { status, paymentStatus } = req.body;
+    const { status, paymentStatus, note } = req.body;
 
-    const order = await Order.findById(orderId);
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
+    if (!note || note.trim().length < 3) {
+      return res.status(400).json({ message: 'Admin note is mandatory' });
     }
 
-    if (status) {
-      const allowedStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-      if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({ message: 'Invalid status' });
-      }
-      order.status = status;
-    }
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    if (paymentStatus) {
-      const allowedPaymentStatuses = ['pending', 'paid', 'failed', 'refunded'];
-      if (!allowedPaymentStatuses.includes(paymentStatus)) {
-        return res.status(400).json({ message: 'Invalid paymentStatus' });
-      }
-      order.paymentStatus = paymentStatus;
-    }
+    const prevStatus = order.status;
+    const prevPayment = order.paymentStatus;
+
+    if (status) order.status = status;
+    if (paymentStatus) order.paymentStatus = paymentStatus;
+
+    order.statusHistory.push({
+      changedBy: 'admin',
+      previousStatus: prevStatus,
+      newStatus: order.status,
+      previousPaymentStatus: prevPayment,
+      newPaymentStatus: order.paymentStatus,
+      note: note.trim()
+    });
 
     await order.save();
 
-    res.json({
-      message: 'Order updated by admin',
-      order
-    });
+    res.json({ message: 'Order updated by admin', order });
   } catch (error) {
-    console.error('Admin update order error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

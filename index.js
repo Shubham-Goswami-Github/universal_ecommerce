@@ -48,6 +48,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/vendor-store', vendorStoreRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/public', publicVendorRoutes);
+app.use('/api/categories', require('./routes/categoryRoutes'));
+
 
 // Simple health endpoints
 app.get('/', (req, res) => {
