@@ -6,11 +6,12 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
     name: '',
     description: '',
     price: '',
-    category: '', // 👈 sub-category ID only
-    images: [''],
     stock: 0,
     isActive: true,
   });
+
+  const [images, setImages] = useState([]); // 🔥 FILES
+  const [existingImages, setExistingImages] = useState([]); // edit mode
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,11 +30,11 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
         name: product.name || '',
         description: product.description || '',
         price: product.price ?? '',
-        category: product.category?._id || product.category || '',
-        images: product.images?.length ? product.images : [''],
         stock: product.stock ?? 0,
         isActive: product.isActive ?? true,
       });
+
+      setExistingImages(product.images || []);
 
       if (product.category?.parent) {
         setSuperCategory(product.category.parent);
@@ -81,26 +82,37 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
     try {
       setSubmitting(true);
 
-      const payload = {
-        ...form,
-        category: subCategory, // ✅ ONLY sub category ID
-        price: Number(form.price),
-        stock: Number(form.stock),
+      const formData = new FormData();
+
+      formData.append('name', form.name);
+      formData.append('description', form.description);
+      formData.append('price', Number(form.price));
+      formData.append('stock', Number(form.stock));
+      formData.append('category', subCategory);
+
+      // 🔥 NEW IMAGES
+      if (images.length) {
+        Array.from(images).forEach((file) => {
+          formData.append('images', file);
+        });
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
       };
 
-      if (product?._id) {
-        const res = await axiosClient.put(
-          `/api/products/${product._id}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        onSaved(res.data.product);
-      } else {
-        const res = await axiosClient.post('/api/products', payload, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        onSaved(res.data.product);
-      }
+      const res = product?._id
+        ? await axiosClient.put(
+            `/api/products/${product._id}`,
+            formData,
+            config
+          )
+        : await axiosClient.post('/api/products', formData, config);
+
+      onSaved(res.data.product);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Save failed');
@@ -157,21 +169,18 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
         />
       </div>
 
-      {/* CATEGORY SECTION */}
+      {/* CATEGORY */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* SUPER CATEGORY */}
         <div>
           <label className="text-xs font-medium text-slate-600">
             Super Category
           </label>
-
           <input
             placeholder="Search super category..."
             value={superSearch}
             onChange={(e) => setSuperSearch(e.target.value)}
             className="w-full border rounded px-2 py-1 text-xs mb-1"
           />
-
           <select
             value={superCategory}
             onChange={(e) => {
@@ -190,19 +199,16 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
           </select>
         </div>
 
-        {/* SUB CATEGORY */}
         <div>
           <label className="text-xs font-medium text-slate-600">
             Sub Category
           </label>
-
           <input
             placeholder="Search sub category..."
             value={subSearch}
             onChange={(e) => setSubSearch(e.target.value)}
             className="w-full border rounded px-2 py-1 text-xs mb-1"
           />
-
           <select
             value={subCategory}
             onChange={(e) => setSubCategory(e.target.value)}
@@ -218,6 +224,34 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
             ))}
           </select>
         </div>
+      </div>
+
+      {/* IMAGE UPLOAD */}
+      <div>
+        <label className="text-xs font-medium text-slate-600">
+          Product Images
+        </label>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={(e) => setImages(e.target.files)}
+          className="w-full text-sm"
+        />
+
+        {/* EXISTING IMAGES (EDIT MODE) */}
+        {existingImages.length > 0 && (
+          <div className="flex gap-2 mt-2 flex-wrap">
+            {existingImages.map((img, i) => (
+              <img
+                key={i}
+                src={img}
+                alt="product"
+                className="w-16 h-16 object-cover rounded border"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* STOCK */}

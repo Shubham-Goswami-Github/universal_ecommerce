@@ -38,8 +38,7 @@ const Products = () => {
   }, {});
 
   return (
-    <div className="space-y-10">
-      
+    <div className="space-y-10 min-h-screen">
       {/* ================= PAGE HEADER ================= */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
@@ -66,35 +65,52 @@ const Products = () => {
               <Link
                 key={p._id}
                 to={`/products/${p._id}`}
-                className="group rounded-2xl bg-white border border-slate-200 p-4 shadow-sm hover:shadow-lg transition"
+                className="group rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition"
               >
-                {/* CATEGORY BADGE */}
-                <div className="mb-2">
-                  <span className="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase text-slate-600">
-                    {superCategory
-                      ? `${superCategory} / ${p.category?.name}`
-                      : p.category?.name || 'General'}
-                  </span>
+                {/* IMAGE */}
+                <div className="h-44 bg-slate-100">
+                  <img
+                    src={
+                      p.images?.length
+                        ? p.images[0]
+                        : 'https://via.placeholder.com/400x300?text=No+Image'
+                    }
+                    alt={p.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
                 </div>
 
-                {/* PRODUCT NAME */}
-                <h3 className="text-sm font-semibold text-slate-900 mb-1 line-clamp-1">
-                  {p.name}
-                </h3>
+                {/* CONTENT */}
+                <div className="p-4">
+                  {/* CATEGORY BADGE */}
+                  <div className="mb-2">
+                    <span className="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase text-slate-600">
+                      {superCategory
+                        ? `${superCategory} / ${p.category?.name}`
+                        : p.category?.name || 'General'}
+                    </span>
+                  </div>
 
-                {/* DESCRIPTION */}
-                <p className="text-xs text-slate-500 mb-3 line-clamp-2">
-                  {p.description || 'No description available.'}
-                </p>
+                  {/* PRODUCT NAME */}
+                  <h3 className="text-sm font-semibold text-slate-900 mb-1 line-clamp-1">
+                    {p.name}
+                  </h3>
 
-                {/* PRICE */}
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-blue-600">
-                    ₹{p.price}
-                  </span>
-                  <span className="text-xs text-slate-400 group-hover:text-blue-600 transition">
-                    View →
-                  </span>
+                  {/* DESCRIPTION */}
+                  <p className="text-xs text-slate-500 mb-3 line-clamp-2">
+                    {p.description || 'No description available.'}
+                  </p>
+
+                  {/* PRICE */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-blue-600">
+                      ₹{p.price}
+                    </span>
+                    <span className="text-xs text-slate-400 group-hover:text-blue-600 transition">
+                      View →
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}

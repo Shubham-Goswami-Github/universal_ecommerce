@@ -12,11 +12,13 @@ const ProductDetails = () => {
   const [qty, setQty] = useState(1);
   const [message, setMessage] = useState('');
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
+  const [activeImage, setActiveImage] = useState(0);
 
   const loadProduct = async () => {
     try {
       const res = await axiosClient.get(`/api/products/${id}`);
       setProduct(res.data.product || res.data);
+      setActiveImage(0);
     } catch (err) {
       console.error(err);
     }
@@ -45,9 +47,7 @@ const ProductDetails = () => {
       });
       setMessage('Added to cart ✅');
     } catch (err) {
-      setMessage(
-        err.response?.data?.message || 'Failed to add to cart. Login as user?'
-      );
+      setMessage(err.response?.data?.message || 'Login as user to add to cart');
     }
   };
 
@@ -57,10 +57,7 @@ const ProductDetails = () => {
       await axiosClient.post('/api/wishlist/add', { productId: id });
       setMessage('Added to wishlist ❤️');
     } catch (err) {
-      setMessage(
-        err.response?.data?.message ||
-          'Failed to add to wishlist. Login as user?'
-      );
+      setMessage(err.response?.data?.message || 'Login as user to wishlist');
     }
   };
 
@@ -78,10 +75,7 @@ const ProductDetails = () => {
       await loadProduct();
       setMessage('Review submitted ✅');
     } catch (err) {
-      setMessage(
-        err.response?.data?.message ||
-          'Failed to submit review. Maybe login as user?'
-      );
+      setMessage(err.response?.data?.message || 'Failed to submit review');
     }
   };
 
@@ -90,9 +84,39 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 grid gap-8 md:grid-cols-[2fr,1fr]">
-      {/* LEFT SECTION */}
+    <div className="max-w-7xl mx-auto px-4 py-8 grid gap-8 md:grid-cols-[1.2fr,1fr]">
+      {/* LEFT: IMAGE + INFO */}
       <div className="bg-white rounded-xl border shadow-sm p-6">
+        {/* MAIN IMAGE */}
+        <div className="w-full h-[380px] bg-gray-100 rounded-lg overflow-hidden mb-4">
+          <img
+            src={
+              product.images?.length
+                ? product.images[activeImage]
+                : 'https://via.placeholder.com/600x400?text=No+Image'
+            }
+            alt={product.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* THUMBNAILS */}
+        {product.images?.length > 1 && (
+          <div className="flex gap-3 mb-6">
+            {product.images.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveImage(idx)}
+                className={`w-16 h-16 rounded border overflow-hidden ${
+                  activeImage === idx ? 'ring-2 ring-emerald-500' : ''
+                }`}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        )}
+
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">
           {product.name}
         </h1>
@@ -117,12 +141,6 @@ const ProductDetails = () => {
           <span className="text-gray-500 text-xs">
             Stock: {product.stock ?? 0}
           </span>
-
-          {product.avgRating > 0 && (
-            <span className="text-amber-500 text-xs font-medium">
-              ★ {product.avgRating.toFixed(1)} ({product.totalReviews} reviews)
-            </span>
-          )}
         </div>
 
         {message && (
@@ -132,17 +150,14 @@ const ProductDetails = () => {
         )}
 
         {/* ACTIONS */}
-        <div className="flex flex-wrap items-center gap-4 mb-8">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-700">Qty</label>
-            <input
-              type="number"
-              min={1}
-              value={qty}
-              onChange={(e) => setQty(Number(e.target.value) || 1)}
-              className="w-20 rounded-md border px-2 py-1 text-sm"
-            />
-          </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <input
+            type="number"
+            min={1}
+            value={qty}
+            onChange={(e) => setQty(Number(e.target.value) || 1)}
+            className="w-20 rounded-md border px-2 py-1 text-sm"
+          />
 
           <button
             onClick={addToCart}
@@ -155,80 +170,65 @@ const ProductDetails = () => {
             onClick={addToWishlist}
             className="px-6 py-2 rounded-md border border-pink-500 text-pink-600 hover:bg-pink-50 text-sm font-semibold"
           >
-            Add to Wishlist
+            Wishlist ❤️
           </button>
-        </div>
-
-        {/* REVIEWS */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
-            Customer Reviews
-          </h2>
-
-          {reviews.length === 0 && (
-            <p className="text-sm text-gray-500">No reviews yet.</p>
-          )}
-
-          <div className="space-y-4">
-            {reviews.map((r) => (
-              <div
-                key={r._id}
-                className="rounded-lg border bg-gray-50 p-4"
-              >
-                <div className="flex justify-between mb-1 text-sm">
-                  <span className="font-semibold text-gray-800">
-                    {r.user?.name || 'User'}
-                  </span>
-                  <span className="text-amber-500">★ {r.rating}</span>
-                </div>
-                {r.comment && (
-                  <p className="text-sm text-gray-600">{r.comment}</p>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
-      {/* RIGHT SECTION */}
+      {/* RIGHT: REVIEWS */}
       <div className="bg-white rounded-xl border shadow-sm p-6 h-fit sticky top-24">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Write a Review
+          Customer Reviews
         </h3>
 
-        {auth.user && auth.user.role === 'user' ? (
-          <form onSubmit={submitReview} className="space-y-4 text-sm">
-            <div>
-              <label className="block mb-1 text-gray-700">Rating</label>
-              <select
-                value={reviewForm.rating}
-                onChange={(e) =>
-                  setReviewForm((f) => ({
-                    ...f,
-                    rating: Number(e.target.value),
-                  }))
-                }
-                className="w-full rounded-md border px-2 py-2"
-              >
-                {[5, 4, 3, 2, 1].map((v) => (
-                  <option key={v} value={v}>
-                    {v} star{v > 1 ? 's' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {reviews.length === 0 && (
+          <p className="text-sm text-gray-500 mb-4">No reviews yet.</p>
+        )}
 
-            <div>
-              <label className="block mb-1 text-gray-700">Comment</label>
-              <textarea
-                rows={3}
-                value={reviewForm.comment}
-                onChange={(e) =>
-                  setReviewForm((f) => ({ ...f, comment: e.target.value }))
-                }
-                className="w-full rounded-md border px-2 py-2"
-              />
+        <div className="space-y-4 mb-6">
+          {reviews.map((r) => (
+            <div key={r._id} className="rounded-lg border bg-gray-50 p-4">
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-semibold text-gray-800">
+                  {r.user?.name || 'User'}
+                </span>
+                <span className="text-amber-500">★ {r.rating}</span>
+              </div>
+              {r.comment && (
+                <p className="text-sm text-gray-600">{r.comment}</p>
+              )}
             </div>
+          ))}
+        </div>
+
+        {auth.user && auth.user.role === 'user' ? (
+          <form onSubmit={submitReview} className="space-y-3 text-sm">
+            <select
+              value={reviewForm.rating}
+              onChange={(e) =>
+                setReviewForm((f) => ({
+                  ...f,
+                  rating: Number(e.target.value),
+                }))
+              }
+              className="w-full rounded-md border px-2 py-2"
+            >
+              {[5, 4, 3, 2, 1].map((v) => (
+                <option key={v} value={v}>
+                  {v} star{v > 1 ? 's' : ''}
+                </option>
+              ))}
+            </select>
+
+            <textarea
+              rows={3}
+              placeholder="Write your review..."
+              value={reviewForm.comment}
+              onChange={(e) =>
+                setReviewForm((f) => ({ ...f, comment: e.target.value }))
+              }
+              className="w-full rounded-md border px-2 py-2"
+            />
 
             <button
               type="submit"
@@ -239,7 +239,7 @@ const ProductDetails = () => {
           </form>
         ) : (
           <p className="text-sm text-gray-500">
-            Please login as a <span className="font-semibold">user</span> to write a review.
+            Login as <b>user</b> to write a review.
           </p>
         )}
       </div>

@@ -4,7 +4,9 @@ const router = express.Router();
 const orderController = require('../controllers/orderController');
 const { requireLogin, allowRoles } = require('../middleware/authMiddleware');
 
-// USER routes
+/* ================================
+      USER ROUTES
+================================ */
 router.post(
   '/checkout',
   requireLogin,
@@ -26,7 +28,9 @@ router.get(
   orderController.getMyOrderById
 );
 
-// VENDOR routes
+/* ================================
+      VENDOR ROUTES
+================================ */
 router.get(
   '/vendor',
   requireLogin,
@@ -41,7 +45,9 @@ router.patch(
   orderController.vendorUpdateOrderStatus
 );
 
-// ADMIN routes
+/* ================================
+      ADMIN ROUTES
+================================ */
 router.get(
   '/admin',
   requireLogin,

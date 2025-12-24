@@ -1,3 +1,6 @@
+// 🔥 ENV MUST BE FIRST
+require('dotenv').config();
+
 const express = require('express');
 const connectDB = require('./config/db');
 const cors = require('cors');
@@ -15,17 +18,18 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const vendorStoreRoutes = require('./routes/vendorStoreRoutes');
 const publicVendorRoutes = require('./routes/publicVendorRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const addressRoutes = require('./routes/addressRoutes');
 
-
-// Connect DB first
+// Connect DB
 connectDB();
 
 const app = express();
 
-// CORS allow for frontend
+// CORS
 app.use(
   cors({
-    origin: 'http://localhost:5173', // React dev server
+    origin: 'http://localhost:5173',
     credentials: true,
   })
 );
@@ -33,10 +37,10 @@ app.use(
 // Body parser
 app.use(express.json());
 
-// Serve uploaded static files
+// ⚠️ OPTIONAL: You can REMOVE this if only using Cloudinary
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Mount routes
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
@@ -46,12 +50,12 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/vendor-store', vendorStoreRoutes);
-app.use('/api/upload', uploadRoutes);
 app.use('/api/public', publicVendorRoutes);
-app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/upload', uploadRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/addresses', addressRoutes);
 
-
-// Simple health endpoints
+// Health checks
 app.get('/', (req, res) => {
   res.send('Ecommerce API is running 🚀');
 });

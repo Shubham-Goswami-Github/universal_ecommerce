@@ -1,6 +1,7 @@
 const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
+const Address = require('../models/addressModel');
 
 /* ================================
    USER: CHECKOUT FROM CART
@@ -12,27 +13,35 @@ exports.checkoutFromCart = async (req, res) => {
     const {
       fullName,
       phone,
-      addressLine1,
-      addressLine2,
-      city,
+      alternatePhone,
+      email,
       state,
+      city,
+      locality,
+      addressLine1,
       postalCode,
-      country,
-      paymentMethod
+      latitude,
+      longitude,
+      paymentMethod,
+      saveAddress
     } = req.body;
 
+    // Validation
     if (!fullName || !phone || !addressLine1 || !city || !state || !postalCode) {
-      return res.status(400).json({ message: 'Shipping address fields are required' });
+      return res.status(400).json({ message: 'Required address fields missing' });
     }
 
-    const cart = await Cart.findOne({ user: userId }).populate('items.product');
+   const cart = await Cart.findOne({ user: userId }).populate({
+  path: 'items.product',
+  select: 'name price images vendor isActive'
+});
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
+    // Group items by vendor
     const itemsByVendor = {};
-
     for (const item of cart.items) {
       const product = item.product;
 
@@ -43,16 +52,38 @@ exports.checkoutFromCart = async (req, res) => {
       }
 
       const vendorId = product.vendor.toString();
+      if (!itemsByVendor[vendorId]) itemsByVendor[vendorId] = [];
+itemsByVendor[vendorId].push({
+  productId: product._id,
+  productName: product.name,
+  productPrice: product.price,
+  productImage: product.images?.[0] || '', // 🔥 ADD THIS
+  quantity: item.quantity
+});
 
-      if (!itemsByVendor[vendorId]) {
-        itemsByVendor[vendorId] = [];
-      }
+    }
 
-      itemsByVendor[vendorId].push({
-        productId: product._id,
-        productName: product.name,
-        productPrice: product.price,
-        quantity: item.quantity
+    const shippingAddress = {
+      fullName,
+      phone,
+      alternatePhone,
+      email,
+      state,
+      city,
+      locality,
+      addressLine1,
+      postalCode,
+      latitude,
+      longitude,
+      country: 'India'
+    };
+
+    // Save address if user wants
+    if (saveAddress) {
+      await Address.create({
+        user: userId,
+        ...shippingAddress,
+        isDefault: false
       });
     }
 
@@ -72,12 +103,14 @@ exports.checkoutFromCart = async (req, res) => {
       const order = await Order.create({
         user: userId,
         vendor: vendorId,
-        items: vendorItems.map((it) => ({
-          product: it.productId,
-          productName: it.productName,
-          productPrice: it.productPrice,
-          quantity: it.quantity
-        })),
+      items: vendorItems.map((it) => ({
+  product: it.productId,
+  productName: it.productName,
+  productPrice: it.productPrice,
+  productImage: it.productImage, // 🔥 ADD THIS
+  quantity: it.quantity
+})),
+
         subtotal,
         shippingFee,
         totalAmount,
@@ -94,21 +127,13 @@ exports.checkoutFromCart = async (req, res) => {
             note: 'Order placed successfully'
           }
         ],
-        shippingAddress: {
-          fullName,
-          phone,
-          addressLine1,
-          addressLine2,
-          city,
-          state,
-          postalCode,
-          country: country || 'India'
-        }
+        shippingAddress
       });
 
       createdOrders.push(order);
     }
 
+    // Clear cart
     cart.items = [];
     await cart.save();
 
@@ -128,7 +153,6 @@ exports.checkoutFromCart = async (req, res) => {
 exports.getMyOrders = async (req, res) => {
   try {
     const userId = req.user.userId;
-
     const orders = await Order.find({ user: userId })
       .populate('vendor', 'name email')
       .sort({ createdAt: -1 });
@@ -224,7 +248,6 @@ exports.vendorUpdateOrderStatus = async (req, res) => {
     });
 
     await order.save();
-
     res.json({ message: 'Order updated', order });
   } catch (error) {
     console.error(error);
@@ -279,7 +302,6 @@ exports.adminUpdateOrder = async (req, res) => {
     });
 
     await order.save();
-
     res.json({ message: 'Order updated by admin', order });
   } catch (error) {
     console.error(error);

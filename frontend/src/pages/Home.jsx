@@ -104,9 +104,7 @@ const CategoryRow = ({ title, products }) => {
     <section className="space-y-4">
       {/* HEADER */}
       <div className="flex items-center justify-between px-1">
-        <h2 className="text-xl font-bold text-slate-900">
-          {title}
-        </h2>
+        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
 
         <Link
           to={`/products?category=${title}`}
@@ -135,31 +133,46 @@ const CategoryRow = ({ title, products }) => {
             <Link
               key={p._id}
               to={`/products/${p._id}`}
-              className="min-w-[240px] max-w-[240px] bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-lg transition"
+              className="min-w-[240px] max-w-[240px] bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition"
             >
-              {/* CATEGORY */}
-              <span className="inline-block mb-2 rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase text-slate-600">
-                {p.category?.name || "General"}
-              </span>
+              {/* IMAGE */}
+              <div className="h-40 bg-slate-100">
+                <img
+                  src={
+                    p.images?.length
+                      ? p.images[0]
+                      : "https://via.placeholder.com/300x200?text=No+Image"
+                  }
+                  alt={p.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
 
-              {/* NAME */}
-              <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">
-                {p.name}
-              </h3>
-
-              {/* DESC */}
-              <p className="mt-1 text-xs text-slate-500 line-clamp-2">
-                {p.description || "No description available."}
-              </p>
-
-              {/* PRICE */}
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-lg font-bold text-blue-600">
-                  ₹{p.price}
+              {/* CONTENT */}
+              <div className="p-4">
+                {/* CATEGORY */}
+                <span className="inline-block mb-2 rounded-full bg-slate-100 px-3 py-0.5 text-[10px] uppercase text-slate-600">
+                  {p.category?.name || "General"}
                 </span>
-                <span className="text-xs text-slate-400">
-                  View →
-                </span>
+
+                {/* NAME */}
+                <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">
+                  {p.name}
+                </h3>
+
+                {/* DESC */}
+                <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+                  {p.description || "No description available."}
+                </p>
+
+                {/* PRICE */}
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-lg font-bold text-blue-600">
+                    ₹{p.price}
+                  </span>
+                  <span className="text-xs text-slate-400">View →</span>
+                </div>
               </div>
             </Link>
           ))}

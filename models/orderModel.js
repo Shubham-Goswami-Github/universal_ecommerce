@@ -59,6 +59,10 @@ const orderItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  productImage: {
+    type: String,   // 🔥 MUST
+    default: '',
+  },
   quantity: {
     type: Number,
     required: true,
@@ -72,16 +76,26 @@ const orderItemSchema = new mongoose.Schema({
 const shippingAddressSchema = new mongoose.Schema({
   fullName: String,
   phone: String,
-  addressLine1: String,
-  addressLine2: String,
-  city: String,
+  alternatePhone: String,
+  email: String,
+
   state: String,
+  city: String,
+  locality: String,
+
+  addressLine1: String,
+
   postalCode: String,
+
+  latitude: Number,
+  longitude: Number,
+
   country: {
     type: String,
     default: 'India',
   },
 });
+
 
 /* ================================
    MAIN ORDER SCHEMA

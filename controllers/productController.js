@@ -19,14 +19,12 @@ exports.createProduct = async (req, res) => {
       description = '',
       price,
       category,
-      images = [],
-      stock = 0
+      stock = 0,
     } = req.body;
 
-    // ---- VALIDATIONS ----
     if (!name || price === undefined || !category) {
       return res.status(400).json({
-        message: 'Name, price and category are required'
+        message: 'Name, price and category are required',
       });
     }
 
@@ -34,40 +32,40 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Invalid price' });
     }
 
-    // category must be valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(category)) {
       return res.status(400).json({ message: 'Invalid category ID' });
     }
 
-    // category must exist
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
       return res.status(400).json({ message: 'Category not found' });
     }
 
-    // ---- CREATE PRODUCT ----
+    // 🔥 CLOUDINARY IMAGES
+    const images = req.files?.map((file) => file.path) || [];
+
     const product = await Product.create({
       name: name.trim(),
       description: description.trim(),
       price: Number(price),
-      category, // ObjectId ref
-      images: Array.isArray(images) ? images : [],
+      category,
+      images,
       stock: Number(stock) || 0,
       vendor: vendorId,
       status: 'pending',
       isActive: true,
-      rejectionReason: ''
+      rejectionReason: '',
     });
 
     return res.status(201).json({
       message: 'Product created and sent for approval',
-      product
+      product,
     });
   } catch (error) {
     console.error('Create product error:', error);
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -97,16 +95,16 @@ exports.updateProduct = async (req, res) => {
     }
 
     // vendor can edit only own product
-    if (role === 'vendor' && product.vendor?.toString() !== userId) {
+    if (role === 'vendor' && product.vendor.toString() !== userId) {
       return res.status(403).json({ message: 'Not allowed' });
     }
 
     const updates = { ...req.body };
 
-    // vendor cannot change vendor field
+    // vendor field protected
     delete updates.vendor;
 
-    // sanitize numbers
+    // sanitize price
     if (updates.price !== undefined) {
       if (Number.isNaN(Number(updates.price))) {
         return res.status(400).json({ message: 'Invalid price' });
@@ -114,11 +112,12 @@ exports.updateProduct = async (req, res) => {
       updates.price = Number(updates.price);
     }
 
+    // sanitize stock
     if (updates.stock !== undefined) {
       updates.stock = Number(updates.stock) || 0;
     }
 
-    // validate category if updating
+    // validate category
     if (updates.category) {
       if (!mongoose.Types.ObjectId.isValid(updates.category)) {
         return res.status(400).json({ message: 'Invalid category ID' });
@@ -130,10 +129,16 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // apply updates
+    // 🔥 APPLY FIELD UPDATES
     Object.keys(updates).forEach((key) => {
       product[key] = updates[key];
     });
+
+    // 🔥 ADD NEW CLOUDINARY IMAGES
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => file.path);
+      product.images.push(...newImages);
+    }
 
     // vendor edit → pending again
     if (role === 'vendor') {
@@ -145,13 +150,13 @@ exports.updateProduct = async (req, res) => {
 
     return res.json({
       message: 'Product updated',
-      product
+      product,
     });
   } catch (error) {
     console.error('Update product error:', error);
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -180,7 +185,7 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    if (role === 'vendor' && product.vendor?.toString() !== userId) {
+    if (role === 'vendor' && product.vendor.toString() !== userId) {
       return res.status(403).json({ message: 'Not allowed' });
     }
 
@@ -191,7 +196,7 @@ exports.deleteProduct = async (req, res) => {
     console.error('Delete product error:', error);
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -209,15 +214,14 @@ exports.getMyProducts = async (req, res) => {
     }
 
     const products = await Product.find({ vendor: vendorId })
-     .populate({
-  path: 'category',
-  select: 'name type parent',
-  populate: {
-    path: 'parent',
-    select: 'name'
-  }
-})
-
+      .populate({
+        path: 'category',
+        select: 'name type parent',
+        populate: {
+          path: 'parent',
+          select: 'name',
+        },
+      })
       .sort({ createdAt: -1 });
 
     return res.json({ products });
@@ -225,7 +229,7 @@ exports.getMyProducts = async (req, res) => {
     console.error('Get my products error:', error);
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -239,17 +243,16 @@ exports.getPublicProducts = async (req, res) => {
   try {
     const products = await Product.find({
       status: 'approved',
-      isActive: true
+      isActive: true,
     })
       .populate({
-  path: 'category',
-  select: 'name type parent',
-  populate: {
-    path: 'parent',
-    select: 'name'
-  }
-})
-
+        path: 'category',
+        select: 'name type parent',
+        populate: {
+          path: 'parent',
+          select: 'name',
+        },
+      })
       .sort({ createdAt: -1 });
 
     return res.json({ products });
@@ -257,7 +260,7 @@ exports.getPublicProducts = async (req, res) => {
     console.error('Get public products error:', error);
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -278,29 +281,26 @@ exports.getPublicProductDetails = async (req, res) => {
     const product = await Product.findById(productId)
       .populate('vendor', 'name email')
       .populate({
-  path: 'category',
-  select: 'name type parent',
-  populate: {
-    path: 'parent',
-    select: 'name'
-  }
-})
-;
+        path: 'category',
+        select: 'name type parent',
+        populate: {
+          path: 'parent',
+          select: 'name',
+        },
+      });
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // approved → public
     if (product.status === 'approved') {
       return res.json({ product });
     }
 
-    // non-approved → admin or owner only
     const userId = req.user?.userId;
     const role = req.user?.role;
 
-    if (userId && (role === 'admin' || product.vendor?.toString() === userId)) {
+    if (userId && (role === 'admin' || product.vendor.toString() === userId)) {
       return res.json({ product });
     }
 
@@ -309,7 +309,7 @@ exports.getPublicProductDetails = async (req, res) => {
     console.error('Get product details error:', error);
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };

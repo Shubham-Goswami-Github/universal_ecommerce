@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const { requireLogin, allowRoles, optionalAuth } = require('../middleware/authMiddleware');
-
+const upload = require('../middleware/upload');
 /**
  * =====================
  * VENDOR ROUTES (FIRST)
@@ -20,6 +20,21 @@ router.get(
  * PUBLIC ROUTES
  * =====================
  */
+router.post(
+  '/',
+  requireLogin,
+  allowRoles('vendor'),
+  upload.array('images', 5),
+  productController.createProduct
+);
+
+router.put(
+  '/:id',
+  requireLogin,
+  allowRoles('vendor', 'admin'),
+  upload.array('images', 5),
+  productController.updateProduct
+);
 router.get(
   '/',
   productController.getPublicProducts
