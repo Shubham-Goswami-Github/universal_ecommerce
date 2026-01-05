@@ -20,6 +20,7 @@ const publicVendorRoutes = require('./routes/publicVendorRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const addressRoutes = require('./routes/addressRoutes');
+const vendorRoutes = require('./routes/vendorRoutes');
 
 // 👇 YEH LINE ADD KARO
 const userRoutes = require('./routes/userRoutes');
@@ -58,6 +59,7 @@ app.use('/api/public', publicVendorRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/addresses', addressRoutes);
+app.use('/api/vendor', vendorRoutes);
 
 // Health checks
 app.get('/', (req, res) => {

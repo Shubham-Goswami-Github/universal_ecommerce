@@ -164,4 +164,69 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
+
+const VendorSalesStats = require('./vendorSalesStatsModel');
+const Product = require('./productModel');
+
+orderSchema.post('save', async function (doc) {
+  try {
+    // 🔒 only when delivered
+    if (doc.status !== 'delivered') return;
+
+    // 🔒 prevent double counting
+    const alreadyRecorded = doc.statusHistory?.some(
+      (h) =>
+        h.previousStatus !== 'delivered' &&
+        h.newStatus === 'delivered'
+    );
+
+    if (!alreadyRecorded) return;
+
+    let stats = await VendorSalesStats.findOne({
+      vendor: doc.vendor,
+    });
+
+    if (!stats) {
+      stats = await VendorSalesStats.create({
+        vendor: doc.vendor,
+      });
+    }
+
+    stats.totalOrders += 1;
+    stats.totalRevenue += doc.totalAmount;
+
+    for (const item of doc.items) {
+      stats.totalProductsSold += item.quantity;
+
+      const existingProduct =
+        stats.productSales.find(
+          (p) => p.product.toString() === item.product.toString()
+        );
+
+      if (existingProduct) {
+        existingProduct.totalQuantitySold += item.quantity;
+        existingProduct.totalRevenue +=
+          item.productPrice * item.quantity;
+      } else {
+        stats.productSales.push({
+          product: item.product,
+          productName: item.productName,
+          totalQuantitySold: item.quantity,
+          totalRevenue: item.productPrice * item.quantity,
+        });
+      }
+
+      // 🔥 OPTIONAL: update Product.totalSales also
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { totalSales: item.quantity },
+      });
+    }
+
+    await stats.save();
+  } catch (err) {
+    console.error('Vendor sales stats update error:', err);
+  }
+});
+
+
 module.exports = mongoose.model('Order', orderSchema);

@@ -1,3 +1,9 @@
+
+/* ================================
+   USER: CHECKOUT FROM CART
+================================ */
+// controllers/orderController.js
+
 const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
@@ -37,6 +43,7 @@ exports.checkoutFromCart = async (req, res) => {
       select: `
         name images vendor status
         sellingPrice finalPrice mrp
+        totalStock stock         // 👈 stock fields select kar rahe hain
       `
     });
 
@@ -67,6 +74,22 @@ exports.checkoutFromCart = async (req, res) => {
         });
       }
 
+      // 🔥 AVAILABLE STOCK CHECK
+      const availableStock = Number(product.totalStock ?? product.stock ?? 0);
+      const requestedQty = Number(item.quantity || 0);
+
+      if (requestedQty <= 0) {
+        return res.status(400).json({
+          message: `Invalid quantity for product: ${product.name}`
+        });
+      }
+
+      if (requestedQty > availableStock) {
+        return res.status(400).json({
+          message: `Insufficient stock for product: ${product.name}. Available: ${availableStock}, Requested: ${requestedQty}`
+        });
+      }
+
       // SAFE PRICE RESOLUTION
       const price = Number(
         product.finalPrice ?? product.sellingPrice
@@ -87,7 +110,7 @@ exports.checkoutFromCart = async (req, res) => {
         productName: product.name,
         productPrice: price, // REQUIRED BY ORDER MODEL
         productImage: product.images?.[0] || '',
-        quantity: item.quantity
+        quantity: requestedQty
       });
     }
 
@@ -168,6 +191,23 @@ exports.checkoutFromCart = async (req, res) => {
       });
 
       createdOrders.push(order);
+
+      /* ================= UPDATE PRODUCT STOCK ================= */
+      // Har vendor item ke liye product stock kam karo
+      await Promise.all(
+        vendorItems.map((it) =>
+          Product.findByIdAndUpdate(
+            it.productId,
+            {
+              $inc: {
+                totalStock: -it.quantity, // agar field hai to kam hoga
+                stock: -it.quantity       // agar tum 'stock' use karte ho to bhi update
+              }
+            },
+            { new: false }
+          )
+        )
+      );
     }
 
     /* ================= USER ANALYTICS UPDATE ================= */
@@ -252,9 +292,9 @@ exports.getMyOrderById = async (req, res) => {
    VENDOR: GET ORDERS
 ================================ */
 exports.getVendorOrders = async (req, res) => {
-  try {
+   try {
     const orders = await Order.find({ vendor: req.user.userId })
-      .populate('user', 'name email')
+      .populate('user', 'name email mobileNumber profilePicture gender') // 👈 yeh fields add karo
       .sort({ createdAt: -1 });
 
     res.json({ orders });

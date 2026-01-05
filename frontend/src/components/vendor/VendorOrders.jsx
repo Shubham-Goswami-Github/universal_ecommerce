@@ -1,20 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
+import ProductQuickView from '../product/ProductQuickView';
 
-const STATUS_OPTIONS = [
-  'pending',
-  'confirmed',
-  'shipped',
-  'delivered',
-  'cancelled',
-];
+const STATUS_OPTIONS = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
-const PAYMENT_OPTIONS = [
-  'pending',
-  'paid',
-  'failed',
-  'refunded',
-];
+const PAYMENT_OPTIONS = ['pending', 'paid', 'failed', 'refunded'];
 
 const STATUS_COLORS = {
   pending: 'text-yellow-600',
@@ -24,12 +15,16 @@ const STATUS_COLORS = {
   cancelled: 'text-red-600',
 };
 
-const VendorOrders = ({ token }) => {
+const VendorOrders = ({ token, onEditProduct, onDeleteProduct }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState(null);
   const [form, setForm] = useState({});
   const [openHistory, setOpenHistory] = useState(null);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     try {
@@ -39,7 +34,7 @@ const VendorOrders = ({ token }) => {
       });
       setOrders(res.data.orders || []);
     } catch (err) {
-      console.error(err);
+      console.error('Fetch vendor orders error:', err);
     } finally {
       setLoading(false);
     }
@@ -75,7 +70,7 @@ const VendorOrders = ({ token }) => {
         {
           status: data.status || order.status,
           paymentStatus: data.paymentStatus || order.paymentStatus,
-          note: data.note, // 🔥 BACKEND EXPECTS `note`
+          note: data.note,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -85,11 +80,27 @@ const VendorOrders = ({ token }) => {
       alert('✅ Order updated successfully');
       fetchOrders();
     } catch (err) {
-      console.error(err);
+      console.error('Update order error:', err);
       alert(err.response?.data?.message || 'Update failed');
     } finally {
       setSavingId(null);
     }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
+  const formatGender = (g) => {
+    if (!g) return null;
+    const v = g.toLowerCase();
+    if (v === 'male') return 'Male';
+    if (v === 'female') return 'Female';
+    if (v === 'other') return 'Other';
+    return g;
   };
 
   if (loading) {
@@ -100,6 +111,16 @@ const VendorOrders = ({ token }) => {
     <div className="space-y-5">
       {orders.map((order) => {
         const local = form[order._id] || {};
+        const addr = order.shippingAddress || {};
+        const user = order.user || {};
+
+        const subtotal = order.subtotal ?? 0;
+        const shippingFee = order.shippingFee ?? 0;
+        const totalAmount = order.totalAmount ?? subtotal + shippingFee;
+
+        const displayPhone =
+          user.mobileNumber || addr.phone || addr.mobileNumber || 'N/A';
+        const genderLabel = formatGender(user.gender);
 
         return (
           <div
@@ -107,34 +128,219 @@ const VendorOrders = ({ token }) => {
             className="rounded-xl border bg-white shadow-sm p-5"
           >
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sm font-semibold text-slate-900">
-                Order #{order._id.slice(-6)}
-              </h3>
-              <span className="text-xs text-slate-500">
-                {new Date(order.createdAt).toLocaleString()}
-              </span>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  Order #{order._id.slice(-6).toUpperCase()}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Placed on{' '}
+                  {order.createdAt
+                    ? new Date(order.createdAt).toLocaleString()
+                    : 'N/A'}
+                </p>
+              </div>
+
+              <div className="flex flex-col items-end text-xs">
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold border ${
+                    STATUS_COLORS[order.status] || 'text-slate-600'
+                  } border-slate-200 bg-slate-50`}
+                >
+                  {order.status.toUpperCase()}
+                </span>
+                <span className="mt-1 text-slate-500">
+                  Payment: {order.paymentStatus}
+                </span>
+              </div>
             </div>
 
-            {/* CUSTOMER */}
-            <div className="text-xs text-slate-600 mb-3">
-              Customer:{' '}
-              <span className="font-medium">{order.user?.name}</span> (
-              {order.user?.email})
+            {/* CUSTOMER + ADDRESS */}
+            <div className="grid md:grid-cols-2 gap-4 mb-4 text-xs text-slate-700">
+              {/* Customer details with avatar */}
+              <div className="border rounded-lg p-3 bg-slate-50/60">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase mb-2">
+                  Customer
+                </div>
+
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700">
+                    {user.profilePicture ? (
+                      <img
+                        src={user.profilePicture}
+                        alt={user.name || 'Customer'}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span>{getInitials(user.name || addr.fullName)}</span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900 text-sm">
+                      {user.name || addr.fullName || 'N/A'}
+                    </p>
+                    {genderLabel && (
+                      <span className="inline-flex items-center rounded-full bg-slate-200/70 text-slate-700 text-[10px] font-semibold px-2 py-[1px] mt-0.5">
+                        {genderLabel}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="mb-0.5">
+                  <span className="text-slate-500">Email: </span>
+                  <a
+                    href={user.email ? `mailto:${user.email}` : '#'}
+                    className="font-medium text-blue-600 break-all"
+                  >
+                    {user.email || addr.email || 'N/A'}
+                  </a>
+                </p>
+                <p>
+                  <span className="text-slate-500">Phone: </span>
+                  <a
+                    href={displayPhone !== 'N/A' ? `tel:${displayPhone}` : '#'}
+                    className="font-medium"
+                  >
+                    {displayPhone}
+                  </a>
+                </p>
+                {addr.alternatePhone && (
+                  <p>
+                    <span className="text-slate-500">Alt. Phone: </span>
+                    <a
+                      href={`tel:${addr.alternatePhone}`}
+                      className="font-medium"
+                    >
+                      {addr.alternatePhone}
+                    </a>
+                  </p>
+                )}
+              </div>
+
+              {/* Shipping Address */}
+              <div className="border rounded-lg p-3 bg-slate-50/60">
+                <div className="text-[11px] font-semibold text-slate-500 uppercase mb-2">
+                  Shipping Address
+                </div>
+                {addr.fullName || addr.addressLine1 ? (
+                  <>
+                    <p className="font-medium">
+                      {addr.fullName || user.name || 'N/A'}
+                    </p>
+                    <p>
+                      {addr.addressLine1 || ''}
+                      {addr.locality ? `, ${addr.locality}` : ''}
+                    </p>
+                    <p>
+                      {addr.city || 'City'}, {addr.state || 'State'} -{' '}
+                      {addr.postalCode || addr.pincode || 'Pincode'}
+                    </p>
+                    <p className="text-slate-500 mt-1">
+                      {addr.country || 'India'}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-slate-500">No shipping address found.</p>
+                )}
+              </div>
             </div>
 
             {/* ITEMS */}
             <div className="rounded-lg bg-slate-50 p-3 mb-4 text-sm">
+              <div className="text-[11px] font-semibold text-slate-500 uppercase mb-2">
+                Products Purchased
+              </div>
               {order.items.map((i, idx) => (
-                <div key={idx} className="flex justify-between">
-                  <span>
-                    {i.productName} × {i.quantity}
-                  </span>
-                  <span className="font-medium">
+                <div
+                  key={idx}
+                  className="flex items-center justify-between py-2 border-b last:border-b-0"
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Product image */}
+                    <div
+                      className="h-10 w-10 rounded-md overflow-hidden bg-white border border-slate-200 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => i.product && navigate(`/products/${i.product}`)}
+                    >
+                      {i.productImage ? (
+                        <img
+                          src={i.productImage}
+                          alt={i.productName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center text-[10px] text-slate-400">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      {/* Product name clickable */}
+                      <p
+                        className="font-medium text-slate-800 cursor-pointer hover:text-blue-600"
+                        onClick={() => i.product && navigate(`/products/${i.product}`)}
+                      >
+                        {i.productName}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        Qty: {i.quantity} • Price: ₹{i.productPrice}
+                      </p>
+                      {i.product && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const res = await axiosClient.get(`/api/products/${i.product}`);
+                              setQuickViewProduct(res.data.product);
+                              setQuickViewOpen(true);
+                            } catch (err) {
+                              console.error('Failed to fetch product:', err);
+                            }
+                          }}
+                          className="mt-0.5 text-[11px] text-blue-600 hover:underline"
+                        >
+                          View product details
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="font-semibold text-slate-900">
                     ₹{i.productPrice * i.quantity}
-                  </span>
+                  </div>
                 </div>
               ))}
+            </div>
+
+            {/* ORDER SUMMARY */}
+            <div className="grid sm:grid-cols-3 gap-3 mb-4 text-xs">
+              <div className="bg-slate-50 rounded-lg p-3">
+                <p className="text-slate-500 text-[11px] uppercase mb-1">
+                  Subtotal
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
+                  ₹{subtotal}
+                </p>
+              </div>
+              <div className="bg-slate-50 rounded-lg p-3">
+                <p className="text-slate-500 text-[11px] uppercase mb-1">
+                  Shipping
+                </p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {shippingFee ? `₹${shippingFee}` : 'Free'}
+                </p>
+              </div>
+              <div className="bg-slate-50 rounded-lg p-3">
+                <p className="text-slate-500 text-[11px] uppercase mb-1">
+                  Total / Payment
+                </p>
+                <p className="text-sm font-semibold text-emerald-600">
+                  ₹{totalAmount}
+                </p>
+                <p className="text-[11px] text-slate-600">
+                  Method: {order.paymentMethod?.toUpperCase() || 'N/A'}
+                </p>
+              </div>
             </div>
 
             {/* STATUS TOGGLE */}
@@ -146,7 +352,8 @@ const VendorOrders = ({ token }) => {
                 STATUS_COLORS[order.status]
               }`}
             >
-              Status: {order.status} · Payment: {order.paymentStatus}
+              Status: {order.status} · Payment: {order.paymentStatus} · View
+              history
             </button>
 
             {/* STATUS HISTORY */}
@@ -167,7 +374,9 @@ const VendorOrders = ({ token }) => {
                           {h.previousStatus} → {h.newStatus}
                         </span>
                         <span className="text-slate-500">
-                          {new Date(h.changedAt).toLocaleString()}
+                          {h.changedAt
+                            ? new Date(h.changedAt).toLocaleString()
+                            : ''}
                         </span>
                       </div>
 
@@ -244,6 +453,14 @@ const VendorOrders = ({ token }) => {
           No orders yet.
         </p>
       )}
+
+      <ProductQuickView
+        product={quickViewProduct}
+        isOpen={quickViewOpen}
+        onClose={() => setQuickViewOpen(false)}
+        onEdit={onEditProduct}
+        onDelete={onDeleteProduct}
+      />
     </div>
   );
 };
