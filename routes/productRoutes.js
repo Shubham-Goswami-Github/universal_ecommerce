@@ -3,9 +3,10 @@ const router = express.Router();
 const productController = require('../controllers/productController');
 const { requireLogin, allowRoles, optionalAuth } = require('../middleware/authMiddleware');
 const upload = require('../middleware/upload');
+
 /**
  * =====================
- * VENDOR ROUTES (FIRST)
+ * VENDOR ROUTES
  * =====================
  */
 router.get(
@@ -15,16 +16,11 @@ router.get(
   productController.getMyProducts
 );
 
-/**
- * =====================
- * PUBLIC ROUTES
- * =====================
- */
 router.post(
   '/',
   requireLogin,
   allowRoles('vendor'),
-  upload.array('images', 5),
+  upload.array('images', 5), // ✅ MULTIPLE IMAGES
   productController.createProduct
 );
 
@@ -32,27 +28,7 @@ router.put(
   '/:id',
   requireLogin,
   allowRoles('vendor', 'admin'),
-  upload.array('images', 5),
-  productController.updateProduct
-);
-router.get(
-  '/',
-  productController.getPublicProducts
-);
-
-// Vendor creates product
-router.post(
-  '/',
-  requireLogin,
-  allowRoles('vendor'),
-  productController.createProduct
-);
-
-// Vendor/Admin edit/delete
-router.put(
-  '/:id',
-  requireLogin,
-  allowRoles('vendor', 'admin'),
+  upload.array('images', 5), // ✅ MULTIPLE IMAGES
   productController.updateProduct
 );
 
@@ -63,7 +39,13 @@ router.delete(
   productController.deleteProduct
 );
 
-// Product details
+/**
+ * =====================
+ * PUBLIC ROUTES
+ * =====================
+ */
+router.get('/', productController.getPublicProducts);
+
 router.get(
   '/:id',
   optionalAuth,

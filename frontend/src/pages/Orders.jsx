@@ -325,7 +325,10 @@ const Orders = () => {
 
                         {/* Actions */}
                         <div className="flex flex-col gap-2">
-                          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline">
+                          <button 
+                            onClick={() => navigate(`/products/${item.product}`)}
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                          >
                             View Product
                           </button>
                           {order.status === 'delivered' && (

@@ -239,7 +239,7 @@ const Cart = () => {
 
   const items = cart?.items || [];
   const subtotal = items.reduce(
-    (sum, it) => sum + it.product.price * it.quantity,
+    (sum, it) => sum + (it.product.finalPrice || it.product.sellingPrice) * it.quantity,
     0
   );
   const deliveryCharges = subtotal > 499 ? 0 : 40;
@@ -478,16 +478,16 @@ const Cart = () => {
                         <div className="flex-1">
                           <h3 className="font-semibold text-gray-800 mb-1">{item.product.name}</h3>
                           <p className="text-xs text-gray-400 mb-2">
-                            Seller: {item.product.seller?.name || 'Official Store'}
+                            Seller: {item.product.vendor?.name || 'Official Store'}
                           </p>
 
                           <div className="flex items-center gap-2 mb-3">
-                            <span className="text-xl font-bold text-gray-800">₹{item.product.price}</span>
-                            {item.product.originalPrice && (
+                            <span className="text-xl font-bold text-gray-800">₹{item.product.finalPrice || item.product.sellingPrice}</span>
+                            {item.product.mrp && item.product.mrp > (item.product.finalPrice || item.product.sellingPrice) && (
                               <>
-                                <span className="text-sm text-gray-400 line-through">₹{item.product.originalPrice}</span>
+                                <span className="text-sm text-gray-400 line-through">₹{item.product.mrp}</span>
                                 <span className="text-sm text-green-600 font-semibold">
-                                  {Math.round(((item.product.originalPrice - item.product.price) / item.product.originalPrice) * 100)}% off
+                                  {Math.round(((item.product.mrp - (item.product.finalPrice || item.product.sellingPrice)) / item.product.mrp) * 100)}% off
                                 </span>
                               </>
                             )}
@@ -519,7 +519,7 @@ const Cart = () => {
                         </div>
 
                         <div className="text-right font-bold text-gray-800">
-                          ₹{item.product.price * item.quantity}
+                          ₹{(item.product.finalPrice || item.product.sellingPrice) * item.quantity}
                         </div>
                       </div>
                     ))}

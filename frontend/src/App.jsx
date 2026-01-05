@@ -17,6 +17,10 @@ import VendorDashboard from './pages/VendorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Vendors from './pages/Vendors';
 import VendorStorePage from './pages/VendorStorePage';
+// App.jsx ya jaha routes define hain
+import Profile from './pages/Profile';
+
+// ...
 
 function AppInner() {
   return (
@@ -32,7 +36,7 @@ function AppInner() {
 
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-
+<Route path="/profile" element={<Profile />} />
               <Route
                 path="/cart"
                 element={

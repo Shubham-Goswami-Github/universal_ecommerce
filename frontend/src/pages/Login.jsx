@@ -7,7 +7,12 @@ const Login = () => {
   const { login, auth } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: '', password: '' });
+  // 🔥 email -> identifier
+  const [form, setForm] = useState({
+    identifier: '',
+    password: '',
+  });
+
   const [error, setError] = useState('');
 
   const handleChange = (e) =>
@@ -16,7 +21,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const res = await login(form.email, form.password);
+
+    // 🔥 email OR mobile dono jaayega
+    const res = await login(form.identifier, form.password);
+
     if (!res.success) {
       setError(res.message);
       return;
@@ -43,19 +51,23 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3">
+            {/* EMAIL OR MOBILE */}
             <div>
               <label className="block text-xs text-slate-300 mb-1">
-                Email
+                Email or Mobile Number
               </label>
               <input
-                type="email"
-                name="email"
+                type="text"
+                name="identifier"
+                placeholder="Enter email or mobile number"
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-1 focus:ring-teal-400"
-                value={form.email}
+                value={form.identifier}
                 onChange={handleChange}
                 required
               />
             </div>
+
+            {/* PASSWORD */}
             <div>
               <label className="block text-xs text-slate-300 mb-1">
                 Password

@@ -21,6 +21,9 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 
+// 👇 YEH LINE ADD KARO
+const userRoutes = require('./routes/userRoutes');
+
 // Connect DB
 connectDB();
 
@@ -45,6 +48,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);   // 👈 ab yahan userRoutes defined hoga
 app.use('/api/settings', settingsRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);

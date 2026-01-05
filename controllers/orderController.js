@@ -2,6 +2,7 @@ const Order = require('../models/orderModel');
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
 const Address = require('../models/addressModel');
+const User = require('../models/userModel');
 
 /* ================================
    USER: CHECKOUT FROM CART
@@ -26,43 +27,71 @@ exports.checkoutFromCart = async (req, res) => {
       saveAddress
     } = req.body;
 
-    // Validation
     if (!fullName || !phone || !addressLine1 || !city || !state || !postalCode) {
       return res.status(400).json({ message: 'Required address fields missing' });
     }
 
-   const cart = await Cart.findOne({ user: userId }).populate({
-  path: 'items.product',
-  select: 'name price images vendor isActive'
-});
+    /* ================= GET CART ================= */
+    const cart = await Cart.findOne({ user: userId }).populate({
+      path: 'items.product',
+      select: `
+        name images vendor status
+        sellingPrice finalPrice mrp
+      `
+    });
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' });
     }
 
-    // Group items by vendor
+    /* ================= GROUP ITEMS BY VENDOR ================= */
     const itemsByVendor = {};
+
     for (const item of cart.items) {
       const product = item.product;
 
-      if (!product || !product.vendor || !product.isActive) {
+      if (!product) {
+        return res.status(400).json({ message: 'Product not found in cart' });
+      }
+
+      // PRODUCT MUST BE APPROVED
+      if (product.status !== 'approved') {
         return res.status(400).json({
-          message: `Product not available: ${product ? product.name : 'Unknown'}`
+          message: `Product not approved: ${product.name}`
+        });
+      }
+
+      if (!product.vendor) {
+        return res.status(400).json({
+          message: `Vendor missing for product: ${product.name}`
+        });
+      }
+
+      // SAFE PRICE RESOLUTION
+      const price = Number(
+        product.finalPrice ?? product.sellingPrice
+      );
+
+      if (isNaN(price)) {
+        return res.status(400).json({
+          message: `Invalid price for product: ${product.name}`
         });
       }
 
       const vendorId = product.vendor.toString();
-      if (!itemsByVendor[vendorId]) itemsByVendor[vendorId] = [];
-itemsByVendor[vendorId].push({
-  productId: product._id,
-  productName: product.name,
-  productPrice: product.price,
-  productImage: product.images?.[0] || '', // 🔥 ADD THIS
-  quantity: item.quantity
-});
 
+      if (!itemsByVendor[vendorId]) itemsByVendor[vendorId] = [];
+
+      itemsByVendor[vendorId].push({
+        productId: product._id,
+        productName: product.name,
+        productPrice: price, // REQUIRED BY ORDER MODEL
+        productImage: product.images?.[0] || '',
+        quantity: item.quantity
+      });
     }
 
+    /* ================= SHIPPING ADDRESS ================= */
     const shippingAddress = {
       fullName,
       phone,
@@ -78,7 +107,6 @@ itemsByVendor[vendorId].push({
       country: 'India'
     };
 
-    // Save address if user wants
     if (saveAddress) {
       await Address.create({
         user: userId,
@@ -87,6 +115,7 @@ itemsByVendor[vendorId].push({
       });
     }
 
+    /* ================= CREATE ORDERS ================= */
     const createdOrders = [];
 
     for (const vendorId of Object.keys(itemsByVendor)) {
@@ -94,8 +123,12 @@ itemsByVendor[vendorId].push({
 
       let subtotal = 0;
       vendorItems.forEach((it) => {
-        subtotal += it.productPrice * it.quantity;
+        subtotal += Number(it.productPrice) * Number(it.quantity);
       });
+
+      if (isNaN(subtotal)) {
+        return res.status(400).json({ message: 'Subtotal calculation failed' });
+      }
 
       const shippingFee = 0;
       const totalAmount = subtotal + shippingFee;
@@ -103,20 +136,23 @@ itemsByVendor[vendorId].push({
       const order = await Order.create({
         user: userId,
         vendor: vendorId,
-      items: vendorItems.map((it) => ({
-  product: it.productId,
-  productName: it.productName,
-  productPrice: it.productPrice,
-  productImage: it.productImage, // 🔥 ADD THIS
-  quantity: it.quantity
-})),
+
+        items: vendorItems.map((it) => ({
+          product: it.productId,
+          productName: it.productName,
+          productPrice: it.productPrice,
+          productImage: it.productImage,
+          quantity: it.quantity
+        })),
 
         subtotal,
         shippingFee,
         totalAmount,
+
         paymentMethod: paymentMethod || 'cod',
         paymentStatus: 'pending',
         status: 'pending',
+
         statusHistory: [
           {
             changedBy: 'vendor',
@@ -127,13 +163,38 @@ itemsByVendor[vendorId].push({
             note: 'Order placed successfully'
           }
         ],
+
         shippingAddress
       });
 
       createdOrders.push(order);
     }
 
-    // Clear cart
+    /* ================= USER ANALYTICS UPDATE ================= */
+    // kitne orders bane (1 user ke checkout se multiple vendor orders ban sakte)
+    const ordersCount = createdOrders.length;
+
+    // in sab orders ka total amount sum karo
+    const totalSpentIncrement = createdOrders.reduce(
+      (sum, ord) => sum + (Number(ord.totalAmount) || 0),
+      0
+    );
+
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        $inc: {
+          totalOrders: ordersCount,       // pehle se + naya count
+          totalSpent: totalSpentIncrement // pehle se + is checkout ka total
+        },
+        $set: {
+          lastOrderDate: new Date()       // ya createdOrders[0].createdAt
+        }
+      },
+      { new: true }
+    );
+
+    /* ================= CLEAR CART ================= */
     cart.items = [];
     await cart.save();
 
@@ -143,10 +204,12 @@ itemsByVendor[vendorId].push({
     });
   } catch (error) {
     console.error('Checkout error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
   }
 };
-
 /* ================================
    USER: MY ORDERS
 ================================ */

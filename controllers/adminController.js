@@ -23,7 +23,9 @@ exports.getAllUsers = async (req, res) => {
 // GET: all vendors
 exports.getAllVendors = async (req, res) => {
   try {
-    const vendors = await User.find({ role: 'vendor' }).select('-password').sort({ createdAt: -1 });
+    const vendors = await User.find({ role: 'vendor' })
+      .select('-password')
+      .sort({ createdAt: -1 });
     res.json({ vendors });
   } catch (error) {
     console.error('Get vendors error:', error);
@@ -34,7 +36,9 @@ exports.getAllVendors = async (req, res) => {
 // GET: all admins
 exports.getAllAdmins = async (req, res) => {
   try {
-    const admins = await User.find({ role: 'admin' }).select('-password').sort({ createdAt: -1 });
+    const admins = await User.find({ role: 'admin' })
+      .select('-password')
+      .sort({ createdAt: -1 });
     res.json({ admins });
   } catch (error) {
     console.error('Get admins error:', error);
@@ -49,11 +53,17 @@ exports.updateUserStatus = async (req, res) => {
     const { isActive } = req.body;
 
     if (isActive == null) {
-      return res.status(400).json({ message: 'isActive is required (true/false)' });
+      return res
+        .status(400)
+        .json({ message: 'isActive is required (true/false)' });
     }
 
     // prevent admin deleting/blocking themselves? you earlier blocked delete, here we won't block status change
-    const user = await User.findByIdAndUpdate(userId, { isActive }, { new: true }).select('-password');
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { isActive },
+      { new: true }
+    ).select('-password');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -61,7 +71,7 @@ exports.updateUserStatus = async (req, res) => {
 
     res.json({
       message: 'User status updated',
-      user
+      user,
     });
   } catch (error) {
     console.error('Update user status error:', error);
@@ -76,7 +86,9 @@ exports.deleteUser = async (req, res) => {
 
     // prevent admin deleting himself (optional)
     if (userId === req.user.userId) {
-      return res.status(400).json({ message: 'You cannot delete your own admin account' });
+      return res
+        .status(400)
+        .json({ message: 'You cannot delete your own admin account' });
     }
 
     const user = await User.findByIdAndDelete(userId);
@@ -101,7 +113,9 @@ exports.deleteUser = async (req, res) => {
 // GET: all products (admin)
 exports.getAllProductsAdmin = async (req, res) => {
   try {
-    const products = await Product.find().populate('vendor', 'name email').sort({ createdAt: -1 });
+    const products = await Product.find()
+      .populate('vendor', 'name email')
+      .sort({ createdAt: -1 });
     res.json({ products });
   } catch (error) {
     console.error('Get all products error:', error);
@@ -116,10 +130,16 @@ exports.updateProductStatus = async (req, res) => {
     const { isActive } = req.body;
 
     if (isActive == null) {
-      return res.status(400).json({ message: 'isActive is required (true/false)' });
+      return res
+        .status(400)
+        .json({ message: 'isActive is required (true/false)' });
     }
 
-    const product = await Product.findByIdAndUpdate(productId, { isActive }, { new: true }).populate('vendor', 'name email');
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { isActive },
+      { new: true }
+    ).populate('vendor', 'name email');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -127,7 +147,7 @@ exports.updateProductStatus = async (req, res) => {
 
     res.json({
       message: 'Product status updated',
-      product
+      product,
     });
   } catch (error) {
     console.error('Update product status error:', error);
@@ -157,37 +177,100 @@ exports.deleteProductAdmin = async (req, res) => {
 exports.getProductsByVendor = async (req, res) => {
   try {
     const vendorId = req.params.vendorId;
-    const products = await Product.find({ vendor: vendorId }).populate('vendor', 'name email').sort({ createdAt: -1 });
+    const products = await Product.find({ vendor: vendorId })
+      .populate('vendor', 'name email')
+      .sort({ createdAt: -1 });
     res.json({ products });
   } catch (error) {
     console.error('Get vendor products error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 // CREATE user (admin)
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, password, role = 'user', isActive = true } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'name, email and password are required' });
+    // 🔥 Parse addresses string (from form-data) to JSON array
+    if (req.body.addresses && typeof req.body.addresses === 'string') {
+      try {
+        req.body.addresses = JSON.parse(req.body.addresses);
+      } catch (e) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid addresses format' });
+      }
     }
 
-    // check existing
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: 'Email already in use' });
+    const {
+      name,
+      email,
+      password,
+      role = 'user',
+      accountStatus = 'active',
+      isActive = true,
 
+      mobileNumber,
+      alternateMobileNumber,
+      gender,
+      dateOfBirth,
+    } = req.body;
+
+    // ✅ BASIC REQUIRED CHECK
+    if (!name || !email || !password || !mobileNumber) {
+      return res.status(400).json({
+        message: 'name, email, password and mobileNumber are required',
+      });
+    }
+
+    // ✅ EMAIL UNIQUE
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    // ✅ MOBILE UNIQUE
+    const existingMobile = await User.findOne({ mobileNumber });
+    if (existingMobile) {
+      return res
+        .status(400)
+        .json({ message: 'Mobile number already in use' });
+    }
+
+    // ✅ PASSWORD HASH
     const hashed = await bcrypt.hash(password, 10);
+
+    // ✅ PROFILE PIC (Cloudinary via middleware)
+    let profilePicUrl = '';
+    if (req.file) {
+      profilePicUrl = req.file.path; // Cloudinary secure_url
+    }
+
     const user = await User.create({
       name,
       email,
       password: hashed,
       role,
-      isActive
+      accountStatus,
+      isActive,
+
+      mobileNumber,
+      alternateMobileNumber,
+      gender,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+      profilePicture: profilePicUrl,
+
+      // ✅ use parsed req.body.addresses
+      addresses: Array.isArray(req.body.addresses)
+        ? req.body.addresses
+        : [],
     });
 
-    // return without password
     const { password: _p, ...safe } = user.toObject();
-    res.status(201).json({ message: 'User created', user: safe });
+
+    res.status(201).json({
+      message: 'User created successfully',
+      user: safe,
+    });
   } catch (err) {
     console.error('Create user error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -198,28 +281,111 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { name, email, password, role, isActive } = req.body;
+
+    // 🔥 Parse addresses string (from form-data) to JSON array
+    if (req.body.addresses && typeof req.body.addresses === 'string') {
+      try {
+        req.body.addresses = JSON.parse(req.body.addresses);
+      } catch (e) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid addresses format' });
+      }
+    }
+
+    const {
+      name,
+      email,
+      password,
+      role,
+      isActive,
+      accountStatus,
+
+      mobileNumber,
+      alternateMobileNumber,
+      gender,
+      dateOfBirth,
+      profilePicture,
+      addresses,
+    } = req.body;
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
+    // BASIC
     if (name !== undefined) user.name = name;
+
     if (email !== undefined) {
-      // check email conflict
       const other = await User.findOne({ email, _id: { $ne: userId } });
-      if (other) return res.status(400).json({ message: 'Email already in use by another account' });
+      if (other) {
+        return res.status(400).json({
+          message: 'Email already in use by another account',
+        });
+      }
       user.email = email;
     }
+
+    // CONTACT
+    if (mobileNumber !== undefined) {
+      const otherMobile = await User.findOne({
+        mobileNumber,
+        _id: { $ne: userId },
+      });
+      if (otherMobile) {
+        return res
+          .status(400)
+          .json({ message: 'Mobile number already in use' });
+      }
+      user.mobileNumber = mobileNumber;
+    }
+
+    if (alternateMobileNumber !== undefined) {
+      user.alternateMobileNumber = alternateMobileNumber;
+    }
+
     if (role !== undefined) user.role = role;
     if (isActive !== undefined) user.isActive = isActive;
+    if (accountStatus !== undefined) user.accountStatus = accountStatus;
 
+    // PROFILE
+    if (gender !== undefined) user.gender = gender;
+
+    if (dateOfBirth !== undefined) {
+      user.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
+    }
+
+    // profile picture (priority to uploaded file)
+    if (req.file) {
+      user.profilePicture = req.file.path;
+    } else if (profilePicture !== undefined) {
+      user.profilePicture = profilePicture;
+    }
+
+    // ADDRESS (replace whole array – simple & safe)
+    if (addresses !== undefined) {
+      if (!Array.isArray(addresses)) {
+        return res
+          .status(400)
+          .json({ message: 'addresses must be an array' });
+      }
+      user.addresses = addresses;
+    }
+
+    // PASSWORD
     if (password) {
       user.password = await bcrypt.hash(password, 10);
     }
 
     await user.save();
+
     const { password: _p, ...safe } = user.toObject();
-    res.json({ message: 'User updated', user: safe });
+
+    res.json({
+      message: 'User updated successfully',
+      user: safe,
+    });
   } catch (err) {
     console.error('Update user error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -256,7 +422,9 @@ exports.getUserCart = async (req, res) => {
 exports.getPendingGroupedByVendor = async (req, res) => {
   try {
     // find pending products and populate vendor basic info
-    const pendings = await Product.find({ status: 'pending' }).populate('vendor', 'name email').sort({ createdAt: -1 });
+    const pendings = await Product.find({ status: 'pending' })
+      .populate('vendor', 'name email')
+      .sort({ createdAt: -1 });
 
     // group by vendor id
     const grouped = {};
@@ -264,8 +432,14 @@ exports.getPendingGroupedByVendor = async (req, res) => {
       const vId = p.vendor?._id ? p.vendor._id.toString() : 'unknown';
       if (!grouped[vId]) {
         grouped[vId] = {
-          vendor: p.vendor ? { _id: p.vendor._id, name: p.vendor.name, email: p.vendor.email } : { _id: null, name: 'Unknown', email: '' },
-          products: []
+          vendor: p.vendor
+            ? {
+                _id: p.vendor._id,
+                name: p.vendor.name,
+                email: p.vendor.email,
+              }
+            : { _id: null, name: 'Unknown', email: '' },
+          products: [],
         };
       }
       grouped[vId].products.push(p);
@@ -284,8 +458,12 @@ exports.getPendingGroupedByVendor = async (req, res) => {
 exports.approveProduct = async (req, res) => {
   try {
     const productId = req.params.id;
-    const product = await Product.findById(productId).populate('vendor', 'name email');
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    const product = await Product.findById(productId).populate(
+      'vendor',
+      'name email'
+    );
+    if (!product)
+      return res.status(404).json({ message: 'Product not found' });
 
     product.status = 'approved';
     product.rejectionReason = '';
@@ -305,9 +483,13 @@ exports.rejectProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const { reason } = req.body;
-    const product = await Product.findById(productId).populate('vendor', 'name email');
+    const product = await Product.findById(productId).populate(
+      'vendor',
+      'name email'
+    );
 
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (!product)
+      return res.status(404).json({ message: 'Product not found' });
 
     product.status = 'rejected';
     product.rejectionReason = reason || '';

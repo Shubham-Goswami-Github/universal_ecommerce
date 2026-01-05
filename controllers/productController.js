@@ -17,19 +17,49 @@ exports.createProduct = async (req, res) => {
     const {
       name,
       description = '',
-      price,
       category,
-      stock = 0,
+
+      // BASIC INFO
+      shortTitle,
+      brandName,
+      productType,
+      countryOfOrigin,
+      hsnCode,
+
+      // PRICING
+      mrp,
+      sellingPrice,
+      discountType,
+      discountValue,
+      gstApplicable,
+      gstPercentage,
+      taxInclusive,
+
+      // STOCK
+      totalStock,
+      lowStockAlertQty,
+      allowBackorders,
+      maxPurchaseQty,
+      minPurchaseQty,
+
+      // DESCRIPTION
+      shortDescription,
+      fullDescription,
+      keyFeatures,
+
+      // RETURNS / WARRANTY
+      returnAvailable,
+      returnDays,
+      warrantyAvailable,
+      warrantyPeriod,
+      warrantyType,
     } = req.body;
 
-    if (!name || price === undefined || !category) {
+    /* ================= VALIDATION ================= */
+    if (!name || !sellingPrice || !category) {
       return res.status(400).json({
-        message: 'Name, price and category are required',
+        message: 'Name, selling price and category are required',
       });
-    }
-
-    if (Number.isNaN(Number(price))) {
-      return res.status(400).json({ message: 'Invalid price' });
     }
 
     if (!mongoose.Types.ObjectId.isValid(category)) {
@@ -41,20 +71,75 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Category not found' });
     }
 
-    // 🔥 CLOUDINARY IMAGES
+    /* ================= FINAL PRICE ================= */
+    let finalPrice = Number(sellingPrice);
+
+    if (discountType === 'percentage') {
+      finalPrice -= (finalPrice * Number(discountValue || 0)) / 100;
+    }
+
+    if (discountType === 'flat') {
+      finalPrice -= Number(discountValue || 0);
+    }
+
+    if (gstApplicable === 'true' && taxInclusive === 'false') {
+      finalPrice += (finalPrice * Number(gstPercentage || 0)) / 100;
+    }
+
+    if (finalPrice < 0) finalPrice = 0;
+
+    /* ================= IMAGES ================= */
     const images = req.files?.map((file) => file.path) || [];
 
+    /* ================= CREATE PRODUCT ================= */
     const product = await Product.create({
       name: name.trim(),
-      description: description.trim(),
-      price: Number(price),
+      shortTitle,
+      brandName,
+      productType,
+      countryOfOrigin,
+      hsnCode,
+
+      shortDescription: description.trim(),
+      fullDescription,
+      keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : [],
+
+      mrp: Number(mrp) || 0,
+      sellingPrice: Number(sellingPrice),
+      discountType,
+      discountValue: Number(discountValue) || 0,
+      finalPrice,
+
+      gstApplicable: gstApplicable === 'true',
+      gstPercentage: Number(gstPercentage) || 0,
+      taxInclusive: taxInclusive === 'true',
+
+      totalStock: Number(totalStock) || 0,
+      lowStockAlertQty: Number(lowStockAlertQty) || 0,
+      allowBackorders: allowBackorders === 'true',
+      maxPurchaseQty: Number(maxPurchaseQty) || 1,
+      minPurchaseQty: Number(minPurchaseQty) || 1,
+
+      returnAvailable: returnAvailable === 'true',
+      returnDays: Number(returnDays) || 0,
+      warrantyAvailable: warrantyAvailable === 'true' || warrantyAvailable === true,
+warrantyPeriod:
+  warrantyAvailable === 'true' || warrantyAvailable === true
+    ? warrantyPeriod
+    : undefined,
+warrantyType:
+  warrantyAvailable === 'true' || warrantyAvailable === true
+    ? warrantyType
+    : undefined,
+
+
       category,
       images,
-      stock: Number(stock) || 0,
       vendor: vendorId,
+
+      sku: `SKU-${vendorId}-${Date.now()}`,
       status: 'pending',
       isActive: true,
-      rejectionReason: '',
     });
 
     return res.status(201).json({
@@ -69,6 +154,7 @@ exports.createProduct = async (req, res) => {
     });
   }
 };
+
 
 /**
  * ================================

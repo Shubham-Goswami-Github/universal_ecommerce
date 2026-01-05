@@ -1,46 +1,87 @@
-// routes/adminRoutes.js
 const express = require('express');
 const router = express.Router();
 
 const adminController = require('../controllers/adminController');
 const { requireLogin, allowRoles } = require('../middleware/authMiddleware');
+const adminProfileUpload = require('../middleware/adminProfileUpload');
 
-// Protect all admin routes
-router.use(requireLogin, allowRoles('admin'));
+// 🔐 Protect all admin routes
+router.use(requireLogin);
+router.use(allowRoles('admin'));
 
-/* USERS */
+/* =======================
+   USERS
+======================= */
+
+// GET all users
 router.get('/users', adminController.getAllUsers);
+
+// GET vendors
 router.get('/vendors', adminController.getAllVendors);
+
+// GET admins
 router.get('/admins', adminController.getAllAdmins);
 
-router.post('/users', adminController.createUser);
-router.patch('/users/:id', adminController.updateUser);
+// ✅ CREATE USER (multipart/form-data REQUIRED)
+router.post(
+  '/users',
+  adminProfileUpload.single('profilePicture'), // 👈 MUST be before controller
+  adminController.createUser
+);
+
+// ✅ UPDATE USER (multipart/form-data REQUIRED)
+router.patch(
+  '/users/:id',
+  adminProfileUpload.single('profilePicture'), // 👈 MUST be before controller
+  adminController.updateUser
+);
+
+// Update user active status
 router.patch('/users/:id/status', adminController.updateUserStatus);
+
+// Delete user
 router.delete('/users/:id', adminController.deleteUser);
 
-/* PRODUCTS / APPROVALS */
+/* =======================
+   PRODUCTS (ADMIN)
+======================= */
+
+// Get all products
 router.get('/products', adminController.getAllProductsAdmin);
+
+// Update product active status
 router.patch('/products/:id/status', adminController.updateProductStatus);
+
+// Delete product
 router.delete('/products/:id', adminController.deleteProductAdmin);
 
-/* Vendor products */
-router.get('/vendors/:vendorId/products', adminController.getProductsByVendor);
+// Get products by vendor
+router.get(
+  '/vendors/:vendorId/products',
+  adminController.getProductsByVendor
+);
 
-/* User carts */
+/* =======================
+   CARTS
+======================= */
+
+// Get cart of a user
 router.get('/users/:userId/cart', adminController.getUserCart);
 
-/* --- The endpoint you need: pending grouped approvals --- */
-/* This MUST match the function name exported in your controller:
-   exports.getPendingGroupedByVendor = async (req, res) => { ... }
-*/
-router.get('/pending-products-grouped', adminController.getPendingGroupedByVendor);
+/* =======================
+   APPROVALS
+======================= */
 
-/* Approve / reject routes (only if controller exports them) */
-if (typeof adminController.approveProduct === 'function') {
-  router.post('/products/:id/approve', adminController.approveProduct);
-}
-if (typeof adminController.rejectProduct === 'function') {
-  router.post('/products/:id/reject', adminController.rejectProduct);
-}
+// Pending products grouped by vendor
+router.get(
+  '/pending-products-grouped',
+  adminController.getPendingGroupedByVendor
+);
+
+// Approve product
+router.post('/products/:id/approve', adminController.approveProduct);
+
+// Reject product
+router.post('/products/:id/reject', adminController.rejectProduct);
 
 module.exports = router;

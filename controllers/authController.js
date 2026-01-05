@@ -1,29 +1,74 @@
+// controllers/authController.js
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Normally yeh env se aata, abhi hardcode kar dete hain
 const JWT_SECRET = 'supersecretkey';
 
+/* ================= REGISTER ================= */
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    // addresses: string (from form-data) -> JSON
+    if (req.body?.addresses && typeof req.body.addresses === 'string') {
+      try {
+        req.body.addresses = JSON.parse(req.body.addresses);
+      } catch (e) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid addresses format' });
+      }
+    }
 
-    // check existing user
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const {
+      name,
+      email,
+      mobileNumber,
+      password,
+      role,
+
+      alternateMobileNumber,
+      gender,
+      dateOfBirth,
+      addresses,
+    } = req.body || {};
+
+    if (!name || !email || !mobileNumber || !password) {
+      return res.status(400).json({
+        message: 'Name, email, mobile number and password are required',
+      });
+    }
+
+    // check email
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    // password hash
+    // check mobile
+    const mobileExists = await User.findOne({ mobileNumber });
+    if (mobileExists) {
+      return res
+        .status(400)
+        .json({ message: 'Mobile number already registered' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // user create
     const user = await User.create({
       name,
       email,
+      mobileNumber,
+      alternateMobileNumber,
+
       password: hashedPassword,
-      role: role || 'user'
+      role: role || 'user',
+
+      gender, // 'male' | 'female' | 'other'
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+
+      profilePicture: req.file ? req.file.path : '',
+
+      addresses: Array.isArray(addresses) ? addresses : [],
     });
 
     res.status(201).json({
@@ -32,8 +77,17 @@ exports.register = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        mobileNumber: user.mobileNumber,
+        alternateMobileNumber: user.alternateMobileNumber,
+        role: user.role,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+        profilePicture: user.profilePicture,
+        addresses: user.addresses,
+        totalOrders: user.totalOrders,
+        totalSpent: user.totalSpent,
+        lastOrderDate: user.lastOrderDate,
+      },
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -41,23 +95,38 @@ exports.register = async (req, res) => {
   }
 };
 
+/* ================= LOGIN (EMAIL OR MOBILE) ================= */
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    // user find
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+    if (!identifier || !password) {
+      return res.status(400).json({
+        message: 'Email/Mobile and password are required',
+      });
     }
 
-    // password compare
+    // EMAIL OR MOBILE LOGIN
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { mobileNumber: identifier }],
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // block / inactive check
+    if (user.accountStatus === 'blocked' || user.isActive === false) {
+      return res.status(403).json({
+        message: 'Your account is blocked. Please contact support.',
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // token create
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       JWT_SECRET,
@@ -71,8 +140,23 @@ exports.login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
-      }
+        mobileNumber: user.mobileNumber,
+        alternateMobileNumber: user.alternateMobileNumber,
+
+        role: user.role,
+        accountStatus: user.accountStatus,
+        isActive: user.isActive,
+
+        profilePicture: user.profilePicture,
+        gender: user.gender,
+        dateOfBirth: user.dateOfBirth,
+
+        addresses: user.addresses,
+
+        totalOrders: user.totalOrders,
+        totalSpent: user.totalSpent,
+        lastOrderDate: user.lastOrderDate,
+      },
     });
   } catch (error) {
     console.error('Login error:', error);

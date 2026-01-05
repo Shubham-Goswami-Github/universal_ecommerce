@@ -99,13 +99,13 @@ const Products = () => {
 
                   {/* DESCRIPTION */}
                   <p className="text-xs text-slate-500 mb-3 line-clamp-2">
-                    {p.description || 'No description available.'}
+                    {p.shortDescription || p.fullDescription || 'No description available.'}
                   </p>
 
                   {/* PRICE */}
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-blue-600">
-                      ₹{p.price}
+                      ₹{p.finalPrice}
                     </span>
                     <span className="text-xs text-slate-400 group-hover:text-blue-600 transition">
                       View →

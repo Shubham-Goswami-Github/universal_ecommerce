@@ -9,6 +9,7 @@ import ProductForm from "../vendor/ProductForm";
 function ProductCard({ p, onEdit, onDelete }) {
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col h-full shadow-sm hover:shadow-md transition">
+      
       {/* IMAGE */}
       <div className="w-full aspect-square bg-slate-100 rounded-xl overflow-hidden mb-3">
         {p.images?.[0] ? (
@@ -29,13 +30,36 @@ function ProductCard({ p, onEdit, onDelete }) {
         <h3 className="text-sm font-semibold text-slate-900 truncate">
           {p.name}
         </h3>
-        <p className="text-xs text-slate-500 truncate">{p.category}</p>
 
-        <p className="text-sm font-bold text-blue-600 mt-1">₹{p.price}</p>
+        <p className="text-xs text-slate-500 truncate">
+          {p.category?.name || "—"}
+        </p>
 
-        {p.description && (
+        {/* PRICE */}
+        <div className="mt-1">
+          <span className="text-sm font-bold text-blue-600">
+            ₹{p.sellingPrice}
+          </span>
+
+          {p.mrp > p.sellingPrice && (
+            <span className="ml-2 text-xs text-slate-400 line-through">
+              ₹{p.mrp}
+            </span>
+          )}
+        </div>
+
+        {/* DISCOUNT */}
+        {p.discountType && p.discountValue > 0 && (
+          <p className="text-[11px] text-emerald-600 font-medium mt-0.5">
+            {p.discountType === "percentage"
+              ? `${p.discountValue}% OFF`
+              : `₹${p.discountValue} OFF`}
+          </p>
+        )}
+
+        {p.shortDescription && (
           <p className="text-xs text-slate-500 mt-2 line-clamp-2">
-            {p.description}
+            {p.shortDescription}
           </p>
         )}
       </div>
@@ -84,6 +108,7 @@ function ProductCard({ p, onEdit, onDelete }) {
     </div>
   );
 }
+
 
 /* -------------------------------------------------------------------------- */
 /* MAIN COMPONENT */
