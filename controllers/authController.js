@@ -54,6 +54,18 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    /* ================= ROLE + VENDOR FLOW ================= */
+    let finalRole = 'user';
+    let vendorApplicationStatus = 'none';
+    let vendorActive = false;
+
+    // 👇 vendor selected from frontend
+    if (role === 'vendor') {
+      finalRole = 'user';                 // 🔒 still user
+      vendorApplicationStatus = 'pending'; // 🕒 admin approval needed
+      vendorActive = false;
+    }
+
     const user = await User.create({
       name,
       email,
@@ -61,9 +73,12 @@ exports.register = async (req, res) => {
       alternateMobileNumber,
 
       password: hashedPassword,
-      role: role || 'user',
 
-      gender, // 'male' | 'female' | 'other'
+      role: finalRole,
+      vendorApplicationStatus,
+      vendorActive,
+
+      gender,
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
 
       profilePicture: req.file ? req.file.path : '',
@@ -72,18 +87,26 @@ exports.register = async (req, res) => {
     });
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message:
+        vendorApplicationStatus === 'pending'
+          ? 'Registration successful. Vendor approval pending.'
+          : 'User registered successfully',
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
         mobileNumber: user.mobileNumber,
         alternateMobileNumber: user.alternateMobileNumber,
+
         role: user.role,
+        vendorApplicationStatus: user.vendorApplicationStatus,
+        vendorActive: user.vendorActive,
+
         gender: user.gender,
         dateOfBirth: user.dateOfBirth,
         profilePicture: user.profilePicture,
         addresses: user.addresses,
+
         totalOrders: user.totalOrders,
         totalSpent: user.totalSpent,
         lastOrderDate: user.lastOrderDate,
@@ -146,6 +169,9 @@ exports.login = async (req, res) => {
         role: user.role,
         accountStatus: user.accountStatus,
         isActive: user.isActive,
+
+        vendorApplicationStatus: user.vendorApplicationStatus,
+        vendorActive: user.vendorActive,
 
         profilePicture: user.profilePicture,
         gender: user.gender,

@@ -21,8 +21,6 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
-
-// 👇 YEH LINE ADD KARO
 const userRoutes = require('./routes/userRoutes');
 
 // Connect DB
@@ -30,26 +28,36 @@ connectDB();
 
 const app = express();
 
-// CORS
+/* ======================
+   CORS
+====================== */
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true,
   })
 );
 
-// Body parser
+/* ======================
+   BODY PARSERS
+====================== */
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // 🔥 IMPORTANT
 
-// ⚠️ OPTIONAL: You can REMOVE this if only using Cloudinary
+/* ======================
+   STATIC FILES
+====================== */
+// ⚠️ OPTIONAL: remove if fully Cloudinary based
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+/* ======================
+   ROUTES
+====================== */
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/users', userRoutes);   // 👈 ab yahan userRoutes defined hoga
+app.use('/api/users', userRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wishlist', wishlistRoutes);
@@ -61,7 +69,9 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/vendor', vendorRoutes);
 
-// Health checks
+/* ======================
+   HEALTH CHECKS
+====================== */
 app.get('/', (req, res) => {
   res.send('Ecommerce API is running 🚀');
 });
@@ -70,7 +80,34 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is healthy' });
 });
 
+/* ======================
+   404 HANDLER
+====================== */
+app.use((req, res) => {
+  res.status(404).json({
+    message: 'API route not found',
+    path: req.originalUrl,
+  });
+});
+
+/* ======================
+   GLOBAL ERROR HANDLER
+====================== */
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    message: 'Internal server error',
+    error:
+      process.env.NODE_ENV === 'production'
+        ? undefined
+        : err.message,
+  });
+});
+
+/* ======================
+   START SERVER
+====================== */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

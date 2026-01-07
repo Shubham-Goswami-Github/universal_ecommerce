@@ -1,10 +1,13 @@
 // middleware/authMiddleware.js
 const jwt = require('jsonwebtoken');
+const User = require('../models/userModel');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
-// requireLogin: must have valid token, sets req.user = { userId, role }
-exports.requireLogin = (req, res, next) => {
+/* =====================
+   REQUIRE LOGIN
+===================== */
+exports.requireLogin = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -13,15 +16,37 @@ exports.requireLogin = (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
-
     const decoded = jwt.verify(token, JWT_SECRET);
 
     const userId = decoded.userId || decoded.id || decoded._id;
-    const role = decoded.role || decoded.userRole || decoded.roleName;
+    if (!userId) {
+      return res.status(401).json({ message: 'Invalid token payload' });
+    }
 
-    if (!userId) return res.status(401).json({ message: 'Invalid token payload' });
+    // 🔥 FETCH USER FROM DB
+    const user = await User.findById(userId).select(
+      'role isActive vendorActive vendorApplicationStatus accountStatus'
+    );
 
-    req.user = { userId, role };
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    // 🔒 GLOBAL BLOCK
+    if (user.accountStatus === 'blocked' || user.isActive === false) {
+      return res.status(403).json({
+        message: 'Account is inactive or blocked',
+      });
+    }
+
+    req.user = {
+      userId: user._id,
+      role: user.role,
+      isActive: user.isActive,
+      vendorActive: user.vendorActive,
+      vendorApplicationStatus: user.vendorApplicationStatus,
+    };
+
     next();
   } catch (error) {
     console.error('Auth error:', error);
@@ -29,32 +54,45 @@ exports.requireLogin = (req, res, next) => {
   }
 };
 
-// optionalAuth: if Authorization header present, decode it and set req.user, otherwise continue
+/* =====================
+   OPTIONAL AUTH
+===================== */
 exports.optionalAuth = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next();
     }
+
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET);
+
     const userId = decoded.userId || decoded.id || decoded._id;
-    const role = decoded.role || decoded.userRole || decoded.roleName;
-    if (userId) req.user = { userId, role };
+    const role = decoded.role;
+
+    if (userId) {
+      req.user = { userId, role };
+    }
   } catch (err) {
-    // invalid token -> ignore and continue unauthenticated
-    console.warn('optionalAuth: invalid token — continuing as guest');
+    // invalid token → ignore and continue as guest
+    console.warn('optionalAuth: invalid token');
   }
-  return next();
+
+  next();
 };
 
-// allowRoles: middleware factory
+/* =====================
+   ROLE GUARD
+===================== */
 exports.allowRoles = (...allowedRoles) => {
   return (req, res, next) => {
     const role = req.user?.role;
+
     if (!role || !allowedRoles.includes(role)) {
       return res.status(403).json({ message: 'Access denied' });
     }
+
     next();
   };
 };

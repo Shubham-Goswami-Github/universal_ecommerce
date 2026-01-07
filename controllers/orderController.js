@@ -165,7 +165,8 @@ exports.checkoutFromCart = async (req, res) => {
           productName: it.productName,
           productPrice: it.productPrice,
           productImage: it.productImage,
-          quantity: it.quantity
+          quantity: it.quantity,
+          totalPrice: it.productPrice * it.quantity
         })),
 
         subtotal,
@@ -282,6 +283,24 @@ exports.getMyOrderById = async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
     res.json({ order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/* ================================
+   USER: MY STATS
+================================ */
+exports.getMyStats = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('totalOrders totalSpent lastOrderDate');
+    res.json({
+      totalOrders: user.totalOrders || 0,
+      totalSpent: user.totalSpent || 0,
+      lastOrderDate: user.lastOrderDate,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

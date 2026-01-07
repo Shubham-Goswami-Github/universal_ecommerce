@@ -127,6 +127,17 @@ const userSchema = new mongoose.Schema(
 
     /* ---------- ADDRESS ---------- */
     addresses: [addressSchema],
+/* ---------- VENDOR FLOW ---------- */
+vendorApplicationStatus: {
+  type: String,
+  enum: ['none', 'pending', 'approved', 'rejected'],
+  default: 'none',
+},
+
+vendorActive: {
+  type: Boolean,
+  default: false,
+},
 
     /* ---------- ANALYTICS ---------- */
     totalOrders: {
@@ -141,7 +152,12 @@ const userSchema = new mongoose.Schema(
 
     lastOrderDate: Date, // ✅ single Date
   },
-  { timestamps: true }
+  { timestamps: true },
+  
+  
+  
 );
+
+
 
 module.exports = mongoose.model('User', userSchema);

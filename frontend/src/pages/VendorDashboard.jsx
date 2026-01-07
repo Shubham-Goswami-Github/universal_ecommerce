@@ -9,7 +9,7 @@ import VendorOrders from '../components/vendor/VendorOrders';
 const VendorDashboard = () => {
   const { auth } = useAuth();
   const token = auth.token;
-  const vendor = auth.user;
+  const [vendor, setVendor] = useState(null);
 
   /* ================= STATES ================= */
   const [products, setProducts] = useState([]);
@@ -57,9 +57,24 @@ const VendorDashboard = () => {
     }
   };
 
+  /* ================= FETCH VENDOR ================= */
+  const fetchVendor = async () => {
+    try {
+      const res = await axiosClient.get('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setVendor(res.data.user);
+    } catch (err) {
+      console.error(err);
+      setVendor(auth.user); // fallback
+    }
+  };
+
   /* ================= EFFECT ================= */
   useEffect(() => {
     if (!token) return;
+
+    fetchVendor(); // always fetch vendor
 
     if (activeSection === 'products') {
       fetchProducts();

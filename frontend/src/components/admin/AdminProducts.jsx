@@ -249,7 +249,7 @@ export default function AdminProducts({ token: tokenProp }) {
       {/* EDIT MODAL */}
       {showEditor && (
         <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-start pt-10 px-3">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl p-6 shadow-lg">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-3xl p-6 shadow-lg max-h-[calc(100vh-5rem)] overflow-y-auto">
             <div className="flex justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900">
                 Edit Product

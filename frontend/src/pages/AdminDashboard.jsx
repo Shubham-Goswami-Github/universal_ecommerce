@@ -9,12 +9,14 @@ import VendorLogins from '../components/admin/VendorLogins';
 import UserLogins from '../components/admin/UserLogins';
 import AdminProducts from '../components/admin/AdminProducts';
 import AdminCategories from '../components/admin/AdminCategories';
+import VendorApprovals from '../components/admin/VendorApprovals';
 
 
 const TABS = [
   { key: 'settings', label: 'Site Settings' },
   { key: 'categories', label: 'Product Categories' },
   { key: 'approvals', label: 'Pending Approvals' },
+  { key: 'vendorApprovals', label: 'Vendor Requests' }, 
   { key: 'vendors', label: 'Vendor Logins' },
   { key: 'users', label: 'User Logins' },
   { key: 'allproducts', label: 'All Products' },
@@ -124,6 +126,16 @@ export default function AdminDashboard() {
     <AdminCategories token={token} />
   </div>
 )}
+
+{activeTab === 'vendorApprovals' && (
+  <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+    <h2 className="text-lg font-semibold text-slate-900 mb-4">
+      Vendor Approval Requests
+    </h2>
+    <VendorApprovals token={token} />
+  </div>
+)}
+
 
         {/* APPROVALS */}
         {activeTab === 'approvals' && (

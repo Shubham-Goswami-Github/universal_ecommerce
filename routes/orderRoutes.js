@@ -3,6 +3,9 @@ const router = express.Router();
 
 const orderController = require('../controllers/orderController');
 const { requireLogin, allowRoles } = require('../middleware/authMiddleware');
+const { checkVendorActive,checkUserActive } = require('../middleware/permissionMiddleware');
+
+
 
 /* ================================
       USER ROUTES
@@ -11,6 +14,7 @@ router.post(
   '/checkout',
   requireLogin,
   allowRoles('user'),
+  checkUserActive,   
   orderController.checkoutFromCart
 );
 
@@ -19,6 +23,13 @@ router.get(
   requireLogin,
   allowRoles('user'),
   orderController.getMyOrders
+);
+
+router.get(
+  '/my-stats',
+  requireLogin,
+  allowRoles('user'),
+  orderController.getMyStats
 );
 
 router.get(
@@ -42,6 +53,7 @@ router.patch(
   '/vendor/:id/status',
   requireLogin,
   allowRoles('vendor', 'admin'),
+  checkVendorActive, 
   orderController.vendorUpdateOrderStatus
 );
 
@@ -61,5 +73,8 @@ router.patch(
   allowRoles('admin'),
   orderController.adminUpdateOrder
 );
+
+
+
 
 module.exports = router;

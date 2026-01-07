@@ -877,7 +877,7 @@ export default function AdminApprovals() {
   };
 
   // Total pending products
-  const totalPending = grouped.reduce((sum, g) => sum + g.products.length, 0);
+  const totalPending = stats.pending;
 
   return (
     <div className="min-h-screen bg-gray-100">

@@ -23,7 +23,11 @@ exports.getAllUsers = async (req, res) => {
 // GET: all vendors
 exports.getAllVendors = async (req, res) => {
   try {
-    const vendors = await User.find({ role: 'vendor' })
+   const vendors = await User.find({
+  role: 'vendor',
+  vendorApplicationStatus: 'approved',
+})
+
       .select('-password')
       .sort({ createdAt: -1 });
     res.json({ vendors });
@@ -45,6 +49,68 @@ exports.getAllAdmins = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+// GET: pending vendor requests
+exports.getPendingVendorRequests = async (req, res) => {
+  try {
+    const vendors = await User.find({
+      vendorApplicationStatus: 'pending',
+    })
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    res.json({ vendors });
+  } catch (error) {
+    console.error('Get vendor requests error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// PATCH: approve vendor
+exports.approveVendor = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.vendorApplicationStatus !== 'pending') {
+      return res
+        .status(400)
+        .json({ message: 'No pending vendor request' });
+    }
+
+    user.role = 'vendor';
+    user.vendorApplicationStatus = 'approved';
+    user.vendorActive = true;
+
+    await user.save();
+
+    res.json({ message: 'Vendor approved successfully', user });
+  } catch (error) {
+    console.error('Approve vendor error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+// PATCH: reject vendor
+exports.rejectVendor = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.vendorApplicationStatus = 'rejected';
+    user.vendorActive = false;
+
+    await user.save();
+
+    res.json({ message: 'Vendor request rejected', user });
+  } catch (error) {
+    console.error('Reject vendor error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 
 // PATCH: update user active status (block/unblock)
 exports.updateUserStatus = async (req, res) => {
@@ -123,6 +189,35 @@ exports.getAllProductsAdmin = async (req, res) => {
   }
 };
 
+// GET: pending products grouped by vendor
+exports.getPendingGroupedByVendor = async (req, res) => {
+  try {
+    const products = await Product.find({ status: 'pending' })
+      .populate('vendor', 'name email')
+      .populate('category', 'name parent')
+      .sort({ createdAt: -1 });
+
+    // Group by vendor
+    const grouped = {};
+    products.forEach(product => {
+      const vendorId = product.vendor?._id || 'unknown';
+      if (!grouped[vendorId]) {
+        grouped[vendorId] = {
+          vendor: product.vendor,
+          products: []
+        };
+      }
+      grouped[vendorId].products.push(product);
+    });
+
+    const result = Object.values(grouped);
+    res.json({ grouped: result });
+  } catch (error) {
+    console.error('Get pending grouped error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // PATCH: update product active status (show/hide product)
 exports.updateProductStatus = async (req, res) => {
   try {
@@ -187,6 +282,49 @@ exports.getProductsByVendor = async (req, res) => {
   }
 };
 
+// GET: sales stats of a specific vendor
+exports.getVendorSalesStats = async (req, res) => {
+  try {
+    const vendorId = req.params.vendorId;
+    const VendorSalesStats = require('../models/vendorSalesStatsModel');
+    const stats = await VendorSalesStats.findOne({ vendor: vendorId })
+      .populate('productSales.product', 'name images');
+
+    if (!stats) {
+      return res.json({
+        totalOrders: 0,
+        totalProductsSold: 0,
+        totalRevenue: 0,
+        lastOrderDate: null,
+        productSales: [],
+      });
+    }
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Get vendor sales stats error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// GET: admin stats
+exports.getAdminStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments({ role: 'user' });
+    const totalVendors = await User.countDocuments({ role: 'vendor' });
+    const totalProducts = await Product.countDocuments();
+
+    res.json({
+      totalUsers,
+      totalVendors,
+      totalProducts,
+    });
+  } catch (error) {
+    console.error('Get admin stats error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // CREATE user (admin)
 exports.createUser = async (req, res) => {
   try {
@@ -244,6 +382,13 @@ exports.createUser = async (req, res) => {
     if (req.file) {
       profilePicUrl = req.file.path; // Cloudinary secure_url
     }
+      let vendorApplicationStatus = 'none';
+let vendorActive = false;
+
+if (role === 'vendor') {
+  vendorApplicationStatus = 'approved';
+  vendorActive = true;
+}
 
     const user = await User.create({
       name,
@@ -345,7 +490,21 @@ exports.updateUser = async (req, res) => {
       user.alternateMobileNumber = alternateMobileNumber;
     }
 
-    if (role !== undefined) user.role = role;
+    // 🔥 ROLE UPDATE
+    if (role !== undefined) {
+      user.role = role;
+
+      // 🔥 SMALL LOGIC (AS REQUESTED)
+      if (role === 'vendor') {
+        user.vendorApplicationStatus = 'approved';
+        user.vendorActive = true;
+      }
+
+      if (role === 'user') {
+        user.vendorActive = false;
+      }
+    }
+
     if (isActive !== undefined) user.isActive = isActive;
     if (accountStatus !== undefined) user.accountStatus = accountStatus;
 
@@ -391,6 +550,8 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+
 
 /**
  * CARTS
@@ -502,4 +663,4 @@ exports.rejectProduct = async (req, res) => {
     console.error('rejectProduct error:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
-};
+}; 

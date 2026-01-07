@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const { requireLogin, allowRoles, optionalAuth } = require('../middleware/authMiddleware');
+const { checkVendorActive } = require('../middleware/permissionMiddleware');
 const upload = require('../middleware/upload');
 
 /**
@@ -9,6 +10,8 @@ const upload = require('../middleware/upload');
  * VENDOR ROUTES
  * =====================
  */
+
+// Vendor / Admin: get own products
 router.get(
   '/vendor/my-products',
   requireLogin,
@@ -16,22 +19,26 @@ router.get(
   productController.getMyProducts
 );
 
+// ✅ CREATE PRODUCT (ONLY ACTIVE + APPROVED VENDOR)
 router.post(
   '/',
   requireLogin,
   allowRoles('vendor'),
-  upload.array('images', 5), // ✅ MULTIPLE IMAGES
+  checkVendorActive,              // 🔥 IMPORTANT
+  upload.array('images', 5),
   productController.createProduct
 );
 
+// UPDATE PRODUCT
 router.put(
   '/:id',
   requireLogin,
   allowRoles('vendor', 'admin'),
-  upload.array('images', 5), // ✅ MULTIPLE IMAGES
+  upload.array('images', 5),
   productController.updateProduct
 );
 
+// DELETE PRODUCT
 router.delete(
   '/:id',
   requireLogin,
@@ -44,8 +51,11 @@ router.delete(
  * PUBLIC ROUTES
  * =====================
  */
+
+// Public product listing
 router.get('/', productController.getPublicProducts);
 
+// Public product details
 router.get(
   '/:id',
   optionalAuth,

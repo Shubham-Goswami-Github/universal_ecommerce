@@ -1,4 +1,3 @@
-// src/pages/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,18 +13,22 @@ const Register = () => {
     alternateMobileNumber: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // 👈 yahi select se change hoga
+    role: 'user',
 
     gender: '',
     dateOfBirth: '',
 
-    // address (single → backend array)
+    // address
     fullName: '',
     pincode: '',
     houseNo: '',
     streetArea: '',
     city: '',
     state: '',
+
+    // vendor extra (optional)
+    businessName: '',
+    businessType: '',
 
     acceptTerms: false,
   });
@@ -62,7 +65,6 @@ const Register = () => {
       return;
     }
 
-    // Kya koi address field bhari gayi hai?
     const anyAddressFilled =
       form.houseNo ||
       form.streetArea ||
@@ -70,13 +72,11 @@ const Register = () => {
       form.state ||
       form.pincode;
 
-    // Agar address de rahe ho to pincode required rakho
     if (anyAddressFilled && !form.pincode) {
       setError('Please enter pincode for the address');
       return;
     }
 
-    // Address → backend expects ARRAY
     const addresses = anyAddressFilled
       ? [
           {
@@ -94,23 +94,25 @@ const Register = () => {
         ]
       : [];
 
-    // Extra payload (ye body me jayega)
     const extraPayload = {
       mobileNumber: form.mobileNumber,
       alternateMobileNumber: form.alternateMobileNumber,
-      gender: form.gender,         // 'male' | 'female' | 'other'
-      dateOfBirth: form.dateOfBirth, // "YYYY-MM-DD", backend me new Date()
+      gender: form.gender,
+      dateOfBirth: form.dateOfBirth,
       addresses,
+
+      // 👇 vendor-only (safe even if backend ignores)
+      businessName: form.businessName,
+      businessType: form.businessType,
     };
 
-    // register(name, email, password, role, extraPayload, file)
     const res = await register(
       form.name,
       form.email,
       form.password,
-      form.role,     // 👈 yahan se 'user' ya 'vendor' jayega
+      form.role,
       extraPayload,
-      profilePic     // profile picture file
+      profilePic
     );
 
     if (!res.success) {
@@ -118,8 +120,15 @@ const Register = () => {
       return;
     }
 
-    setSuccessMsg('Registration successful! Please login.');
-    setTimeout(() => navigate('/login'), 1200);
+    if (form.role === 'vendor') {
+      setSuccessMsg(
+        'Vendor application submitted! Admin approval is required before you can sell.'
+      );
+    } else {
+      setSuccessMsg('Registration successful! Please login.');
+    }
+
+    setTimeout(() => navigate('/login'), 1500);
   };
 
   return (
@@ -177,7 +186,7 @@ const Register = () => {
               className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white"
             />
 
-            {/* ROLE SELECT (User / Vendor) */}
+            {/* ROLE */}
             <select
               name="role"
               value={form.role}
@@ -186,8 +195,36 @@ const Register = () => {
             >
               <option value="user">User</option>
               <option value="vendor">Vendor</option>
-              {/* admin ko yahan nahi dena, sirf admin panel se */}
             </select>
+
+            {/* 👇 Vendor info box */}
+            {form.role === 'vendor' && (
+              <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/40 px-3 py-2 text-xs text-yellow-200">
+                Vendor accounts require <b>admin approval</b>. You will be able
+                to add products only after approval.
+              </div>
+            )}
+
+            {/* Vendor extra fields */}
+            {form.role === 'vendor' && (
+              <>
+                <input
+                  name="businessName"
+                  placeholder="Business / Store Name"
+                  value={form.businessName}
+                  onChange={handleChange}
+                  className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white"
+                />
+
+                <input
+                  name="businessType"
+                  placeholder="Business Type (e.g. Electronics, Clothing)"
+                  value={form.businessType}
+                  onChange={handleChange}
+                  className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white"
+                />
+              </>
+            )}
 
             {/* PROFILE */}
             <select
@@ -197,9 +234,9 @@ const Register = () => {
               className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white"
             >
               <option value="">Select Gender</option>
-              <option value="male">Male</option>      {/* schema enum: 'male' */}
-              <option value="female">Female</option>  {/* 'female' */}
-              <option value="other">Other</option>    {/* 'other' */}
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
 
             <input
@@ -210,7 +247,6 @@ const Register = () => {
               className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white"
             />
 
-            {/* PROFILE PICTURE */}
             <input
               type="file"
               accept="image/*"
@@ -237,7 +273,7 @@ const Register = () => {
               className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white"
             />
 
-            {/* ADDRESS (OPTIONAL) */}
+            {/* ADDRESS */}
             <input
               name="houseNo"
               placeholder="House / Flat No"

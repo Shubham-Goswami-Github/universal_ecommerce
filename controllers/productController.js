@@ -102,7 +102,12 @@ exports.createProduct = async (req, res) => {
 
       shortDescription: description.trim(),
       fullDescription,
-      keyFeatures: keyFeatures ? JSON.parse(keyFeatures) : [],
+      keyFeatures: Array.isArray(keyFeatures)
+      ? keyFeatures
+      : keyFeatures
+      ? JSON.parse(keyFeatures)
+      : [],
+
 
       mrp: Number(mrp) || 0,
       sellingPrice: Number(sellingPrice),
@@ -169,6 +174,13 @@ exports.updateProduct = async (req, res) => {
 
     if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // 🔥 VENDOR ACTIVE CHECK (AS REQUESTED)
+    if (role === 'vendor' && !req.user.vendorActive) {
+      return res.status(403).json({
+        message: 'Vendor not active',
+      });
     }
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -251,8 +263,7 @@ exports.updateProduct = async (req, res) => {
  * ================================
  * DELETE PRODUCT (VENDOR / ADMIN)
  * ================================
- */
-exports.deleteProduct = async (req, res) => {
+ */exports.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const userId = req.user?.userId;
@@ -260,6 +271,13 @@ exports.deleteProduct = async (req, res) => {
 
     if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    // 🔥 VENDOR ACTIVE CHECK (AS REQUESTED)
+    if (role === 'vendor' && !req.user.vendorActive) {
+      return res.status(403).json({
+        message: 'Vendor not active',
+      });
     }
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -286,6 +304,7 @@ exports.deleteProduct = async (req, res) => {
     });
   }
 };
+
 
 /**
  * ================================

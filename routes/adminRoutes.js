@@ -19,6 +19,9 @@ router.get('/users', adminController.getAllUsers);
 // GET vendors
 router.get('/vendors', adminController.getAllVendors);
 
+// GET admin stats
+router.get('/stats', adminController.getAdminStats);
+
 // GET admins
 router.get('/admins', adminController.getAllAdmins);
 
@@ -61,6 +64,15 @@ router.get(
   adminController.getProductsByVendor
 );
 
+// Get pending products grouped by vendor
+router.get('/pending-products-grouped', adminController.getPendingGroupedByVendor);
+
+// Get vendor sales stats
+router.get(
+  '/vendors/:vendorId/sales-stats',
+  adminController.getVendorSalesStats
+);
+
 /* =======================
    CARTS
 ======================= */
@@ -72,16 +84,38 @@ router.get('/users/:userId/cart', adminController.getUserCart);
    APPROVALS
 ======================= */
 
-// Pending products grouped by vendor
+/* =======================
+   VENDOR APPROVALS
+======================= */
+
+// Get pending vendor requests
 router.get(
-  '/pending-products-grouped',
-  adminController.getPendingGroupedByVendor
+  '/vendor-requests',
+  adminController.getPendingVendorRequests
+);
+
+// Approve vendor
+router.patch(
+  '/vendors/:id/approve',
+  adminController.approveVendor
+);
+
+// Reject vendor
+router.patch(
+  '/vendors/:id/reject',
+  adminController.rejectVendor
 );
 
 // Approve product
-router.post('/products/:id/approve', adminController.approveProduct);
+router.post(
+  '/products/:id/approve',
+  adminController.approveProduct
+);
 
 // Reject product
-router.post('/products/:id/reject', adminController.rejectProduct);
+router.post(
+  '/products/:id/reject',
+  adminController.rejectProduct
+);
 
 module.exports = router;
