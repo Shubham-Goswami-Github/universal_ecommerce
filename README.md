@@ -49,23 +49,126 @@ Built with **React + Tailwind CSS (Frontend)** and **Node.js + Express + MongoDB
 
 ---
 
-## 📂 Project Structure
 
-```bash
-project-root/
-│
-├── client/                # React frontend
-│   ├── src/
-│   ├── public/
-│   └── package.json
-│
-├── server/                # Node backend
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   └── server.js
+├── 📁 config
+│   ├── 📄 cloudinary.js
+│   └── 📄 db.js
+├── 📁 controllers
+│   ├── 📄 addressController.js
+│   ├── 📄 adminController.js
+│   ├── 📄 authController.js
+│   ├── 📄 cartController.js
+│   ├── 📄 categoryController.js
+│   ├── 📄 orderController.js
+│   ├── 📄 productController.js
+│   ├── 📄 reviewController.js
+│   ├── 📄 siteSettingsController.js
+│   ├── 📄 userController.js
+│   ├── 📄 vendorSalesStatsController.js
+│   ├── 📄 vendorStoreController.js
+│   └── 📄 wishlistController.js
+├── 📁 frontend
+│   ├── 📁 public
+│   │   └── 🖼️ vite.svg
+│   ├── 📁 src
+│   │   ├── 📁 api
+│   │   │   └── 📄 axiosClient.js
+│   │   ├── 📁 assets
+│   │   │   └── 🖼️ react.svg
+│   │   ├── 📁 components
+│   │   │   ├── 📁 admin
+│   │   │   │   ├── 📄 AdminApprovals.jsx
+│   │   │   │   ├── 📄 AdminCategories.jsx
+│   │   │   │   ├── 📄 AdminProducts.jsx
+│   │   │   │   ├── 📄 SettingsForm.jsx
+│   │   │   │   ├── 📄 UserLogins.jsx
+│   │   │   │   ├── 📄 VendorApprovals.jsx
+│   │   │   │   └── 📄 VendorLogins.jsx
+│   │   │   ├── 📁 layout
+│   │   │   │   ├── 📄 Footer.jsx
+│   │   │   │   └── 📄 Navbar.jsx
+│   │   │   ├── 📁 product
+│   │   │   │   └── 📄 ProductQuickView.jsx
+│   │   │   ├── 📁 vendor
+│   │   │   │   ├── 📄 ProductForm.jsx
+│   │   │   │   ├── 📄 VendorOrders.jsx
+│   │   │   │   └── 📄 VendorProductsList.jsx
+│   │   │   └── 📄 ProtectedRoute.jsx
+│   │   ├── 📁 context
+│   │   │   ├── 📄 AuthContext.jsx
+│   │   │   └── 📄 ProtectedRoute.jsx
+│   │   ├── 📁 pages
+│   │   │   ├── 📄 AdminDashboard.jsx
+│   │   │   ├── 📄 Cart.jsx
+│   │   │   ├── 📄 CategoriesPage.jsx
+│   │   │   ├── 📄 CategoryPage.jsx
+│   │   │   ├── 📄 Home.jsx
+│   │   │   ├── 📄 Login.jsx
+│   │   │   ├── 📄 Orders.jsx
+│   │   │   ├── 📄 ProductDetails.jsx
+│   │   │   ├── 📄 Products.jsx
+│   │   │   ├── 📄 Profile.jsx
+│   │   │   ├── 📄 Register.jsx
+│   │   │   ├── 📄 VendorDashboard.jsx
+│   │   │   ├── 📄 VendorStorePage.jsx
+│   │   │   └── 📄 Vendors.jsx
+│   │   ├── 🎨 App.css
+│   │   ├── 📄 App.jsx
+│   │   ├── 🎨 index.css
+│   │   └── 📄 main.jsx
+│   ├── ⚙️ .gitignore
+│   ├── 📝 README.md
+│   ├── 📄 eslint.config.js
+│   ├── 🌐 index.html
+│   ├── ⚙️ package-lock.json
+│   ├── ⚙️ package.json
+│   ├── 📄 postcss.config.js
+│   ├── 📄 tailwind.config.js
+│   └── 📄 vite.config.js
+├── 📁 middleware
+│   ├── 📄 adminProfileUpload.js
+│   ├── 📄 authMiddleware.js
+│   ├── 📄 permissionMiddleware.js
+│   └── 📄 upload.js
+├── 📁 models
+│   ├── 📄 addressModel.js
+│   ├── 📄 cartModel.js
+│   ├── 📄 categoryModel.js
+│   ├── 📄 orderModel.js
+│   ├── 📄 productModel.js
+│   ├── 📄 reviewModel.js
+│   ├── 📄 siteSettingsModel.js
+│   ├── 📄 userModel.js
+│   ├── 📄 vendorSalesStatsModel.js
+│   ├── 📄 vendorStoreModel.js
+│   └── 📄 wishlistModel.js
+├── 📁 routes
+│   ├── 📄 addressRoutes.js
+│   ├── 📄 adminRoutes.js
+│   ├── 📄 authRoutes.js
+│   ├── 📄 cartRoutes.js
+│   ├── 📄 categoryRoutes.js
+│   ├── 📄 orderRoutes.js
+│   ├── 📄 productRoutes.js
+│   ├── 📄 publicVendorRoutes.js
+│   ├── 📄 reviewRoutes.js
+│   ├── 📄 siteSettingsRoutes.js
+│   ├── 📄 uploadRoutes.js
+│   ├── 📄 userRoutes.js
+│   ├── 📄 vendorRoutes.js
+│   ├── 📄 vendorStoreRoutes.js
+│   └── 📄 wishlistRoutes.js
+├── 📁 scripts
+│   ├── 📄 assign-vendor-to-products.js
+│   ├── 📄 migrate-set-isActive-true.js
+│   └── 📄 migrate-set-status-approved.js
+├── ⚙️ .gitignore
+├── 📝 README.md
+├── 📄 index.js
+├── ⚙️ package-lock.json
+└── ⚙️ package.json
 │
 ├── .env
 ├── README.md
 └── .gitignore
+
