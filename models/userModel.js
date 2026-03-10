@@ -139,6 +139,36 @@ vendorActive: {
   default: false,
 },
 
+/* ---------- VENDOR FLOW ---------- */
+vendorApplicationStatus: {
+  type: String,
+  enum: ['none', 'pending', 'approved', 'rejected'],
+  default: 'none',
+},
+
+vendorActive: {
+  type: Boolean,
+  default: false,
+},
+
+// ⭐ ADD THESE 3 NEW FIELDS BELOW vendorActive
+businessName: {
+  type: String,
+  trim: true,
+  default: '',
+},
+
+businessType: {
+  type: String,
+  trim: true,
+  default: '',
+},
+
+vendorRejectionReason: {
+  type: String,
+  default: '',
+},
+
     /* ---------- ANALYTICS ---------- */
     totalOrders: {
       type: Number,
@@ -153,6 +183,7 @@ vendorActive: {
     lastOrderDate: Date, // ✅ single Date
   },
   { timestamps: true },
+  
   
   
   

@@ -10,6 +10,13 @@ router.use(requireLogin);
 router.use(allowRoles('admin'));
 
 /* =======================
+   DASHBOARD STATS (NEW)
+======================= */
+
+// GET dashboard analytics stats
+router.get('/dashboard-stats', adminController.getDashboardStats);
+
+/* =======================
    USERS
 ======================= */
 

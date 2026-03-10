@@ -161,7 +161,7 @@ const Navbar = () => {
             : 'bg-white border-b border-slate-100'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="px-3 sm:px-4">
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Brand Logo */}
             <Link
@@ -170,12 +170,18 @@ const Navbar = () => {
               className="flex items-center gap-3 group flex-shrink-0"
             >
               <div className="relative">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xl shadow-lg shadow-blue-500/30 overflow-hidden transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-blue-500/40">
+                <span
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-xl overflow-hidden transition-all duration-300 group-hover:scale-105 ${
+                    logoUrl
+                      ? 'bg-white border border-slate-200 shadow-md'
+                      : 'bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xl shadow-lg shadow-blue-500/30 group-hover:shadow-xl group-hover:shadow-blue-500/40'
+                  }`}
+                >
                   {logoUrl ? (
                     <img
                       src={logoUrl}
                       alt="site logo"
-                      className="h-full w-full object-contain"
+                      className="h-full w-full object-contain p-1"
                     />
                   ) : (
                     <span className="drop-shadow-sm">{siteName?.charAt(0) || 'E'}</span>

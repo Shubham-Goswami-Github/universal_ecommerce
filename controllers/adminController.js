@@ -4,6 +4,7 @@ const User = require('../models/userModel');
 const Product = require('../models/productModel');
 const Cart = require('../models/cartModel');
 const bcrypt = require('bcryptjs');
+const Order = require('../models/orderModel');
 
 /**
  * USERS
@@ -92,19 +93,29 @@ exports.approveVendor = async (req, res) => {
   }
 };
 // PATCH: reject vendor
+// PATCH: reject vendor
 exports.rejectVendor = async (req, res) => {
   try {
+    const { reason } = req.body; // ⭐ Get rejection reason from request
+
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    if (user.vendorApplicationStatus !== 'pending') {
+      return res.status(400).json({ message: 'No pending vendor request' });
+    }
+
     user.vendorApplicationStatus = 'rejected';
     user.vendorActive = false;
+    user.vendorRejectionReason = reason || ''; // ⭐ Store rejection reason
 
     await user.save();
 
-    res.json({ message: 'Vendor request rejected', user });
+    const { password: _p, ...safe } = user.toObject();
+
+    res.json({ message: 'Vendor request rejected', user: safe });
   } catch (error) {
     console.error('Reject vendor error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -664,3 +675,386 @@ exports.rejectProduct = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 }; 
+
+
+// GET /api/admin/dashboard-stats
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const { range } = req.query;
+
+    // Calculate date range
+    let startDate = new Date();
+    switch (range) {
+      case '7days':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case '30days':
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case '90days':
+        startDate.setDate(startDate.getDate() - 90);
+        break;
+      case '365days':
+        startDate.setFullYear(startDate.getFullYear() - 1);
+        break;
+      default:
+        startDate.setDate(startDate.getDate() - 30);
+    }
+
+    // Previous period for comparison
+    const previousStartDate = new Date(startDate);
+    const periodDiff = new Date() - startDate;
+    previousStartDate.setTime(previousStartDate.getTime() - periodDiff);
+
+    // Get basic counts
+    const [
+      totalUsers,
+      totalVendors,
+      totalProducts,
+      totalOrders,
+      pendingOrders,
+      pendingApprovals,
+      pendingVendorRequests,
+      previousUsers,
+      previousVendors,
+      previousOrders,
+    ] = await Promise.all([
+      User.countDocuments({ role: 'user' }),
+      User.countDocuments({ role: 'vendor', vendorApplicationStatus: 'approved' }),
+      Product.countDocuments(),
+      Order.countDocuments(),
+      Order.countDocuments({ status: 'pending' }),
+      Product.countDocuments({ status: 'pending' }),
+      User.countDocuments({ vendorApplicationStatus: 'pending' }),
+      User.countDocuments({ role: 'user', createdAt: { $lt: startDate } }),
+      User.countDocuments({ role: 'vendor', vendorApplicationStatus: 'approved', createdAt: { $lt: startDate } }),
+      Order.countDocuments({ createdAt: { $lt: startDate } }),
+    ]);
+
+    // Calculate total revenue
+    const revenueAgg = await Order.aggregate([
+      { $match: { status: { $nin: ['cancelled', 'failed'] } } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]);
+    const totalRevenue = revenueAgg[0]?.total || 0;
+
+    // Previous revenue for comparison
+    const previousRevenueAgg = await Order.aggregate([
+      {
+        $match: {
+          status: { $nin: ['cancelled', 'failed'] },
+          createdAt: { $lt: startDate },
+        },
+      },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]);
+    const previousRevenue = previousRevenueAgg[0]?.total || 0;
+
+    // Calculate percentage changes
+    const calculateChange = (current, previous) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100 * 10) / 10;
+    };
+
+    const changes = {
+      users: calculateChange(totalUsers, previousUsers),
+      vendors: calculateChange(totalVendors, previousVendors),
+      orders: calculateChange(totalOrders, previousOrders),
+      revenue: calculateChange(totalRevenue, previousRevenue),
+    };
+
+    // Monthly sales data (last 7 months)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const salesChartAgg = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) },
+          status: { $nin: ['cancelled', 'failed'] },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: '$createdAt' },
+          sales: { $sum: '$totalAmount' },
+          orders: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const salesChart = salesChartAgg.map((item) => ({
+      date: monthNames[item._id - 1],
+      sales: item.sales,
+      orders: item.orders,
+    }));
+
+    // User registrations by month
+    const userRegAgg = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: { $month: '$createdAt' },
+            role: '$role',
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { '_id.month': 1 } },
+    ]);
+
+    // Process registration data
+    const regMap = {};
+    userRegAgg.forEach((item) => {
+      const month = monthNames[item._id.month - 1];
+      if (!regMap[month]) regMap[month] = { date: month, users: 0, vendors: 0 };
+      if (item._id.role === 'user') regMap[month].users = item.count;
+      if (item._id.role === 'vendor') regMap[month].vendors = item.count;
+    });
+    const registrationChart = Object.values(regMap);
+
+    // Order status distribution
+    const orderStatusAgg = await Order.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]);
+    const totalOrdersForPie = orderStatusAgg.reduce((sum, item) => sum + item.count, 0);
+    const orderStatusChart = orderStatusAgg.map((item) => ({
+      name: item._id.charAt(0).toUpperCase() + item._id.slice(1),
+      value: Math.round((item.count / totalOrdersForPie) * 100),
+    }));
+
+    // Category distribution
+    const categoryAgg = await Product.aggregate([
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          as: 'categoryInfo',
+        },
+      },
+      { $unwind: { path: '$categoryInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: '$categoryInfo.name',
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+    const totalProductsForPie = categoryAgg.reduce((sum, item) => sum + item.count, 0);
+    const categoryChart = categoryAgg.map((item) => ({
+      name: item._id || 'Uncategorized',
+      value: Math.round((item.count / totalProductsForPie) * 100),
+    }));
+
+    // Top products by revenue
+    const topProductsAgg = await Order.aggregate([
+      { $match: { status: { $nin: ['cancelled', 'failed'] } } },
+      { $unwind: '$items' },
+      {
+        $group: {
+          _id: '$items.product',
+          sales: { $sum: '$items.quantity' },
+          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'productInfo',
+        },
+      },
+      { $unwind: { path: '$productInfo', preserveNullAndEmptyArrays: true } },
+    ]);
+
+    const topProducts = topProductsAgg.map((item, index) => ({
+      id: index + 1,
+      name: item.productInfo?.name || 'Unknown Product',
+      sales: item.sales,
+      revenue: item.revenue,
+      image: item.productInfo?.images?.[0] || 'https://via.placeholder.com/40',
+    }));
+
+    // Top vendors by revenue
+    const topVendorsAgg = await Order.aggregate([
+      { $match: { status: { $nin: ['cancelled', 'failed'] } } },
+      { $unwind: '$items' },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'items.product',
+          foreignField: '_id',
+          as: 'productInfo',
+        },
+      },
+      { $unwind: { path: '$productInfo', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          _id: '$productInfo.vendor',
+          orders: { $sum: 1 },
+          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'vendorInfo',
+        },
+      },
+      { $unwind: { path: '$vendorInfo', preserveNullAndEmptyArrays: true } },
+    ]);
+
+    const topVendors = topVendorsAgg.map((item, index) => ({
+      id: index + 1,
+      name: item.vendorInfo?.name || 'Unknown Vendor',
+      orders: item.orders,
+      revenue: item.revenue,
+    }));
+
+    // Revenue by day of week
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const revenueByDayAgg = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) },
+          status: { $nin: ['cancelled', 'failed'] },
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: '$createdAt' },
+          revenue: { $sum: '$totalAmount' },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const revenueByDay = dayNames.map((day, index) => {
+      const found = revenueByDayAgg.find((item) => item._id === index + 1);
+      return { day, revenue: found?.revenue || 0 };
+    });
+
+    // Recent activity
+    const recentOrders = await Order.find()
+      .sort({ createdAt: -1 })
+      .limit(2)
+      .populate('user', 'name')
+      .lean();
+
+    const recentUsers = await User.find({ role: 'user' })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    const recentVendorRequests = await User.find({ vendorApplicationStatus: 'pending' })
+      .sort({ createdAt: -1 })
+      .limit(1)
+      .lean();
+
+    const recentProductApprovals = await Product.find({ status: 'approved' })
+      .sort({ updatedAt: -1 })
+      .limit(1)
+      .lean();
+
+    const formatTimeAgo = (date) => {
+      const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+      if (seconds < 60) return `${seconds} sec ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes} min ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+      const days = Math.floor(hours / 24);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    };
+
+    const recentActivity = [];
+
+    recentOrders.forEach((order) => {
+      recentActivity.push({
+        type: 'order',
+        title: `New order #${order.orderNumber || order._id.toString().slice(-6).toUpperCase()}`,
+        description: `${order.user?.name || 'Customer'} placed an order worth ₹${order.totalAmount}`,
+        time: formatTimeAgo(order.createdAt),
+      });
+    });
+
+    recentUsers.forEach((user) => {
+      recentActivity.push({
+        type: 'user',
+        title: 'New user registered',
+        description: `${user.email} joined the platform`,
+        time: formatTimeAgo(user.createdAt),
+      });
+    });
+
+    recentVendorRequests.forEach((vendor) => {
+      recentActivity.push({
+        type: 'vendor',
+        title: 'Vendor application',
+        description: `${vendor.name || vendor.email} submitted vendor application`,
+        time: formatTimeAgo(vendor.createdAt),
+      });
+    });
+
+    recentProductApprovals.forEach((product) => {
+      recentActivity.push({
+        type: 'product',
+        title: 'Product approved',
+        description: `${product.name} was approved`,
+        time: formatTimeAgo(product.updatedAt),
+      });
+    });
+
+    // Sort by time (most recent first)
+    recentActivity.sort((a, b) => {
+      const getSeconds = (timeStr) => {
+        const num = parseInt(timeStr);
+        if (timeStr.includes('sec')) return num;
+        if (timeStr.includes('min')) return num * 60;
+        if (timeStr.includes('hour')) return num * 3600;
+        if (timeStr.includes('day')) return num * 86400;
+        return 0;
+      };
+      return getSeconds(a.time) - getSeconds(b.time);
+    });
+
+    res.json({
+      overview: {
+        totalUsers,
+        totalVendors,
+        totalProducts,
+        totalOrders,
+        totalRevenue,
+        pendingOrders,
+        pendingApprovals,
+        pendingVendorRequests,
+      },
+      changes,
+      salesChart,
+      registrationChart,
+      orderStatusChart,
+      categoryChart,
+      topProducts,
+      topVendors,
+      revenueByDay,
+      recentActivity: recentActivity.slice(0, 5),
+    });
+  } catch (error) {
+    console.error('getDashboardStats error:', error);
+    res.status(500).json({ message: 'Failed to fetch dashboard stats', error: error.message });
+  }
+};

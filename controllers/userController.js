@@ -106,3 +106,65 @@ exports.updateMe = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+// ⭐ POST /api/users/apply-vendor
+exports.applyForVendor = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { businessName, businessType } = req.body;
+
+    // Validation
+    if (!businessName || !businessName.trim()) {
+      return res.status(400).json({ message: 'Business name is required' });
+    }
+
+    if (!businessType || !businessType.trim()) {
+      return res.status(400).json({ message: 'Business type is required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Only regular users can apply
+    if (user.role !== 'user') {
+      return res.status(400).json({
+        message: 'Only regular users can apply for vendor status',
+      });
+    }
+
+    // Check if already pending
+    if (user.vendorApplicationStatus === 'pending') {
+      return res.status(400).json({
+        message: 'You already have a pending vendor application',
+      });
+    }
+
+    // Check if already approved
+    if (user.vendorApplicationStatus === 'approved') {
+      return res.status(400).json({
+        message: 'Your vendor application is already approved',
+      });
+    }
+
+    // Update user with vendor application
+    user.businessName = businessName.trim();
+    user.businessType = businessType.trim();
+    user.vendorApplicationStatus = 'pending';
+    user.vendorRejectionReason = ''; // Clear any previous rejection reason
+
+    await user.save();
+
+    // Remove password from response
+    const { password: _p, ...safe } = user.toObject();
+
+    res.json({
+      message: 'Vendor application submitted successfully',
+      user: safe,
+    });
+  } catch (err) {
+    console.error('applyForVendor error:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};

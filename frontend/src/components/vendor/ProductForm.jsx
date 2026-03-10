@@ -2,6 +2,14 @@
 import { useEffect, useState, useRef } from 'react';
 import axiosClient from '../../api/axiosClient';
 
+const normalizeCategoryId = (value) => {
+  if (!value) return '';
+  if (typeof value === 'object') {
+    return value._id?.toString() || '';
+  }
+  return value.toString();
+};
+
 const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
   const [form, setForm] = useState({
     // BASIC INFO
@@ -201,23 +209,29 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
       setExistingImages(product.images || []);
 
       if (product.category?.parent) {
-        setSuperCategory(product.category.parent._id || product.category.parent);
-        setSubCategory(product.category._id);
+        setSuperCategory(normalizeCategoryId(product.category.parent));
+        setSubCategory(normalizeCategoryId(product.category));
       } else if (product.category) {
-        setSubCategory(product.category._id || product.category);
+        setSubCategory(normalizeCategoryId(product.category));
       }
     }
   }, [product]);
 
   /* FETCH CATEGORIES */
   useEffect(() => {
-    axiosClient.get('/api/categories/public').then((res) => {
+    axiosClient.get('/api/categories/public/hierarchy').then((res) => {
       setCategories(res.data.categories || []);
     });
   }, []);
 
   const superCategories = categories.filter((c) => c.type === 'super');
-  const subCategories = categories.filter((c) => c.type === 'sub' && c.parent === superCategory);
+  const selectedSuperCategory = superCategories.find(
+    (c) => normalizeCategoryId(c._id) === normalizeCategoryId(superCategory)
+  );
+  const subCategories = selectedSuperCategory?.subCategories || [];
+  const selectedSubCategory = subCategories.find(
+    (c) => normalizeCategoryId(c._id) === normalizeCategoryId(subCategory)
+  );
 
   const filteredSuperCategories = superCategories.filter((c) =>
     c.name.toLowerCase().includes(superSearch.toLowerCase())
@@ -414,12 +428,12 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
 
   // Get selected category names
   const getSelectedSuperCategoryName = () => {
-    const cat = superCategories.find(c => c._id === superCategory);
+    const cat = superCategories.find((c) => normalizeCategoryId(c._id) === normalizeCategoryId(superCategory));
     return cat ? cat.name : '';
   };
 
   const getSelectedSubCategoryName = () => {
-    const cat = subCategories.find(c => c._id === subCategory);
+    const cat = subCategories.find((c) => normalizeCategoryId(c._id) === normalizeCategoryId(subCategory));
     return cat ? cat.name : '';
   };
 
@@ -601,9 +615,24 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
                     }}
                     className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition bg-white text-left flex items-center justify-between"
                   >
-                    <span className={superCategory ? 'text-gray-900' : 'text-gray-400'}>
-                      {getSelectedSuperCategoryName() || 'Select Super Category'}
-                    </span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      {selectedSuperCategory?.image ? (
+                        <img
+                          src={selectedSuperCategory.image}
+                          alt={selectedSuperCategory.name}
+                          className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                        </div>
+                      )}
+                      <span className={`truncate ${superCategory ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {getSelectedSuperCategoryName() || 'Select Super Category'}
+                      </span>
+                    </div>
                     <svg className={`w-5 h-5 text-gray-400 transition-transform ${superDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -640,14 +669,30 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
                                 setSubCategory('');
                                 setSuperDropdownOpen(false);
                                 setSuperSearch('');
+                                setSubSearch('');
                               }}
                               className={`w-full px-4 py-3 text-left hover:bg-purple-50 transition flex items-center justify-between ${
-                                superCategory === cat._id ? 'bg-purple-50 text-purple-700' : 'text-gray-700'
+                                normalizeCategoryId(superCategory) === normalizeCategoryId(cat._id) ? 'bg-purple-50 text-purple-700' : 'text-gray-700'
                               }`}
                             >
-                              <span>{cat.name}</span>
-                              {superCategory === cat._id && (
-                                <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                              <div className="flex min-w-0 items-center gap-3">
+                                {cat.image ? (
+                                  <img
+                                    src={cat.image}
+                                    alt={cat.name}
+                                    className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                                  />
+                                ) : (
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                  </div>
+                                )}
+                                <span className="truncate">{cat.name}</span>
+                              </div>
+                              {normalizeCategoryId(superCategory) === normalizeCategoryId(cat._id) && (
+                                <svg className="w-5 h-5 flex-shrink-0 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               )}
@@ -685,9 +730,24 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
                         : 'bg-white border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500'
                     }`}
                   >
-                    <span className={subCategory ? 'text-gray-900' : 'text-gray-400'}>
-                      {getSelectedSubCategoryName() || (superCategory ? 'Select Sub Category' : 'Select super category first')}
-                    </span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      {selectedSubCategory?.image ? (
+                        <img
+                          src={selectedSubCategory.image}
+                          alt={selectedSubCategory.name}
+                          className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                          </svg>
+                        </div>
+                      )}
+                      <span className={`truncate ${subCategory ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {getSelectedSubCategoryName() || (superCategory ? 'Select Sub Category' : 'Select super category first')}
+                      </span>
+                    </div>
                     <svg className={`w-5 h-5 text-gray-400 transition-transform ${subDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -725,12 +785,27 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
                                 setSubSearch('');
                               }}
                               className={`w-full px-4 py-3 text-left hover:bg-purple-50 transition flex items-center justify-between ${
-                                subCategory === cat._id ? 'bg-purple-50 text-purple-700' : 'text-gray-700'
+                                normalizeCategoryId(subCategory) === normalizeCategoryId(cat._id) ? 'bg-purple-50 text-purple-700' : 'text-gray-700'
                               }`}
                             >
-                              <span>{cat.name}</span>
-                              {subCategory === cat._id && (
-                                <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                              <div className="flex min-w-0 items-center gap-3">
+                                {cat.image ? (
+                                  <img
+                                    src={cat.image}
+                                    alt={cat.name}
+                                    className="h-10 w-10 rounded-lg object-cover border border-gray-200"
+                                  />
+                                ) : (
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    </svg>
+                                  </div>
+                                )}
+                                <span className="truncate">{cat.name}</span>
+                              </div>
+                              {normalizeCategoryId(subCategory) === normalizeCategoryId(cat._id) && (
+                                <svg className="w-5 h-5 flex-shrink-0 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               )}
@@ -751,10 +826,33 @@ const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
             {/* Selected Category Display */}
             {subCategory && (
               <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-200">
-                <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                <div className="flex items-center -space-x-2">
+                  {selectedSuperCategory?.image ? (
+                    <img
+                      src={selectedSuperCategory.image}
+                      alt={selectedSuperCategory.name}
+                      className="h-12 w-12 rounded-full border-2 border-white object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-purple-600 text-white">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    </div>
+                  )}
+                  {selectedSubCategory?.image ? (
+                    <img
+                      src={selectedSubCategory.image}
+                      alt={selectedSubCategory.name}
+                      className="h-12 w-12 rounded-full border-2 border-white object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-white">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Selected Category</p>

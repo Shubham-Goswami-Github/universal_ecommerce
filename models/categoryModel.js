@@ -1,3 +1,4 @@
+// models/categoryModel.js
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema({
@@ -7,24 +8,36 @@ const categorySchema = new mongoose.Schema({
     trim: true
   },
 
-  // super | sub
   type: {
     type: String,
     enum: ['super', 'sub'],
     required: true
   },
 
-  // sub category ka parent (super category)
   parent: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
     default: null
   },
 
-  createdAt: {
-    type: Date,
-    default: Date.now
+  description: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+
+  // Category image (Cloudinary URL)
+  image: {
+    type: String,
+    default: ''
+  },
+
+  isActive: {
+    type: Boolean,
+    default: true
   }
+}, {
+  timestamps: true
 });
 
 module.exports = mongoose.model('Category', categorySchema);

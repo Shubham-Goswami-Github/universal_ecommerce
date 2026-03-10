@@ -14,4 +14,7 @@ router.patch(
   userController.updateMe
 );
 
-module.exports = router;  // 👈 YE LINE BILKUL AISI HI HONA CHAHIYE
+// POST /api/users/apply-vendor (user applies to become vendor)
+router.post('/apply-vendor', requireLogin, userController.applyForVendor);
+
+module.exports = router;

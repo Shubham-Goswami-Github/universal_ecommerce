@@ -1,9 +1,6 @@
 // controllers/siteSettingsController.js
 const SiteSettings = require('../models/siteSettingsModel');
 
-/**
- * Helper: get or create single settings doc
- */
 const getSettingsDoc = async () => {
   let settings = await SiteSettings.findOne();
   if (!settings) {
@@ -12,19 +9,16 @@ const getSettingsDoc = async () => {
   return settings;
 };
 
-/**
- * PUBLIC: frontend reads this
- */
 exports.getPublicSettings = async (req, res) => {
   try {
     const settings = await getSettingsDoc();
-    // choose which fields are public
     res.json({
       siteName: settings.siteName,
       logoUrl: settings.logoUrl,
       homepageTitle: settings.homepageTitle,
       homepageSubtitle: settings.homepageSubtitle,
       heroBannerImages: settings.heroBannerImages,
+      heroBannerSettings: settings.heroBannerSettings,  // Added
       featuredText: settings.featuredText,
       footerText: settings.footerText,
       contactEmail: settings.contactEmail,
@@ -32,8 +26,6 @@ exports.getPublicSettings = async (req, res) => {
       address: settings.address,
       socialLinks: settings.socialLinks,
       isMaintenanceMode: settings.isMaintenanceMode,
-      // NOTE: styling fields intentionally omitted from public payload if you prefer.
-      // If frontend needs fontColor etc for theme, include only those you want public.
     });
   } catch (error) {
     console.error('Get public settings error:', error);
@@ -41,9 +33,6 @@ exports.getPublicSettings = async (req, res) => {
   }
 };
 
-/**
- * ADMIN: get full settings for admin panel (read-only for styling)
- */
 exports.getAdminSettings = async (req, res) => {
   try {
     const settings = await getSettingsDoc();
@@ -54,16 +43,13 @@ exports.getAdminSettings = async (req, res) => {
   }
 };
 
-/**
- * ADMIN: upsert content fields only (admin cannot change styling)
- * allowedByAdmin = list of fields admin may change
- */
 const allowedByAdmin = [
   'siteName',
   'logoUrl',
   'homepageTitle',
   'homepageSubtitle',
   'heroBannerImages',
+  'heroBannerSettings',  // Added
   'featuredText',
   'footerText',
   'contactEmail',
@@ -78,7 +64,6 @@ exports.upsertPublicSettingsByAdmin = async (req, res) => {
     const payload = req.body || {};
     const settings = await getSettingsDoc();
 
-    // Only apply allowed fields
     for (const key of allowedByAdmin) {
       if (Object.prototype.hasOwnProperty.call(payload, key)) {
         settings[key] = payload[key];
@@ -93,10 +78,6 @@ exports.upsertPublicSettingsByAdmin = async (req, res) => {
   }
 };
 
-/**
- * DEVELOPER: upsert styling fields (requires X-DEV-KEY header)
- * allowedDev = list of styling/design fields that only dev can change
- */
 const allowedDev = [
   'backgroundColor',
   'backgroundImage',

@@ -37,6 +37,16 @@ const Profile = () => {
     confirmNewPassword: '',
   });
 
+  // ⭐ NEW: Vendor Application Form
+  const [vendorForm, setVendorForm] = useState({
+    wantToBeVendor: false,
+    businessName: '',
+    businessType: '',
+  });
+  const [vendorApplying, setVendorApplying] = useState(false);
+  const [vendorMsg, setVendorMsg] = useState('');
+  const [vendorErr, setVendorErr] = useState('');
+
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -50,9 +60,7 @@ const Profile = () => {
         mobileNumber: user.mobileNumber || '',
         alternateMobileNumber: user.alternateMobileNumber || '',
         gender: user.gender || '',
-        dateOfBirth: user.dateOfBirth
-          ? user.dateOfBirth.slice(0, 10)
-          : '',
+        dateOfBirth: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : '',
       });
 
       // Load primary / default address into form
@@ -82,12 +90,21 @@ const Profile = () => {
           state: '',
         });
       }
+
+      // ⭐ Load existing vendor application data if any
+      if (user.businessName || user.businessType) {
+        setVendorForm({
+          wantToBeVendor: false,
+          businessName: user.businessName || '',
+          businessType: user.businessType || '',
+        });
+      }
     }
   }, [user]);
 
   if (!user) {
     return (
-      <div className="min-h-screen.flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="bg-white p-6 rounded-xl shadow-sm text-center">
           <p className="mb-3 text-slate-700">You are not logged in.</p>
           <button
@@ -130,6 +147,15 @@ const Profile = () => {
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordForm((f) => ({ ...f, [name]: value }));
+  };
+
+  // ⭐ NEW: Handle vendor form changes
+  const handleVendorChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setVendorForm((f) => ({
+      ...f,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const handleSave = async (e) => {
@@ -188,7 +214,9 @@ const Profile = () => {
         !addressForm.city ||
         !addressForm.state
       ) {
-        setErr('Please fill required address fields (House, City, State, Pincode)');
+        setErr(
+          'Please fill required address fields (House, City, State, Pincode)'
+        );
         return;
       }
 
@@ -235,7 +263,7 @@ const Profile = () => {
       });
 
       if (data.user) {
-        updateUser(data.user); // Auth context & localStorage update
+        updateUser(data.user);
       }
 
       // Reset password fields
@@ -249,12 +277,107 @@ const Profile = () => {
     } catch (error) {
       console.error('Profile update error:', error);
       setErr(
-        error.response?.data?.message ||
-          'Failed to update profile. Try again.'
+        error.response?.data?.message || 'Failed to update profile. Try again.'
       );
     } finally {
       setSaving(false);
     }
+  };
+
+  // ⭐ NEW: Handle vendor application submission
+  const handleVendorApply = async (e) => {
+    e.preventDefault();
+    setVendorMsg('');
+    setVendorErr('');
+
+    // Validation
+    if (!vendorForm.businessName.trim()) {
+      setVendorErr('Business/Store Name is required');
+      return;
+    }
+
+    if (!vendorForm.businessType.trim()) {
+      setVendorErr('Business Type is required');
+      return;
+    }
+
+    try {
+      setVendorApplying(true);
+
+      const { data } = await axiosClient.post('/api/users/apply-vendor', {
+        businessName: vendorForm.businessName.trim(),
+        businessType: vendorForm.businessType.trim(),
+      });
+
+      if (data.user) {
+        updateUser(data.user);
+      }
+
+      setVendorMsg(
+        'Vendor application submitted successfully! Admin will review your request.'
+      );
+      setVendorForm((f) => ({ ...f, wantToBeVendor: false }));
+    } catch (error) {
+      console.error('Vendor application error:', error);
+      setVendorErr(
+        error.response?.data?.message || 'Failed to submit application. Try again.'
+      );
+    } finally {
+      setVendorApplying(false);
+    }
+  };
+
+  // ⭐ Helper to get application status badge
+  const getApplicationStatusBadge = () => {
+    const status = user.vendorApplicationStatus;
+
+    if (status === 'pending') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          ⏳ Application Pending
+        </span>
+      );
+    }
+
+    if (status === 'rejected') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          ❌ Application Rejected
+        </span>
+      );
+    }
+
+    if (status === 'approved' || user.role === 'vendor') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+          ✅ Vendor Approved
+        </span>
+      );
+    }
+
+    return null;
+  };
+
+  // ⭐ Check if user can apply for vendor
+  const canApplyForVendor = () => {
+    // Only regular users can apply
+    if (user.role !== 'user') return false;
+
+    // If already pending, can't apply again
+    if (user.vendorApplicationStatus === 'pending') return false;
+
+    // If already approved (shouldn't happen if role check is done), can't apply
+    if (user.vendorApplicationStatus === 'approved') return false;
+
+    return true;
+  };
+
+  // ⭐ Check if user has pending or rejected application
+  const hasExistingApplication = () => {
+    return (
+      user.vendorApplicationStatus === 'pending' ||
+      user.vendorApplicationStatus === 'rejected'
+    );
   };
 
   return (
@@ -280,9 +403,12 @@ const Profile = () => {
                   {user.name}
                 </h1>
                 <p className="text-sm text-slate-500">{user.email}</p>
-                <p className="text-[11px] uppercase text-blue-600 mt-1">
-                  {user.role}
-                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-[11px] uppercase text-blue-600 font-medium">
+                    {user.role}
+                  </p>
+                  {getApplicationStatusBadge()}
+                </div>
               </div>
             </div>
 
@@ -328,9 +454,7 @@ const Profile = () => {
               </div>
             </div>
             <div className="bg-slate-50 rounded-xl p-4 text-center">
-              <div className="text-xs text-slate-500 mb-1 uppercase">
-                Spent
-              </div>
+              <div className="text-xs text-slate-500 mb-1 uppercase">Spent</div>
               <div className="text-xl font-bold text-emerald-600">
                 ₹{user.totalSpent ?? 0}
               </div>
@@ -344,6 +468,195 @@ const Profile = () => {
               </div>
             </div>
           </div>
+
+          {/* ⭐ NEW: Vendor Application Section - Only for Users */}
+          {user.role === 'user' && (
+            <div className="mb-6 border border-orange-200 rounded-xl p-4 bg-orange-50/50">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-slate-700 uppercase flex items-center gap-2">
+                  🏪 Become a Vendor
+                </h2>
+                {getApplicationStatusBadge()}
+              </div>
+
+              {/* Show status message for pending application */}
+              {user.vendorApplicationStatus === 'pending' && (
+                <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 text-sm text-yellow-800">
+                  <p className="font-medium">Application Under Review</p>
+                  <p className="text-xs mt-1">
+                    Your vendor application is being reviewed by admin. You will
+                    be notified once it's approved.
+                  </p>
+                  {user.businessName && (
+                    <p className="text-xs mt-2">
+                      <span className="font-medium">Business Name:</span>{' '}
+                      {user.businessName}
+                    </p>
+                  )}
+                  {user.businessType && (
+                    <p className="text-xs">
+                      <span className="font-medium">Business Type:</span>{' '}
+                      {user.businessType}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Show rejection message */}
+              {user.vendorApplicationStatus === 'rejected' && (
+                <div className="bg-red-100 border border-red-300 rounded-lg p-3 text-sm text-red-800 mb-3">
+                  <p className="font-medium">Application Rejected</p>
+                  <p className="text-xs mt-1">
+                    Your previous vendor application was rejected.
+                    {user.vendorRejectionReason && (
+                      <span>
+                        {' '}
+                        Reason: <b>{user.vendorRejectionReason}</b>
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs mt-1">
+                    You can re-apply with updated information below.
+                  </p>
+                </div>
+              )}
+
+              {/* Vendor alerts */}
+              {vendorErr && (
+                <div className="mb-3 text-sm bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md">
+                  {vendorErr}
+                </div>
+              )}
+              {vendorMsg && (
+                <div className="mb-3 text-sm bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-2 rounded-md">
+                  {vendorMsg}
+                </div>
+              )}
+
+              {/* Application Form - Show only if can apply */}
+              {canApplyForVendor() && (
+                <>
+                  <div className="mb-3">
+                    <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="wantToBeVendor"
+                        checked={vendorForm.wantToBeVendor}
+                        onChange={handleVendorChange}
+                        className="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                      />
+                      <span>I want to become a Vendor and sell products</span>
+                    </label>
+                  </div>
+
+                  {/* Vendor fields - Show only when checkbox is checked */}
+                  {vendorForm.wantToBeVendor && (
+                    <form onSubmit={handleVendorApply} className="space-y-3">
+                      <div className="bg-white border border-orange-200 rounded-lg p-4 space-y-3">
+                        <p className="text-xs text-orange-700">
+                          ⚠️ Your vendor application will be reviewed by admin.
+                          You'll remain a regular user until approval.
+                        </p>
+
+                        <div>
+                          <label className="block text-xs text-slate-500 mb-1">
+                            Business / Store Name *
+                          </label>
+                          <input
+                            name="businessName"
+                            value={vendorForm.businessName}
+                            onChange={handleVendorChange}
+                            placeholder="e.g., Krishna Electronics, Fashion Hub"
+                            className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs text-slate-500 mb-1">
+                            Business Type *
+                          </label>
+                          <select
+                            name="businessType"
+                            value={vendorForm.businessType}
+                            onChange={handleVendorChange}
+                            className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                          >
+                            <option value="">Select Business Type</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion & Clothing</option>
+                            <option value="home">Home & Kitchen</option>
+                            <option value="beauty">Beauty & Personal Care</option>
+                            <option value="sports">Sports & Fitness</option>
+                            <option value="books">Books & Stationery</option>
+                            <option value="grocery">Grocery & Food</option>
+                            <option value="health">Health & Wellness</option>
+                            <option value="toys">Toys & Games</option>
+                            <option value="automotive">Automotive</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={vendorApplying}
+                          className="w-full px-4 py-2 rounded-md bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-60"
+                        >
+                          {vendorApplying
+                            ? 'Submitting Application...'
+                            : 'Submit Vendor Application'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </>
+              )}
+
+              {/* Re-apply button for rejected applications */}
+              {user.vendorApplicationStatus === 'rejected' &&
+                !vendorForm.wantToBeVendor && (
+                  <button
+                    onClick={() =>
+                      setVendorForm((f) => ({ ...f, wantToBeVendor: true }))
+                    }
+                    className="mt-2 px-4 py-2 rounded-md bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600"
+                  >
+                    Re-apply as Vendor
+                  </button>
+                )}
+            </div>
+          )}
+
+          {/* ⭐ Show Vendor Info if already a vendor */}
+          {user.role === 'vendor' && (
+            <div className="mb-6 border border-emerald-200 rounded-xl p-4 bg-emerald-50/50">
+              <h2 className="text-sm font-semibold text-slate-700 uppercase mb-2 flex items-center gap-2">
+                🏪 Vendor Information
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Verified
+                </span>
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-slate-500">Business Name</p>
+                  <p className="text-sm font-medium text-slate-800">
+                    {user.businessName || 'Not set'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Business Type</p>
+                  <p className="text-sm font-medium text-slate-800 capitalize">
+                    {user.businessType || 'Not set'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/vendor/dashboard')}
+                className="mt-3 px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700"
+              >
+                Go to Vendor Dashboard →
+              </button>
+            </div>
+          )}
 
           {/* Form + Details */}
           <div className="grid md:grid-cols-3 gap-6">
@@ -646,10 +959,37 @@ const Profile = () => {
                     );
                   })()
                 ) : (
-                  <p className="text-sm text-slate-500">
-                    No address saved yet.
-                  </p>
+                  <p className="text-sm text-slate-500">No address saved yet.</p>
                 )}
+              </div>
+
+              {/* Account Type Info */}
+              <div className="border rounded-xl p-4">
+                <h2 className="text-sm font-semibold text-slate-700 uppercase mb-2">
+                  Account Type
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      user.role === 'admin'
+                        ? 'bg-purple-100 text-purple-800'
+                        : user.role === 'vendor'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                  >
+                    {user.role === 'admin' && '👑 '}
+                    {user.role === 'vendor' && '🏪 '}
+                    {user.role === 'user' && '👤 '}
+                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                  </span>
+                </div>
+                {user.role === 'user' &&
+                  user.vendorApplicationStatus === 'pending' && (
+                    <p className="text-xs text-yellow-600 mt-2">
+                      Vendor application pending approval
+                    </p>
+                  )}
               </div>
             </div>
           </div>

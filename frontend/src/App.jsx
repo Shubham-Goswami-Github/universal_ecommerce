@@ -1,5 +1,5 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -19,65 +19,73 @@ import Vendors from './pages/Vendors';
 import VendorStorePage from './pages/VendorStorePage';
 // App.jsx ya jaha routes define hain
 import Profile from './pages/Profile';
+// In your router configuration (e.g., App.jsx)
+import CategoryPage from './pages/CategoryPage';
+import CategoriesPage from './pages/CategoriesPage';
 
-// ...
 
 function AppInner() {
+  const location = useLocation();
+  const hideFooter = location.pathname.startsWith('/admin');
+
   return (
-    <BrowserRouter>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 py-4">
-          <div className="max-w-6xl mx-auto px-3 sm:px-4">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/products/:id" element={<ProductDetails />} />
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 py-4">
+        <div className="px-3 sm:px-4">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/products/:id" element={<ProductDetails />} />
 
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            // Add these routes
+<Route path="/category/:categoryId" element={<CategoryPage />} />
+<Route path="/categories" element={<CategoriesPage />} />
+// ...
+
 <Route path="/profile" element={<Profile />} />
-              <Route
-                path="/cart"
-                element={
-                  <ProtectedRoute allowedRoles={['user']}>
-                    <Cart />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/orders"
-                element={
-                  <ProtectedRoute allowedRoles={['user']}>
-                    <Orders />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/vendor"
-                element={
-                  <ProtectedRoute allowedRoles={['vendor', 'admin']}>
-                    <VendorDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute allowedRoles={['user']}>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <ProtectedRoute allowedRoles={['user']}>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor"
+              element={
+                <ProtectedRoute allowedRoles={['vendor', 'admin']}>
+                  <VendorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
 
-              <Route path="/vendors" element={<Vendors />} />
-              <Route path="/vendor-store/:id" element={<VendorStorePage />} />
-            </Routes>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    </BrowserRouter>
+            <Route path="/vendors" element={<Vendors />} />
+            <Route path="/vendor-store/:id" element={<VendorStorePage />} />
+          </Routes>
+        </div>
+      </main>
+      {!hideFooter && <Footer />}
+    </div>
   );
 }
 
@@ -130,7 +138,9 @@ export default function ThemedApp() {
         <div className="text-slate-400">Loading...</div>
       </div>
     ) : (
-      <AppInner />
+      <BrowserRouter>
+        <AppInner />
+      </BrowserRouter>
     )}
   </div>
 );
