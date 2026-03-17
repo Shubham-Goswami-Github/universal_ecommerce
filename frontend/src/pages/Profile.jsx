@@ -16,6 +16,8 @@ const Profile = () => {
     alternateMobileNumber: '',
     gender: '',
     dateOfBirth: '',
+    businessName: '',
+    businessType: '',
   });
 
   // Primary address form
@@ -51,6 +53,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -61,6 +64,8 @@ const Profile = () => {
         alternateMobileNumber: user.alternateMobileNumber || '',
         gender: user.gender || '',
         dateOfBirth: user.dateOfBirth ? user.dateOfBirth.slice(0, 10) : '',
+        businessName: user.businessName || '',
+        businessType: user.businessType || '',
       });
 
       // Load primary / default address into form
@@ -246,6 +251,10 @@ const Profile = () => {
         fd.append('alternateMobileNumber', form.alternateMobileNumber);
       if (form.gender) fd.append('gender', form.gender);
       if (form.dateOfBirth) fd.append('dateOfBirth', form.dateOfBirth);
+      if (user.role === 'vendor') {
+        fd.append('businessName', form.businessName || '');
+        fd.append('businessType', form.businessType || '');
+      }
 
       if (addressesPayload.length > 0) {
         fd.append('addresses', JSON.stringify(addressesPayload));
@@ -273,6 +282,7 @@ const Profile = () => {
         confirmNewPassword: '',
       });
 
+      setIsEditingProfile(false);
       setMsg('Profile updated successfully');
     } catch (error) {
       console.error('Profile update error:', error);
@@ -653,7 +663,7 @@ const Profile = () => {
                 onClick={() => navigate('/vendor/dashboard')}
                 className="mt-3 px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700"
               >
-                Go to Vendor Dashboard →
+                Go to Vendor Dashb →
               </button>
             </div>
           )}
@@ -665,9 +675,34 @@ const Profile = () => {
               onSubmit={handleSave}
               className="md:col-span-2 space-y-4 border rounded-xl p-4"
             >
-              <h2 className="text-sm font-semibold text-slate-700 uppercase mb-1">
-                Edit Profile
-              </h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-slate-700 uppercase">
+                  Edit Profile
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isEditingProfile) {
+                      setIsEditingProfile(false);
+                      setProfilePicFile(null);
+                      setPasswordForm({
+                        currentPassword: '',
+                        newPassword: '',
+                        confirmNewPassword: '',
+                      });
+                    } else {
+                      setIsEditingProfile(true);
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                    isEditingProfile
+                      ? 'border border-slate-300 text-slate-700 hover:bg-slate-50'
+                      : 'bg-blue-600 text-white hover:bg-blue-500'
+                  }`}
+                >
+                  {isEditingProfile ? 'Cancel' : 'Edit Profile'}
+                </button>
+              </div>
 
               {/* Basic info */}
               <div className="grid sm:grid-cols-2 gap-4">
@@ -679,6 +714,7 @@ const Profile = () => {
                     name="name"
                     value={form.name}
                     onChange={handleChange}
+                    disabled={!isEditingProfile}
                     className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -700,6 +736,7 @@ const Profile = () => {
                     name="mobileNumber"
                     value={form.mobileNumber}
                     onChange={handleChange}
+                    disabled={!isEditingProfile}
                     className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -711,6 +748,7 @@ const Profile = () => {
                     name="alternateMobileNumber"
                     value={form.alternateMobileNumber}
                     onChange={handleChange}
+                    disabled={!isEditingProfile}
                     className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -723,6 +761,7 @@ const Profile = () => {
                     name="gender"
                     value={form.gender}
                     onChange={handleChange}
+                    disabled={!isEditingProfile}
                     className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   >
                     <option value="">Select</option>
@@ -741,9 +780,39 @@ const Profile = () => {
                     name="dateOfBirth"
                     value={form.dateOfBirth}
                     onChange={handleChange}
+                    disabled={!isEditingProfile}
                     className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+
+                {user.role === 'vendor' && (
+                  <>
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1">
+                        Business Name
+                      </label>
+                      <input
+                        name="businessName"
+                        value={form.businessName}
+                        onChange={handleChange}
+                        disabled={!isEditingProfile}
+                        className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-500 mb-1">
+                        Business Type
+                      </label>
+                      <input
+                        name="businessType"
+                        value={form.businessType}
+                        onChange={handleChange}
+                        disabled={!isEditingProfile}
+                        className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Profile picture */}
@@ -754,6 +823,7 @@ const Profile = () => {
                 <input
                   type="file"
                   accept="image/*"
+                  disabled={!isEditingProfile}
                   onChange={(e) => setProfilePicFile(e.target.files[0])}
                   className="text-xs text-slate-600"
                 />
@@ -773,6 +843,7 @@ const Profile = () => {
                       name="fullName"
                       value={addressForm.fullName}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -784,6 +855,7 @@ const Profile = () => {
                       name="mobileNumber"
                       value={addressForm.mobileNumber}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -795,6 +867,7 @@ const Profile = () => {
                       name="houseNo"
                       value={addressForm.houseNo}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -806,6 +879,7 @@ const Profile = () => {
                       name="streetArea"
                       value={addressForm.streetArea}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -817,6 +891,7 @@ const Profile = () => {
                       name="landmark"
                       value={addressForm.landmark}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -828,6 +903,7 @@ const Profile = () => {
                       name="pincode"
                       value={addressForm.pincode}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -839,6 +915,7 @@ const Profile = () => {
                       name="city"
                       value={addressForm.city}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -850,6 +927,7 @@ const Profile = () => {
                       name="state"
                       value={addressForm.state}
                       onChange={handleAddressChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -871,6 +949,7 @@ const Profile = () => {
                       name="currentPassword"
                       value={passwordForm.currentPassword}
                       onChange={handlePasswordChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -883,6 +962,7 @@ const Profile = () => {
                       name="newPassword"
                       value={passwordForm.newPassword}
                       onChange={handlePasswordChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -895,21 +975,24 @@ const Profile = () => {
                       name="confirmNewPassword"
                       value={passwordForm.confirmNewPassword}
                       onChange={handlePasswordChange}
+                      disabled={!isEditingProfile}
                       className="w-full px-3 py-2 rounded-md border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 disabled:opacity-60"
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
+              {isEditingProfile && (
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500 disabled:opacity-60"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              )}
             </form>
 
             {/* Read-only details */}

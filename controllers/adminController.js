@@ -57,6 +57,7 @@ exports.getPendingVendorRequests = async (req, res) => {
       vendorApplicationStatus: 'pending',
     })
       .select('-password')
+      .populate('vendorCategoriesRequested', 'name')
       .sort({ createdAt: -1 });
 
     res.json({ vendors });
@@ -80,13 +81,31 @@ exports.approveVendor = async (req, res) => {
         .json({ message: 'No pending vendor request' });
     }
 
+    const { vendorCategoriesApproved } = req.body;
+
     user.role = 'vendor';
     user.vendorApplicationStatus = 'approved';
     user.vendorActive = true;
 
+    // 🔥 MAIN LOGIC
+    user.vendorCategoriesApproved =
+      Array.isArray(vendorCategoriesApproved) &&
+      vendorCategoriesApproved.length > 0
+        ? vendorCategoriesApproved
+        : user.vendorCategoriesRequested;
+
     await user.save();
 
-    res.json({ message: 'Vendor approved successfully', user });
+    const { password: _p, ...safe } = user.toObject();
+
+    res.json({
+      message: 'Vendor approved successfully',
+      user: {
+        ...safe,
+        vendorCategoriesApproved: user.vendorCategoriesApproved,
+        vendorCategoriesRequested: user.vendorCategoriesRequested,
+      },
+    });
   } catch (error) {
     console.error('Approve vendor error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -463,6 +482,8 @@ exports.updateUser = async (req, res) => {
       dateOfBirth,
       profilePicture,
       addresses,
+      vendorCategoriesApproved,
+      vendorCategoryAccessType,
     } = req.body;
 
     const user = await User.findById(userId);
@@ -541,6 +562,21 @@ exports.updateUser = async (req, res) => {
           .json({ message: 'addresses must be an array' });
       }
       user.addresses = addresses;
+    }
+
+    if (vendorCategoryAccessType !== undefined) {
+      user.vendorCategoryAccessType =
+        vendorCategoryAccessType === 'all' ? 'all' : 'limited';
+    }
+
+    if (vendorCategoriesApproved !== undefined) {
+      if (!Array.isArray(vendorCategoriesApproved)) {
+        return res
+          .status(400)
+          .json({ message: 'vendorCategoriesApproved must be an array' });
+      }
+
+      user.vendorCategoriesApproved = vendorCategoriesApproved;
     }
 
     // PASSWORD
@@ -680,7 +716,9 @@ exports.rejectProduct = async (req, res) => {
 // GET /api/admin/dashboard-stats
 exports.getDashboardStats = async (req, res) => {
   try {
-    const { range } = req.query;
+    const { range = '30days' } = req.query;
+
+    const successfulOrderStatuses = ['confirmed', 'shipped', 'delivered'];
 
     // Calculate date range
     let startDate = new Date();
@@ -701,10 +739,13 @@ exports.getDashboardStats = async (req, res) => {
         startDate.setDate(startDate.getDate() - 30);
     }
 
+    startDate.setHours(0, 0, 0, 0);
+
     // Previous period for comparison
     const previousStartDate = new Date(startDate);
     const periodDiff = new Date() - startDate;
     previousStartDate.setTime(previousStartDate.getTime() - periodDiff);
+    const currentEndDate = new Date();
 
     // Get basic counts
     const [
@@ -715,35 +756,59 @@ exports.getDashboardStats = async (req, res) => {
       pendingOrders,
       pendingApprovals,
       pendingVendorRequests,
+      currentUsers,
       previousUsers,
+      currentVendors,
       previousVendors,
+      currentOrders,
       previousOrders,
+      activeUsers,
+      activeVendors,
     ] = await Promise.all([
       User.countDocuments({ role: 'user' }),
       User.countDocuments({ role: 'vendor', vendorApplicationStatus: 'approved' }),
-      Product.countDocuments(),
+      Product.countDocuments({ status: 'approved' }),
       Order.countDocuments(),
       Order.countDocuments({ status: 'pending' }),
       Product.countDocuments({ status: 'pending' }),
       User.countDocuments({ vendorApplicationStatus: 'pending' }),
+      User.countDocuments({ role: 'user', createdAt: { $gte: startDate, $lt: currentEndDate } }),
       User.countDocuments({ role: 'user', createdAt: { $lt: startDate } }),
+      User.countDocuments({ role: 'vendor', vendorApplicationStatus: 'approved', createdAt: { $gte: startDate, $lt: currentEndDate } }),
       User.countDocuments({ role: 'vendor', vendorApplicationStatus: 'approved', createdAt: { $lt: startDate } }),
+      Order.countDocuments({ createdAt: { $gte: startDate, $lt: currentEndDate } }),
       Order.countDocuments({ createdAt: { $lt: startDate } }),
+      Order.distinct('user', { createdAt: { $gte: startDate, $lt: currentEndDate } }).then((users) => users.length),
+      Order.distinct('vendor', {
+        createdAt: { $gte: startDate, $lt: currentEndDate },
+        status: { $in: successfulOrderStatuses },
+      }).then((vendors) => vendors.length),
     ]);
 
     // Calculate total revenue
     const revenueAgg = await Order.aggregate([
-      { $match: { status: { $nin: ['cancelled', 'failed'] } } },
+      { $match: { status: { $in: successfulOrderStatuses } } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]);
     const totalRevenue = revenueAgg[0]?.total || 0;
+
+    const currentRevenueAgg = await Order.aggregate([
+      {
+        $match: {
+          status: { $in: successfulOrderStatuses },
+          createdAt: { $gte: startDate, $lt: currentEndDate },
+        },
+      },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]);
+    const currentRevenue = currentRevenueAgg[0]?.total || 0;
 
     // Previous revenue for comparison
     const previousRevenueAgg = await Order.aggregate([
       {
         $match: {
-          status: { $nin: ['cancelled', 'failed'] },
-          createdAt: { $lt: startDate },
+          status: { $in: successfulOrderStatuses },
+          createdAt: { $gte: previousStartDate, $lt: startDate },
         },
       },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
@@ -757,10 +822,10 @@ exports.getDashboardStats = async (req, res) => {
     };
 
     const changes = {
-      users: calculateChange(totalUsers, previousUsers),
-      vendors: calculateChange(totalVendors, previousVendors),
-      orders: calculateChange(totalOrders, previousOrders),
-      revenue: calculateChange(totalRevenue, previousRevenue),
+      users: calculateChange(currentUsers, previousUsers),
+      vendors: calculateChange(currentVendors, previousVendors),
+      orders: calculateChange(currentOrders, previousOrders),
+      revenue: calculateChange(currentRevenue, previousRevenue),
     };
 
     // Monthly sales data (last 7 months)
@@ -855,13 +920,18 @@ exports.getDashboardStats = async (req, res) => {
 
     // Top products by revenue
     const topProductsAgg = await Order.aggregate([
-      { $match: { status: { $nin: ['cancelled', 'failed'] } } },
+      {
+        $match: {
+          status: { $in: successfulOrderStatuses },
+          createdAt: { $gte: startDate, $lt: currentEndDate },
+        },
+      },
       { $unwind: '$items' },
       {
         $group: {
           _id: '$items.product',
           sales: { $sum: '$items.quantity' },
-          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+          revenue: { $sum: { $multiply: ['$items.productPrice', '$items.quantity'] } },
         },
       },
       { $sort: { revenue: -1 } },
@@ -882,27 +952,22 @@ exports.getDashboardStats = async (req, res) => {
       name: item.productInfo?.name || 'Unknown Product',
       sales: item.sales,
       revenue: item.revenue,
-      image: item.productInfo?.images?.[0] || 'https://via.placeholder.com/40',
+      image: item.productInfo?.images?.[0] || '',
     }));
 
     // Top vendors by revenue
     const topVendorsAgg = await Order.aggregate([
-      { $match: { status: { $nin: ['cancelled', 'failed'] } } },
-      { $unwind: '$items' },
       {
-        $lookup: {
-          from: 'products',
-          localField: 'items.product',
-          foreignField: '_id',
-          as: 'productInfo',
+        $match: {
+          status: { $in: successfulOrderStatuses },
+          createdAt: { $gte: startDate, $lt: currentEndDate },
         },
       },
-      { $unwind: { path: '$productInfo', preserveNullAndEmptyArrays: true } },
       {
         $group: {
-          _id: '$productInfo.vendor',
+          _id: '$vendor',
           orders: { $sum: 1 },
-          revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+          revenue: { $sum: '$totalAmount' },
         },
       },
       { $sort: { revenue: -1 } },
@@ -920,7 +985,7 @@ exports.getDashboardStats = async (req, res) => {
 
     const topVendors = topVendorsAgg.map((item, index) => ({
       id: index + 1,
-      name: item.vendorInfo?.name || 'Unknown Vendor',
+      name: item.vendorInfo?.businessName || item.vendorInfo?.name || 'Unknown Vendor',
       orders: item.orders,
       revenue: item.revenue,
     }));
@@ -930,8 +995,8 @@ exports.getDashboardStats = async (req, res) => {
     const revenueByDayAgg = await Order.aggregate([
       {
         $match: {
-          createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) },
-          status: { $nin: ['cancelled', 'failed'] },
+          createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 6)) },
+          status: { $in: successfulOrderStatuses },
         },
       },
       {
@@ -951,23 +1016,23 @@ exports.getDashboardStats = async (req, res) => {
     // Recent activity
     const recentOrders = await Order.find()
       .sort({ createdAt: -1 })
-      .limit(2)
+      .limit(3)
       .populate('user', 'name')
       .lean();
 
     const recentUsers = await User.find({ role: 'user' })
       .sort({ createdAt: -1 })
-      .limit(1)
+      .limit(2)
       .lean();
 
     const recentVendorRequests = await User.find({ vendorApplicationStatus: 'pending' })
       .sort({ createdAt: -1 })
-      .limit(1)
+      .limit(2)
       .lean();
 
     const recentProductApprovals = await Product.find({ status: 'approved' })
       .sort({ updatedAt: -1 })
-      .limit(1)
+      .limit(2)
       .lean();
 
     const formatTimeAgo = (date) => {
@@ -985,6 +1050,7 @@ exports.getDashboardStats = async (req, res) => {
 
     recentOrders.forEach((order) => {
       recentActivity.push({
+        createdAt: order.createdAt,
         type: 'order',
         title: `New order #${order.orderNumber || order._id.toString().slice(-6).toUpperCase()}`,
         description: `${order.user?.name || 'Customer'} placed an order worth ₹${order.totalAmount}`,
@@ -994,6 +1060,7 @@ exports.getDashboardStats = async (req, res) => {
 
     recentUsers.forEach((user) => {
       recentActivity.push({
+        createdAt: user.createdAt,
         type: 'user',
         title: 'New user registered',
         description: `${user.email} joined the platform`,
@@ -1003,6 +1070,7 @@ exports.getDashboardStats = async (req, res) => {
 
     recentVendorRequests.forEach((vendor) => {
       recentActivity.push({
+        createdAt: vendor.createdAt,
         type: 'vendor',
         title: 'Vendor application',
         description: `${vendor.name || vendor.email} submitted vendor application`,
@@ -1012,6 +1080,7 @@ exports.getDashboardStats = async (req, res) => {
 
     recentProductApprovals.forEach((product) => {
       recentActivity.push({
+        createdAt: product.updatedAt,
         type: 'product',
         title: 'Product approved',
         description: `${product.name} was approved`,
@@ -1020,19 +1089,14 @@ exports.getDashboardStats = async (req, res) => {
     });
 
     // Sort by time (most recent first)
-    recentActivity.sort((a, b) => {
-      const getSeconds = (timeStr) => {
-        const num = parseInt(timeStr);
-        if (timeStr.includes('sec')) return num;
-        if (timeStr.includes('min')) return num * 60;
-        if (timeStr.includes('hour')) return num * 3600;
-        if (timeStr.includes('day')) return num * 86400;
-        return 0;
-      };
-      return getSeconds(a.time) - getSeconds(b.time);
-    });
+    recentActivity.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.json({
+      meta: {
+        range,
+        startDate,
+        endDate: currentEndDate,
+      },
       overview: {
         totalUsers,
         totalVendors,
@@ -1043,6 +1107,18 @@ exports.getDashboardStats = async (req, res) => {
         pendingApprovals,
         pendingVendorRequests,
       },
+      periodSummary: {
+        revenue: currentRevenue,
+        orders: currentOrders,
+        users: currentUsers,
+        vendors: currentVendors,
+      },
+      quickStats: {
+        activeUsers,
+        activeVendors,
+        avgOrderValue: currentOrders ? Math.round(currentRevenue / currentOrders) : 0,
+        rangeRevenue: currentRevenue,
+      },
       changes,
       salesChart,
       registrationChart,
@@ -1051,10 +1127,11 @@ exports.getDashboardStats = async (req, res) => {
       topProducts,
       topVendors,
       revenueByDay,
-      recentActivity: recentActivity.slice(0, 5),
+      recentActivity: recentActivity.slice(0, 6),
     });
   } catch (error) {
     console.error('getDashboardStats error:', error);
     res.status(500).json({ message: 'Failed to fetch dashboard stats', error: error.message });
   }
 };
+

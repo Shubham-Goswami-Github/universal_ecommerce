@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const { requireLogin } = require('../middleware/authMiddleware');
 
 // 🔹 Multer + Cloudinary middleware (same jo admin me use kar rahe ho)
 const profileUpload = require('../middleware/adminProfileUpload');
@@ -15,5 +16,6 @@ router.post(
 
 // POST /api/auth/login  (normal JSON)
 router.post('/login', authController.login);
+router.get('/me', requireLogin, authController.me);
 
 module.exports = router;

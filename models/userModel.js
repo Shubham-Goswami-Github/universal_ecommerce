@@ -127,17 +127,7 @@ const userSchema = new mongoose.Schema(
 
     /* ---------- ADDRESS ---------- */
     addresses: [addressSchema],
-/* ---------- VENDOR FLOW ---------- */
-vendorApplicationStatus: {
-  type: String,
-  enum: ['none', 'pending', 'approved', 'rejected'],
-  default: 'none',
-},
 
-vendorActive: {
-  type: Boolean,
-  default: false,
-},
 
 /* ---------- VENDOR FLOW ---------- */
 vendorApplicationStatus: {
@@ -149,6 +139,34 @@ vendorApplicationStatus: {
 vendorActive: {
   type: Boolean,
   default: false,
+},
+
+// ⭐ VENDOR CATEGORY SYSTEM
+
+vendorCategoriesRequested: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+  }
+],
+
+vendorCategoriesApproved: [
+  {
+    type: mongoose.Schema.Types.Mixed,
+  }
+],
+
+vendorCategoriesRejected: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+  }
+],
+
+vendorCategoryAccessType: {
+  type: String,
+  enum: ['limited', 'all'],
+  default: 'limited'
 },
 
 // ⭐ ADD THESE 3 NEW FIELDS BELOW vendorActive

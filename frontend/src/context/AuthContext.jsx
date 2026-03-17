@@ -98,6 +98,23 @@ export const AuthProvider = ({ children }) => {
         formData.append('addresses', JSON.stringify(extra.addresses));
       }
 
+      // vendor specific fields
+      if (extra.businessName) {
+        formData.append('businessName', extra.businessName);
+      }
+      if (extra.businessType) {
+        formData.append('businessType', extra.businessType);
+      }
+      const vendorCategoriesRequested = Array.isArray(extra.vendorCategoriesRequested)
+        ? extra.vendorCategoriesRequested
+        : Array.isArray(extra.vendorCategoriesRequested?.allSelectedCategories)
+        ? extra.vendorCategoriesRequested.allSelectedCategories
+        : [];
+
+      if (vendorCategoriesRequested.length > 0) {
+        formData.append('vendorCategoriesRequested', JSON.stringify(vendorCategoriesRequested));
+      }
+
       // profile picture file
       if (file) {
         // field name MUST be 'profilePicture' (multer .single('profilePicture'))

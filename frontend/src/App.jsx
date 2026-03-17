@@ -26,13 +26,22 @@ import CategoriesPage from './pages/CategoriesPage';
 
 function AppInner() {
   const location = useLocation();
-  const hideFooter = location.pathname.startsWith('/admin');
+  const isDashboardPage =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/vendor');
+  const hideFooter = isDashboardPage;
+  const isFullBleedPage =
+    location.pathname === '/' ||
+    location.pathname === '/products' ||
+    location.pathname === '/categories' ||
+    location.pathname.startsWith('/category/') ||
+    isDashboardPage;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main className="flex-1 py-4">
-        <div className="px-3 sm:px-4">
+      <main className={isFullBleedPage ? 'flex-1' : 'flex-1 py-4'}>
+        <div className={isFullBleedPage ? '' : 'px-3 sm:px-4'}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />

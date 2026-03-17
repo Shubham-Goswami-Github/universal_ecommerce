@@ -5,6 +5,37 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'supersecretkey';
 
+const buildAuthUserPayload = (user) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  mobileNumber: user.mobileNumber,
+  alternateMobileNumber: user.alternateMobileNumber,
+
+  role: user.role,
+  accountStatus: user.accountStatus,
+  isActive: user.isActive,
+
+  vendorApplicationStatus: user.vendorApplicationStatus,
+  vendorActive: user.vendorActive,
+  vendorCategoriesRequested: user.vendorCategoriesRequested,
+  vendorCategoriesApproved: user.vendorCategoriesApproved,
+
+  businessName: user.businessName,
+  businessType: user.businessType,
+  vendorRejectionReason: user.vendorRejectionReason,
+
+  profilePicture: user.profilePicture,
+  gender: user.gender,
+  dateOfBirth: user.dateOfBirth,
+
+  addresses: user.addresses,
+
+  totalOrders: user.totalOrders,
+  totalSpent: user.totalSpent,
+  lastOrderDate: user.lastOrderDate,
+});
+
 /* ================= REGISTER ================= */
 exports.register = async (req, res) => {
   try {
@@ -19,17 +50,34 @@ exports.register = async (req, res) => {
       }
     }
 
+    if (
+      req.body?.vendorCategoriesRequested &&
+      typeof req.body.vendorCategoriesRequested === 'string'
+    ) {
+      try {
+        req.body.vendorCategoriesRequested = JSON.parse(req.body.vendorCategoriesRequested);
+      } catch (e) {
+        return res
+          .status(400)
+          .json({ message: 'Invalid vendorCategoriesRequested format' });
+      }
+    }
+
     const {
       name,
       email,
       mobileNumber,
       password,
       role,
-
+      
       alternateMobileNumber,
       gender,
       dateOfBirth,
       addresses,
+
+      vendorCategoriesRequested,
+      businessName,
+      businessType,
     } = req.body || {};
 
     if (!name || !email || !mobileNumber || !password) {
@@ -78,6 +126,15 @@ exports.register = async (req, res) => {
       vendorApplicationStatus,
       vendorActive,
 
+        // ⭐ NEW
+       vendorCategoriesRequested: Array.isArray(vendorCategoriesRequested)
+        ? vendorCategoriesRequested
+        : [],
+       vendorCategoriesApproved: [],
+
+       businessName: businessName || '',
+       businessType: businessType || '',
+
       gender,
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
 
@@ -91,26 +148,7 @@ exports.register = async (req, res) => {
         vendorApplicationStatus === 'pending'
           ? 'Registration successful. Vendor approval pending.'
           : 'User registered successfully',
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        mobileNumber: user.mobileNumber,
-        alternateMobileNumber: user.alternateMobileNumber,
-
-        role: user.role,
-        vendorApplicationStatus: user.vendorApplicationStatus,
-        vendorActive: user.vendorActive,
-
-        gender: user.gender,
-        dateOfBirth: user.dateOfBirth,
-        profilePicture: user.profilePicture,
-        addresses: user.addresses,
-
-        totalOrders: user.totalOrders,
-        totalSpent: user.totalSpent,
-        lastOrderDate: user.lastOrderDate,
-      },
+      user: buildAuthUserPayload(user),
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -159,33 +197,25 @@ exports.login = async (req, res) => {
     res.json({
       message: 'Login successful',
       token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        mobileNumber: user.mobileNumber,
-        alternateMobileNumber: user.alternateMobileNumber,
-
-        role: user.role,
-        accountStatus: user.accountStatus,
-        isActive: user.isActive,
-
-        vendorApplicationStatus: user.vendorApplicationStatus,
-        vendorActive: user.vendorActive,
-
-        profilePicture: user.profilePicture,
-        gender: user.gender,
-        dateOfBirth: user.dateOfBirth,
-
-        addresses: user.addresses,
-
-        totalOrders: user.totalOrders,
-        totalSpent: user.totalSpent,
-        lastOrderDate: user.lastOrderDate,
-      },
+      user: buildAuthUserPayload(user),
     });
   } catch (error) {
     console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.me = async (req, res) => {
+  try {
+    const user = await User.findById(req.user?.userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ user: buildAuthUserPayload(user) });
+  } catch (error) {
+    console.error('Get current user error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

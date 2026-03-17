@@ -42,6 +42,12 @@ const Register = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [siteName, setSiteName] = useState('ShopEase');
   const [logoUrl, setLogoUrl] = useState(null);
+  
+  // Category States - Improved
+  const [categories, setCategories] = useState([]);
+  const [selectedSuperCategories, setSelectedSuperCategories] = useState([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState({});
+  const [expandedSuperCategories, setExpandedSuperCategories] = useState([]);
 
   const normalizeLogoUrl = (rawUrl) => {
     if (!rawUrl || typeof rawUrl !== 'string') return null;
@@ -82,6 +88,107 @@ const Register = () => {
     };
   }, []);
 
+  // Fetch categories with hierarchy
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axiosClient.get('/api/categories/public/all');
+        const allCategories = res.data?.categories || res.data || [];
+        setCategories(allCategories);
+      } catch (err) {
+        console.log('Category fetch error', err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Get super categories
+  const superCategories = categories.filter(cat => cat.type === 'super');
+
+  // Get sub categories for a super category
+  const getSubCategories = (superCatId) => {
+    return categories.filter(cat => 
+      cat.type === 'sub' && 
+      (cat.parent === superCatId || cat.parent?._id === superCatId)
+    );
+  };
+
+  // Handle super category selection
+  const handleSuperCategoryToggle = (superCatId) => {
+    setSelectedSuperCategories(prev => {
+      if (prev.includes(superCatId)) {
+        // Remove super category and its sub categories
+        setSelectedSubCategories(prevSub => {
+          const newSub = { ...prevSub };
+          delete newSub[superCatId];
+          return newSub;
+        });
+        setExpandedSuperCategories(prevExp => prevExp.filter(id => id !== superCatId));
+        return prev.filter(id => id !== superCatId);
+      } else {
+        // Add super category and expand it
+        setExpandedSuperCategories(prevExp => [...prevExp, superCatId]);
+        return [...prev, superCatId];
+      }
+    });
+  };
+
+  // Handle sub category selection
+  const handleSubCategoryToggle = (superCatId, subCatId) => {
+    setSelectedSubCategories(prev => {
+      const currentSubs = prev[superCatId] || [];
+      if (currentSubs.includes(subCatId)) {
+        return {
+          ...prev,
+          [superCatId]: currentSubs.filter(id => id !== subCatId)
+        };
+      } else {
+        return {
+          ...prev,
+          [superCatId]: [...currentSubs, subCatId]
+        };
+      }
+    });
+  };
+
+  // Toggle expand/collapse for super category
+  const toggleExpandSuperCategory = (superCatId) => {
+    setExpandedSuperCategories(prev => {
+      if (prev.includes(superCatId)) {
+        return prev.filter(id => id !== superCatId);
+      } else {
+        return [...prev, superCatId];
+      }
+    });
+  };
+
+  // Select all sub categories of a super category
+  const selectAllSubCategories = (superCatId) => {
+    const subCats = getSubCategories(superCatId);
+    setSelectedSubCategories(prev => ({
+      ...prev,
+      [superCatId]: subCats.map(cat => cat._id)
+    }));
+  };
+
+  // Deselect all sub categories of a super category
+  const deselectAllSubCategories = (superCatId) => {
+    setSelectedSubCategories(prev => ({
+      ...prev,
+      [superCatId]: []
+    }));
+  };
+
+  // Get total selected categories count
+  const getTotalSelectedCount = () => {
+    let count = selectedSuperCategories.length;
+    Object.values(selectedSubCategories).forEach(subs => {
+      count += subs.length;
+    });
+    return count;
+  };
+
   // Indian States List
   const indianStates = [
     'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
@@ -93,14 +200,14 @@ const Register = () => {
     'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
   ];
 
-  // Fetch City and State from Pincode (Free India Post API)
+  // Fetch City and State from Pincode
   const fetchAddressByPincode = async (pincode) => {
     if (pincode.length === 6 && /^\d{6}$/.test(pincode)) {
       setPincodeLoading(true);
       try {
         const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
         const data = await response.json();
-        
+
         if (data[0].Status === 'Success' && data[0].PostOffice?.length > 0) {
           const postOffice = data[0].PostOffice[0];
           setForm(f => ({
@@ -108,8 +215,7 @@ const Register = () => {
             city: postOffice.District || postOffice.Division,
             state: postOffice.State
           }));
-          
-          // Create address suggestions from post offices
+
           const suggestions = data[0].PostOffice.map(po => ({
             name: po.Name,
             district: po.District,
@@ -128,7 +234,6 @@ const Register = () => {
     }
   };
 
-  // Handle pincode change
   useEffect(() => {
     if (form.pincode.length === 6) {
       fetchAddressByPincode(form.pincode);
@@ -137,7 +242,6 @@ const Register = () => {
     }
   }, [form.pincode]);
 
-  // Handle profile picture preview
   const handleProfilePicChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -159,7 +263,6 @@ const Register = () => {
     setError('');
   };
 
-  // Select address suggestion
   const selectAddressSuggestion = (suggestion) => {
     setForm(f => ({
       ...f,
@@ -171,7 +274,7 @@ const Register = () => {
   };
 
   const validateStep = (step) => {
-    switch(step) {
+    switch (step) {
       case 1:
         if (!form.name.trim()) {
           setError('Full name is required');
@@ -264,6 +367,17 @@ const Register = () => {
         ]
       : [];
 
+    // Prepare vendor categories data
+    const vendorCategoriesData = {
+      superCategories: selectedSuperCategories,
+      subCategories: selectedSubCategories,
+      // Flat array of all selected category IDs for backward compatibility
+      allSelectedCategories: [
+        ...selectedSuperCategories,
+        ...Object.values(selectedSubCategories).flat()
+      ]
+    };
+
     const extraPayload = {
       mobileNumber: form.mobileNumber,
       alternateMobileNumber: form.alternateMobileNumber,
@@ -272,6 +386,7 @@ const Register = () => {
       addresses,
       businessName: form.businessName,
       businessType: form.businessType,
+      vendorCategoriesRequested: vendorCategoriesData,
     };
 
     const res = await register(
@@ -288,9 +403,8 @@ const Register = () => {
       return;
     }
 
-    // Show success modal
     setShowSuccessModal(true);
-    
+
     if (form.role === 'vendor') {
       setSuccessMsg(
         'Vendor application submitted! Admin approval is required before you can sell.'
@@ -309,7 +423,6 @@ const Register = () => {
   const SuccessModal = () => (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transform animate-scaleIn">
-        {/* Success Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
             <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,19 +430,17 @@ const Register = () => {
             </svg>
           </div>
         </div>
-        
-        {/* Content */}
+
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             🎉 Registration Successful!
           </h2>
           <p className="text-gray-600 mb-6">
-            {form.role === 'vendor' 
+            {form.role === 'vendor'
               ? 'Your vendor application has been submitted. Admin approval is required before you can start selling.'
               : 'Welcome aboard! Your account has been created successfully.'}
           </p>
-          
-          {/* User Info Summary */}
+
           <div className="bg-blue-50 rounded-xl p-4 mb-6 text-left">
             <div className="flex items-center gap-3 mb-3">
               {profilePicPreview ? (
@@ -345,9 +456,8 @@ const Register = () => {
               </div>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                form.role === 'vendor' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-              }`}>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${form.role === 'vendor' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+                }`}>
                 {form.role === 'vendor' ? '🏪 Vendor' : '👤 Customer'}
               </span>
               {form.role === 'vendor' && (
@@ -357,8 +467,7 @@ const Register = () => {
               )}
             </div>
           </div>
-          
-          {/* Redirect Info */}
+
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <span>Redirecting to login page...</span>
@@ -373,12 +482,9 @@ const Register = () => {
     <div className="flex items-center justify-center mb-8">
       {[1, 2, 3].map((step, index) => (
         <div key={step} className="flex items-center">
-          <div 
-            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 ${
-              currentStep >= step 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                : 'bg-gray-100 text-gray-400'
-            }`}
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 ${currentStep >= step ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-gray-100 text-gray-400'
+              }`}
           >
             {currentStep > step ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,21 +495,282 @@ const Register = () => {
             )}
           </div>
           {index < 2 && (
-            <div className={`w-16 h-1 mx-2 rounded transition-all duration-300 ${
-              currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
-            }`} />
+            <div className={`w-16 h-1 mx-2 rounded transition-all duration-300 ${currentStep > step ? 'bg-blue-600' : 'bg-gray-200'
+              }`} />
           )}
         </div>
       ))}
     </div>
   );
 
-  // Step Labels
+  // Vendor Category Selection Component
+  const VendorCategorySelection = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-semibold text-gray-700">
+          Select Categories to Sell In
+        </label>
+        {getTotalSelectedCount() > 0 && (
+          <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+            {getTotalSelectedCount()} selected
+          </span>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-500">
+        Select one or more main categories, then choose specific sub-categories within each
+      </p>
+
+      {/* Super Categories Grid */}
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+        {superCategories.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <svg className="w-12 h-12 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <p className="text-sm">Loading categories...</p>
+          </div>
+        ) : (
+          superCategories.map((superCat) => {
+            const subCats = getSubCategories(superCat._id);
+            const isSelected = selectedSuperCategories.includes(superCat._id);
+            const isExpanded = expandedSuperCategories.includes(superCat._id);
+            const selectedSubsCount = (selectedSubCategories[superCat._id] || []).length;
+
+            return (
+              <div
+                key={superCat._id}
+                className={`border-2 rounded-xl overflow-hidden transition-all duration-200 ${isSelected
+                    ? 'border-blue-500 bg-blue-50/50'
+                    : 'border-gray-200 hover:border-gray-300'
+                  }`}
+              >
+                {/* Super Category Header */}
+                <div
+                  className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'
+                    }`}
+                >
+                  {/* Checkbox */}
+                  <div
+                    onClick={() => handleSuperCategoryToggle(superCat._id)}
+                    className="flex-shrink-0"
+                  >
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${isSelected
+                        ? 'bg-blue-600 border-blue-600'
+                        : 'border-gray-300 hover:border-blue-400'
+                      }`}>
+                      {isSelected && (
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Category Image */}
+                  <div
+                    onClick={() => handleSuperCategoryToggle(superCat._id)}
+                    className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0"
+                  >
+                    {superCat.image ? (
+                      <img src={superCat.image} alt={superCat.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Category Info */}
+                  <div
+                    onClick={() => handleSuperCategoryToggle(superCat._id)}
+                    className="flex-1 min-w-0"
+                  >
+                    <h4 className="font-medium text-gray-800 truncate">{superCat.name}</h4>
+                    <p className="text-xs text-gray-500">
+                      {subCats.length} sub-categories
+                      {selectedSubsCount > 0 && (
+                        <span className="text-blue-600 ml-1">• {selectedSubsCount} selected</span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Expand Button */}
+                  {isSelected && subCats.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleExpandSuperCategory(superCat._id);
+                      }}
+                      className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors"
+                    >
+                      <svg
+                        className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Sub Categories */}
+                {isSelected && isExpanded && subCats.length > 0 && (
+                  <div className="border-t border-blue-200 bg-white p-3">
+                    {/* Select All / Deselect All */}
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-100">
+                      <span className="text-xs font-medium text-gray-600">Sub-categories</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => selectAllSubCategories(superCat._id)}
+                          className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          Select All
+                        </button>
+                        <span className="text-gray-300">|</span>
+                        <button
+                          type="button"
+                          onClick={() => deselectAllSubCategories(superCat._id)}
+                          className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Sub Categories Grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {subCats.map((subCat) => {
+                        const isSubSelected = (selectedSubCategories[superCat._id] || []).includes(subCat._id);
+
+                        return (
+                          <label
+                            key={subCat._id}
+                            className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${isSubSelected
+                                ? 'bg-blue-100 border border-blue-300'
+                                : 'bg-gray-50 border border-transparent hover:bg-gray-100'
+                              }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSubSelected}
+                              onChange={() => handleSubCategoryToggle(superCat._id, subCat._id)}
+                              className="sr-only"
+                            />
+                            <div className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${isSubSelected
+                                ? 'bg-blue-600 border-blue-600'
+                                : 'border-gray-300'
+                              }`}>
+                              {isSubSelected && (
+                                <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+
+                            {/* Sub Category Image */}
+                            <div className="w-6 h-6 rounded bg-gray-200 overflow-hidden flex-shrink-0">
+                              {subCat.image ? (
+                                <img src={subCat.image} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400" />
+                              )}
+                            </div>
+
+                            <span className={`text-xs truncate ${isSubSelected ? 'text-blue-800 font-medium' : 'text-gray-700'}`}>
+                              {subCat.name}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* No sub-categories message */}
+                {isSelected && isExpanded && subCats.length === 0 && (
+                  <div className="border-t border-blue-200 bg-white p-4 text-center">
+                    <p className="text-xs text-gray-500">No sub-categories available</p>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Selected Summary */}
+      {selectedSuperCategories.length > 0 && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-green-800">Categories Selected</p>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {selectedSuperCategories.map(catId => {
+                  const cat = superCategories.find(c => c._id === catId);
+                  const subCount = (selectedSubCategories[catId] || []).length;
+                  return (
+                    <span
+                      key={catId}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-green-300 rounded-lg text-xs text-green-700"
+                    >
+                      {cat?.name}
+                      {subCount > 0 && (
+                        <span className="bg-green-200 text-green-800 px-1.5 py-0.5 rounded-full text-[10px] font-medium">
+                          +{subCount}
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleSuperCategoryToggle(catId)}
+                        className="ml-0.5 hover:text-red-600"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Scrollbar Style */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
+    </div>
+  );
+
   const stepLabels = ['Basic Info', 'Security', 'Address & Profile'];
 
   return (
     <>
-      {/* Custom CSS for animations */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -422,11 +789,9 @@ const Register = () => {
         .animate-slideUp { animation: slideUp 0.4s ease-out; }
       `}</style>
 
-      {/* Success Modal */}
       {showSuccessModal && <SuccessModal />}
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 px-4">
-        {/* Background Decorations */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl"></div>
@@ -453,10 +818,8 @@ const Register = () => {
             <p className="text-gray-500">Join thousands of happy customers today</p>
           </div>
 
-          {/* Step Indicator */}
           <StepIndicator />
 
-          {/* Step Labels */}
           <div className="flex justify-center mb-6">
             <span className="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
               Step {currentStep}: {stepLabels[currentStep - 1]}
@@ -465,7 +828,6 @@ const Register = () => {
 
           {/* Main Card */}
           <div className="bg-white rounded-3xl shadow-xl shadow-blue-100/50 border border-blue-100 overflow-hidden animate-slideUp">
-            {/* Error Message */}
             {error && (
               <div className="mx-6 mt-6 flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 animate-fadeIn">
                 <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
@@ -487,11 +849,10 @@ const Register = () => {
                       I want to register as
                     </label>
                     <div className="grid grid-cols-2 gap-4">
-                      <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        form.role === 'user' 
-                          ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100' 
+                      <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${form.role === 'user'
+                          ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
                           : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'
-                      }`}>
+                        }`}>
                         <input
                           type="radio"
                           name="role"
@@ -500,9 +861,8 @@ const Register = () => {
                           onChange={handleChange}
                           className="sr-only"
                         />
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 ${
-                          form.role === 'user' ? 'bg-blue-500' : 'bg-gray-200'
-                        }`}>
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 ${form.role === 'user' ? 'bg-blue-500' : 'bg-gray-200'
+                          }`}>
                           <svg className={`w-7 h-7 ${form.role === 'user' ? 'text-white' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
@@ -518,11 +878,10 @@ const Register = () => {
                         )}
                       </label>
 
-                      <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                        form.role === 'vendor' 
-                          ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100' 
+                      <label className={`relative flex flex-col items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${form.role === 'vendor'
+                          ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-100'
                           : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'
-                      }`}>
+                        }`}>
                         <input
                           type="radio"
                           name="role"
@@ -531,9 +890,8 @@ const Register = () => {
                           onChange={handleChange}
                           className="sr-only"
                         />
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 ${
-                          form.role === 'vendor' ? 'bg-blue-500' : 'bg-gray-200'
-                        }`}>
+                        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 ${form.role === 'vendor' ? 'bg-blue-500' : 'bg-gray-200'
+                          }`}>
                           <svg className={`w-7 h-7 ${form.role === 'vendor' ? 'text-white' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                           </svg>
@@ -677,19 +1035,17 @@ const Register = () => {
                           className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                         >
                           <option value="">Select business type</option>
-                          <option value="Electronics">Electronics</option>
-                          <option value="Fashion">Fashion & Clothing</option>
-                          <option value="Home & Garden">Home & Garden</option>
-                          <option value="Beauty">Beauty & Personal Care</option>
-                          <option value="Sports">Sports & Outdoors</option>
-                          <option value="Books">Books & Stationery</option>
-                          <option value="Food">Food & Groceries</option>
-                          <option value="Toys">Toys & Games</option>
-                          <option value="Health">Health & Wellness</option>
-                          <option value="Automotive">Automotive</option>
+                          <option value="Individual">Individual / Sole Proprietor</option>
+                          <option value="Partnership">Partnership</option>
+                          <option value="LLP">LLP</option>
+                          <option value="Private Limited">Private Limited</option>
+                          <option value="Public Limited">Public Limited</option>
                           <option value="Other">Other</option>
                         </select>
                       </div>
+
+                      {/* Vendor Categories Selection - Improved */}
+                      <VendorCategorySelection />
                     </div>
                   )}
                 </div>
@@ -734,22 +1090,20 @@ const Register = () => {
                         )}
                       </button>
                     </div>
-                    {/* Password Strength Indicator */}
                     {form.password && (
                       <div className="mt-2">
                         <div className="flex gap-1">
                           {[1, 2, 3, 4].map((level) => (
                             <div
                               key={level}
-                              className={`h-1 flex-1 rounded-full ${
-                                form.password.length >= level * 3
+                              className={`h-1 flex-1 rounded-full ${form.password.length >= level * 3
                                   ? form.password.length >= 12
                                     ? 'bg-green-500'
                                     : form.password.length >= 8
-                                    ? 'bg-yellow-500'
-                                    : 'bg-red-500'
+                                      ? 'bg-yellow-500'
+                                      : 'bg-red-500'
                                   : 'bg-gray-200'
-                              }`}
+                                }`}
                             />
                           ))}
                         </div>
@@ -780,13 +1134,12 @@ const Register = () => {
                         placeholder="Re-enter your password"
                         value={form.confirmPassword}
                         onChange={handleChange}
-                        className={`w-full pl-12 pr-12 py-3 bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 ${
-                          form.confirmPassword && form.password !== form.confirmPassword
+                        className={`w-full pl-12 pr-12 py-3 bg-gray-50 border rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 ${form.confirmPassword && form.password !== form.confirmPassword
                             ? 'border-red-300 bg-red-50'
                             : form.confirmPassword && form.password === form.confirmPassword
-                            ? 'border-green-300 bg-green-50'
-                            : 'border-gray-200'
-                        }`}
+                              ? 'border-green-300 bg-green-50'
+                              : 'border-gray-200'
+                          }`}
                       />
                       <button
                         type="button"
@@ -1059,11 +1412,10 @@ const Register = () => {
                           onChange={handleChange}
                           className="sr-only"
                         />
-                        <div className={`w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${
-                          form.acceptTerms 
-                            ? 'bg-blue-600 border-blue-600' 
+                        <div className={`w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${form.acceptTerms
+                            ? 'bg-blue-600 border-blue-600'
                             : 'border-gray-300 group-hover:border-blue-400'
-                        }`}>
+                          }`}>
                           {form.acceptTerms && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -1114,11 +1466,10 @@ const Register = () => {
                   <button
                     type="submit"
                     disabled={auth.loading || !form.acceptTerms}
-                    className={`flex items-center gap-2 px-8 py-3 font-semibold rounded-xl shadow-lg transition-all duration-200 ${
-                      auth.loading || !form.acceptTerms
+                    className={`flex items-center gap-2 px-8 py-3 font-semibold rounded-xl shadow-lg transition-all duration-200 ${auth.loading || !form.acceptTerms
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-blue-200'
-                    }`}
+                      }`}
                   >
                     {auth.loading ? (
                       <>

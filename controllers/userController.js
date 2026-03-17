@@ -25,6 +25,8 @@ exports.updateMe = async (req, res) => {
       addresses,
       currentPassword,
       newPassword,
+      businessName,
+      businessType,
     } = req.body;
 
     const user = await User.findById(userId);
@@ -59,6 +61,14 @@ exports.updateMe = async (req, res) => {
 
     if (dateOfBirth !== undefined) {
       user.dateOfBirth = dateOfBirth ? new Date(dateOfBirth) : null;
+    }
+
+    if (businessName !== undefined) {
+      user.businessName = businessName;
+    }
+
+    if (businessType !== undefined) {
+      user.businessType = businessType;
     }
 
     // Profile picture (Cloudinary)

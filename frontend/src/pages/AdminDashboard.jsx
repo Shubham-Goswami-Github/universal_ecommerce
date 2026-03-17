@@ -5,8 +5,6 @@ import axiosClient from '../api/axiosClient';
 
 // Charts
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,
@@ -18,7 +16,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 
@@ -96,6 +93,26 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
   ),
+  Menu: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  ),
+  Close: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  ),
+  PanelLeftClose: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5h16v14H4zM9 5v14M15 9l-3 3 3 3" />
+    </svg>
+  ),
+  PanelLeftOpen: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5h16v14H4zM9 5v14M12 9l3 3-3 3" />
+    </svg>
+  ),
 };
 
 /* -------------------------------------------------------------------------- */
@@ -126,6 +143,63 @@ const COLORS = {
 };
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+const SIDEBAR_STORAGE_KEY = 'admin-dashboard-sidebar-collapsed';
+
+const formatNumber = (value) => Number(value || 0).toLocaleString('en-IN');
+const formatCurrency = (value) => `₹${formatNumber(value)}`;
+const getChangeType = (value) => (Number(value || 0) >= 0 ? 'increase' : 'decrease');
+const getRangeLabel = (range) => {
+  switch (range) {
+    case '7days':
+      return 'last 7 days';
+    case '90days':
+      return 'last 90 days';
+    case '365days':
+      return 'last 12 months';
+    default:
+      return 'last 30 days';
+  }
+};
+
+const getDefaultStats = () => ({
+  meta: {},
+  overview: {
+    totalUsers: 0,
+    totalVendors: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    pendingOrders: 0,
+    pendingApprovals: 0,
+    pendingVendorRequests: 0,
+  },
+  periodSummary: {
+    revenue: 0,
+    orders: 0,
+    users: 0,
+    vendors: 0,
+  },
+  quickStats: {
+    activeUsers: 0,
+    activeVendors: 0,
+    avgOrderValue: 0,
+    rangeRevenue: 0,
+  },
+  changes: {
+    users: 0,
+    vendors: 0,
+    orders: 0,
+    revenue: 0,
+  },
+  salesChart: [],
+  registrationChart: [],
+  orderStatusChart: [],
+  categoryChart: [],
+  topProducts: [],
+  topVendors: [],
+  recentActivity: [],
+  revenueByDay: [],
+});
 
 /* -------------------------------------------------------------------------- */
 /* STAT CARD COMPONENT                                                        */
@@ -233,9 +307,10 @@ function TopItemRow({ rank, name, value, subtext, image }) {
 /* DASHBOARD OVERVIEW COMPONENT                                               */
 /* -------------------------------------------------------------------------- */
 function DashboardOverview({ token }) {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState(getDefaultStats());
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('30days');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchDashboardStats();
@@ -244,100 +319,26 @@ function DashboardOverview({ token }) {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
+      setError('');
       const res = await axiosClient.get(`/api/admin/dashboard-stats?range=${dateRange}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setStats(res.data);
+      setStats({
+        ...getDefaultStats(),
+        ...res.data,
+        overview: { ...getDefaultStats().overview, ...(res.data?.overview || {}) },
+        periodSummary: { ...getDefaultStats().periodSummary, ...(res.data?.periodSummary || {}) },
+        quickStats: { ...getDefaultStats().quickStats, ...(res.data?.quickStats || {}) },
+        changes: { ...getDefaultStats().changes, ...(res.data?.changes || {}) },
+      });
     } catch (err) {
       console.error('fetchDashboardStats', err);
-      // Fallback to mock data for demonstration
-      setStats(getMockData());
+      setStats(getDefaultStats());
+      setError('Dashboard stats load nahi ho paaye. Backend response check karo.');
     } finally {
       setLoading(false);
     }
   };
-
-  // Mock data for demonstration (remove when API is ready)
-  const getMockData = () => ({
-    overview: {
-      totalUsers: 1234,
-      totalVendors: 56,
-      totalProducts: 892,
-      totalOrders: 3456,
-      totalRevenue: 456789,
-      pendingOrders: 23,
-      pendingApprovals: 12,
-      pendingVendorRequests: 5,
-    },
-    changes: {
-      users: 12.5,
-      vendors: 8.3,
-      orders: 15.2,
-      revenue: 22.4,
-    },
-    salesChart: [
-      { date: 'Jan', sales: 4000, orders: 240, users: 45 },
-      { date: 'Feb', sales: 3000, orders: 198, users: 38 },
-      { date: 'Mar', sales: 5000, orders: 320, users: 62 },
-      { date: 'Apr', sales: 4500, orders: 280, users: 55 },
-      { date: 'May', sales: 6000, orders: 390, users: 78 },
-      { date: 'Jun', sales: 5500, orders: 350, users: 70 },
-      { date: 'Jul', sales: 7000, orders: 450, users: 95 },
-    ],
-    registrationChart: [
-      { date: 'Jan', users: 45, vendors: 5 },
-      { date: 'Feb', users: 38, vendors: 3 },
-      { date: 'Mar', users: 62, vendors: 8 },
-      { date: 'Apr', users: 55, vendors: 6 },
-      { date: 'May', users: 78, vendors: 10 },
-      { date: 'Jun', users: 70, vendors: 7 },
-      { date: 'Jul', users: 95, vendors: 12 },
-    ],
-    orderStatusChart: [
-      { name: 'Delivered', value: 65 },
-      { name: 'Processing', value: 15 },
-      { name: 'Shipped', value: 12 },
-      { name: 'Pending', value: 5 },
-      { name: 'Cancelled', value: 3 },
-    ],
-    categoryChart: [
-      { name: 'Electronics', value: 35 },
-      { name: 'Fashion', value: 28 },
-      { name: 'Home', value: 18 },
-      { name: 'Beauty', value: 12 },
-      { name: 'Others', value: 7 },
-    ],
-    topProducts: [
-      { id: 1, name: 'Wireless Earbuds Pro', sales: 234, revenue: 23400, image: 'https://via.placeholder.com/40' },
-      { id: 2, name: 'Smart Watch Series 5', sales: 189, revenue: 37800, image: 'https://via.placeholder.com/40' },
-      { id: 3, name: 'Laptop Stand Aluminum', sales: 156, revenue: 7800, image: 'https://via.placeholder.com/40' },
-      { id: 4, name: 'USB-C Hub 7-in-1', sales: 142, revenue: 5680, image: 'https://via.placeholder.com/40' },
-      { id: 5, name: 'Mechanical Keyboard RGB', sales: 128, revenue: 12800, image: 'https://via.placeholder.com/40' },
-    ],
-    topVendors: [
-      { id: 1, name: 'TechGadgets Store', orders: 456, revenue: 89000 },
-      { id: 2, name: 'Fashion Hub', orders: 389, revenue: 67500 },
-      { id: 3, name: 'Home Essentials', orders: 312, revenue: 45600 },
-      { id: 4, name: 'Beauty Palace', orders: 278, revenue: 34200 },
-      { id: 5, name: 'Sports Zone', orders: 234, revenue: 28900 },
-    ],
-    recentActivity: [
-      { type: 'order', title: 'New order #ORD-1234', description: 'John Doe placed an order worth ₹2,340', time: '2 min ago' },
-      { type: 'user', title: 'New user registered', description: 'jane.doe@email.com joined the platform', time: '15 min ago' },
-      { type: 'vendor', title: 'Vendor application', description: 'TechMart submitted vendor application', time: '1 hour ago' },
-      { type: 'product', title: 'Product approved', description: 'Wireless Mouse Pro was approved', time: '2 hours ago' },
-      { type: 'order', title: 'Order delivered', description: 'Order #ORD-1230 was delivered successfully', time: '3 hours ago' },
-    ],
-    revenueByDay: [
-      { day: 'Mon', revenue: 12500 },
-      { day: 'Tue', revenue: 15800 },
-      { day: 'Wed', revenue: 14200 },
-      { day: 'Thu', revenue: 18900 },
-      { day: 'Fri', revenue: 22100 },
-      { day: 'Sat', revenue: 25600 },
-      { day: 'Sun', revenue: 19800 },
-    ],
-  });
 
   if (loading) {
     return (
@@ -347,8 +348,6 @@ function DashboardOverview({ token }) {
     );
   }
 
-  if (!stats) return null;
-
   return (
     <div className="space-y-6">
       {/* Header with Date Range Filter */}
@@ -356,7 +355,7 @@ function DashboardOverview({ token }) {
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Dashboard Overview</h2>
           <p className="text-sm text-slate-500 mt-1">
-            Welcome back! Here's what's happening with your store.
+            Real-time admin analytics for {getRangeLabel(dateRange)}.
           </p>
         </div>
         <select
@@ -371,41 +370,49 @@ function DashboardOverview({ token }) {
         </select>
       </div>
 
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
       {/* Quick Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Revenue"
-          value={`₹${stats.overview.totalRevenue.toLocaleString()}`}
+          title="Revenue"
+          value={formatCurrency(stats.periodSummary.revenue)}
           change={stats.changes.revenue}
-          changeType="increase"
+          changeType={getChangeType(stats.changes.revenue)}
           icon={Icons.Revenue}
           color="blue"
+          subtitle={`Lifetime ${formatCurrency(stats.overview.totalRevenue)}`}
         />
         <StatCard
-          title="Total Orders"
-          value={stats.overview.totalOrders.toLocaleString()}
+          title="Orders"
+          value={formatNumber(stats.periodSummary.orders)}
           change={stats.changes.orders}
-          changeType="increase"
+          changeType={getChangeType(stats.changes.orders)}
           icon={Icons.Orders}
           color="green"
-          subtitle={`${stats.overview.pendingOrders} pending`}
+          subtitle={`${formatNumber(stats.overview.pendingOrders)} pending right now`}
         />
         <StatCard
-          title="Total Users"
-          value={stats.overview.totalUsers.toLocaleString()}
+          title="New Users"
+          value={formatNumber(stats.periodSummary.users)}
           change={stats.changes.users}
-          changeType="increase"
+          changeType={getChangeType(stats.changes.users)}
           icon={Icons.Users}
           color="purple"
+          subtitle={`Lifetime ${formatNumber(stats.overview.totalUsers)}`}
         />
         <StatCard
-          title="Total Vendors"
-          value={stats.overview.totalVendors.toLocaleString()}
+          title="New Vendors"
+          value={formatNumber(stats.periodSummary.vendors)}
           change={stats.changes.vendors}
-          changeType="increase"
+          changeType={getChangeType(stats.changes.vendors)}
           icon={Icons.Vendor}
           color="orange"
-          subtitle={`${stats.overview.pendingVendorRequests} pending`}
+          subtitle={`${formatNumber(stats.overview.pendingVendorRequests)} requests pending`}
         />
       </div>
 
@@ -705,12 +712,12 @@ function DashboardOverview({ token }) {
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Stats</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <MiniStatCard label="Total Products" value={stats.overview.totalProducts} />
-            <MiniStatCard label="Active Users" value={Math.round(stats.overview.totalUsers * 0.7)} />
-            <MiniStatCard label="Active Vendors" value={Math.round(stats.overview.totalVendors * 0.85)} />
-            <MiniStatCard label="Pending Orders" value={stats.overview.pendingOrders} color="text-amber-600" />
-            <MiniStatCard label="This Month" value={`₹${Math.round(stats.overview.totalRevenue * 0.15).toLocaleString()}`} color="text-emerald-600" />
-            <MiniStatCard label="Avg Order Value" value={`₹${Math.round(stats.overview.totalRevenue / stats.overview.totalOrders)}`} />
+            <MiniStatCard label="Total Products" value={formatNumber(stats.overview.totalProducts)} />
+            <MiniStatCard label="Active Users" value={formatNumber(stats.quickStats.activeUsers)} />
+            <MiniStatCard label="Active Vendors" value={formatNumber(stats.quickStats.activeVendors)} />
+            <MiniStatCard label="Pending Orders" value={formatNumber(stats.overview.pendingOrders)} color="text-amber-600" />
+            <MiniStatCard label="Range Revenue" value={formatCurrency(stats.quickStats.rangeRevenue)} color="text-emerald-600" />
+            <MiniStatCard label="Avg Order Value" value={formatCurrency(stats.quickStats.avgOrderValue)} />
           </div>
         </div>
       </div>
@@ -728,12 +735,20 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [settings, setSettings] = useState(null);
   const [loadingSettings, setLoadingSettings] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+  });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     fetchSettings();
   }, [token]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const fetchSettings = async () => {
     try {
@@ -761,13 +776,28 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleTabChange = (tabKey) => {
+    setActiveTab(tabKey);
+    setMobileSidebarOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
+      {mobileSidebarOpen && (
+        <button
+          className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Close sidebar"
+        />
+      )}
       <div className="flex">
         {/* ================= SIDEBAR ================= */}
         <aside
-          className={`fixed left-0 top-0 h-screen bg-white border-r border-slate-200 shadow-sm z-30 transition-all duration-300 ${
-            sidebarCollapsed ? 'w-20' : 'w-64'
+          className={`fixed left-0 top-0 h-screen bg-white border-r border-slate-200 shadow-sm z-40 transition-all duration-300 ${
+            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } ${
+            sidebarCollapsed ? 'lg:w-24' : 'lg:w-72'
+          } w-72 lg:translate-x-0
           }`}
         >
           {/* Logo / Brand */}
@@ -782,11 +812,15 @@ export default function AdminDashboard() {
             )}
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+              className="hidden lg:inline-flex p-2 rounded-lg hover:bg-slate-100 text-slate-500"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {sidebarCollapsed ? <Icons.PanelLeftOpen /> : <Icons.PanelLeftClose />}
+            </button>
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="inline-flex lg:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+            >
+              <Icons.Close />
             </button>
           </div>
 
@@ -816,12 +850,12 @@ export default function AdminDashboard() {
               return (
                 <button
                   key={t.key}
-                  onClick={() => setActiveTab(t.key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  onClick={() => handleTabChange(t.key)}
+                  className={`w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     activeTab === t.key
                       ? 'bg-blue-50 text-blue-600 shadow-sm'
                       : 'text-slate-600 hover:bg-slate-100'
-                  }`}
+                  } ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
                   title={sidebarCollapsed ? t.label : undefined}
                 >
                   <Icon />
@@ -847,12 +881,25 @@ export default function AdminDashboard() {
         {/* ================= MAIN CONTENT ================= */}
         <main
           className={`flex-1 min-h-screen transition-all duration-300 ${
-            sidebarCollapsed ? 'ml-20' : 'ml-64'
+            sidebarCollapsed ? 'lg:ml-24' : 'lg:ml-72'
           }`}
         >
           {/* Top Header */}
           <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
-            <div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileSidebarOpen(true)}
+                className="inline-flex lg:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-600"
+              >
+                <Icons.Menu />
+              </button>
+              <button
+                onClick={() => setSidebarCollapsed((current) => !current)}
+                className="hidden lg:inline-flex p-2 rounded-lg hover:bg-slate-100 text-slate-600"
+                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {sidebarCollapsed ? <Icons.PanelLeftOpen /> : <Icons.PanelLeftClose />}
+              </button>
               <h1 className="text-lg font-semibold text-slate-900">
                 {TABS.find((t) => t.key === activeTab)?.label || 'Dashboard'}
               </h1>

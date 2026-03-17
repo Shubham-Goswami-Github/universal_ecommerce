@@ -1,6 +1,62 @@
 const mongoose = require('mongoose');
 const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
+const User = require('../models/userModel'); // ⭐ ADD THIS
+
+const toTrimmedString = (value) =>
+  typeof value === 'string' ? value.trim() : value;
+
+const parseBoolean = (value) => value === true || value === 'true';
+
+const parseNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const parseKeyFeatures = (value) => {
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+};
+
+const calculateFinalPrice = ({
+  sellingPrice,
+  discountType,
+  discountValue,
+  gstApplicable,
+  gstPercentage,
+  taxInclusive,
+}) => {
+  let finalPrice = parseNumber(sellingPrice);
+
+  if (discountType === 'percentage') {
+    finalPrice -= (finalPrice * parseNumber(discountValue)) / 100;
+  }
+
+  if (discountType === 'flat') {
+    finalPrice -= parseNumber(discountValue);
+  }
+
+  if (gstApplicable && !taxInclusive) {
+    finalPrice += (finalPrice * parseNumber(gstPercentage)) / 100;
+  }
+
+  return Math.max(0, finalPrice);
+};
+
+const hasAllowedAllAccess = (approvedCategories = []) =>
+  Array.isArray(approvedCategories) &&
+  approvedCategories.some((value) => value?.toString() === 'AllowedAll');
 
 /**
  * ================================
@@ -10,23 +66,24 @@ const Category = require('../models/categoryModel');
 exports.createProduct = async (req, res) => {
   try {
     const vendorId = req.user?.userId;
+
     if (!vendorId) {
       return res.status(401).json({ message: 'Authentication required' });
     }
+
+    const user = await User.findById(vendorId);
 
     const {
       name,
       description = '',
       category,
 
-      // BASIC INFO
       shortTitle,
       brandName,
       productType,
       countryOfOrigin,
       hsnCode,
 
-      // PRICING
       mrp,
       sellingPrice,
       discountType,
@@ -35,19 +92,15 @@ exports.createProduct = async (req, res) => {
       gstPercentage,
       taxInclusive,
 
-      // STOCK
       totalStock,
       lowStockAlertQty,
       allowBackorders,
       maxPurchaseQty,
       minPurchaseQty,
 
-      // DESCRIPTION
-      shortDescription,
       fullDescription,
       keyFeatures,
 
-      // RETURNS / WARRANTY
       returnAvailable,
       returnDays,
       warrantyAvailable,
@@ -55,7 +108,6 @@ exports.createProduct = async (req, res) => {
       warrantyType,
     } = req.body;
 
-    /* ================= VALIDATION ================= */
     if (!name || !sellingPrice || !category) {
       return res.status(400).json({
         message: 'Name, selling price and category are required',
@@ -71,27 +123,37 @@ exports.createProduct = async (req, res) => {
       return res.status(400).json({ message: 'Category not found' });
     }
 
-    /* ================= FINAL PRICE ================= */
-    let finalPrice = Number(sellingPrice);
-
-    if (discountType === 'percentage') {
-      finalPrice -= (finalPrice * Number(discountValue || 0)) / 100;
+    // 🔥 FINAL CATEGORY PERMISSION CHECK
+    if (!user.vendorCategoriesApproved || user.vendorCategoriesApproved.length === 0) {
+      return res.status(403).json({
+        message: 'No approved categories. Please wait for admin approval.',
+      });
     }
 
-    if (discountType === 'flat') {
-      finalPrice -= Number(discountValue || 0);
+    const isAllowed =
+      hasAllowedAllAccess(user.vendorCategoriesApproved) ||
+      user.vendorCategoriesApproved
+        .map((id) => id.toString())
+        .includes(category);
+
+    if (!isAllowed) {
+      return res.status(403).json({
+        message: 'You are not allowed to post in this category',
+      });
     }
 
-    if (gstApplicable === 'true' && taxInclusive === 'false') {
-      finalPrice += (finalPrice * Number(gstPercentage || 0)) / 100;
-    }
+    const finalPrice = calculateFinalPrice({
+      sellingPrice,
+      discountType,
+      discountValue,
+      gstApplicable: gstApplicable === 'true',
+      gstPercentage,
+      taxInclusive: taxInclusive === 'true',
+    });
 
-    if (finalPrice < 0) finalPrice = 0;
-
-    /* ================= IMAGES ================= */
     const images = req.files?.map((file) => file.path) || [];
+    const hasWarranty = warrantyAvailable === 'true' || warrantyAvailable === true;
 
-    /* ================= CREATE PRODUCT ================= */
     const product = await Product.create({
       name: name.trim(),
       shortTitle,
@@ -102,41 +164,29 @@ exports.createProduct = async (req, res) => {
 
       shortDescription: description.trim(),
       fullDescription,
-      keyFeatures: Array.isArray(keyFeatures)
-      ? keyFeatures
-      : keyFeatures
-      ? JSON.parse(keyFeatures)
-      : [],
+      keyFeatures: parseKeyFeatures(keyFeatures) || [],
 
-
-      mrp: Number(mrp) || 0,
-      sellingPrice: Number(sellingPrice),
+      mrp: parseNumber(mrp),
+      sellingPrice: parseNumber(sellingPrice),
       discountType,
-      discountValue: Number(discountValue) || 0,
+      discountValue: parseNumber(discountValue),
       finalPrice,
 
       gstApplicable: gstApplicable === 'true',
-      gstPercentage: Number(gstPercentage) || 0,
+      gstPercentage: parseNumber(gstPercentage),
       taxInclusive: taxInclusive === 'true',
 
-      totalStock: Number(totalStock) || 0,
-      lowStockAlertQty: Number(lowStockAlertQty) || 0,
+      totalStock: parseNumber(totalStock),
+      lowStockAlertQty: parseNumber(lowStockAlertQty),
       allowBackorders: allowBackorders === 'true',
-      maxPurchaseQty: Number(maxPurchaseQty) || 1,
-      minPurchaseQty: Number(minPurchaseQty) || 1,
+      maxPurchaseQty: parseNumber(maxPurchaseQty, 1),
+      minPurchaseQty: parseNumber(minPurchaseQty, 1),
 
       returnAvailable: returnAvailable === 'true',
-      returnDays: Number(returnDays) || 0,
-      warrantyAvailable: warrantyAvailable === 'true' || warrantyAvailable === true,
-warrantyPeriod:
-  warrantyAvailable === 'true' || warrantyAvailable === true
-    ? warrantyPeriod
-    : undefined,
-warrantyType:
-  warrantyAvailable === 'true' || warrantyAvailable === true
-    ? warrantyType
-    : undefined,
-
+      returnDays: parseNumber(returnDays),
+      warrantyAvailable: hasWarranty,
+      warrantyPeriod: hasWarranty ? warrantyPeriod : undefined,
+      warrantyType: hasWarranty ? warrantyType : undefined,
 
       category,
       images,
@@ -160,7 +210,6 @@ warrantyType:
   }
 };
 
-
 /**
  * ================================
  * UPDATE PRODUCT (VENDOR / ADMIN)
@@ -176,7 +225,6 @@ exports.updateProduct = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    // 🔥 VENDOR ACTIVE CHECK (AS REQUESTED)
     if (role === 'vendor' && !req.user.vendorActive) {
       return res.status(403).json({
         message: 'Vendor not active',
@@ -192,30 +240,34 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // vendor can edit only own product
-    if (role === 'vendor' && product.vendor.toString() !== userId) {
+    if (role === 'vendor' && product.vendor.toString() !== String(userId)) {
       return res.status(403).json({ message: 'Not allowed' });
     }
 
     const updates = { ...req.body };
+    let retainedImages = Array.isArray(product.images) ? [...product.images] : [];
 
-    // vendor field protected
     delete updates.vendor;
+    delete updates.productCode;
+    delete updates.sku;
+    delete updates.price;
+    delete updates.stock;
 
-    // sanitize price
-    if (updates.price !== undefined) {
-      if (Number.isNaN(Number(updates.price))) {
-        return res.status(400).json({ message: 'Invalid price' });
+    if (updates.existingImages !== undefined) {
+      try {
+        retainedImages = Array.isArray(updates.existingImages)
+          ? updates.existingImages
+          : JSON.parse(updates.existingImages);
+      } catch {
+        retainedImages = Array.isArray(product.images) ? [...product.images] : [];
       }
-      updates.price = Number(updates.price);
     }
 
-    // sanitize stock
-    if (updates.stock !== undefined) {
-      updates.stock = Number(updates.stock) || 0;
-    }
+    updates.keyFeatures = parseKeyFeatures(updates.keyFeatures);
 
-    // validate category
+    delete updates.existingImages;
+    delete updates.imagesToDelete;
+
     if (updates.category) {
       if (!mongoose.Types.ObjectId.isValid(updates.category)) {
         return res.status(400).json({ message: 'Invalid category ID' });
@@ -227,24 +279,115 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // 🔥 APPLY FIELD UPDATES
-    Object.keys(updates).forEach((key) => {
-      product[key] = updates[key];
+    const numericFields = [
+      'mrp',
+      'sellingPrice',
+      'discountValue',
+      'gstPercentage',
+      'totalStock',
+      'lowStockAlertQty',
+      'maxPurchaseQty',
+      'minPurchaseQty',
+      'returnDays',
+    ];
+
+    numericFields.forEach((field) => {
+      if (updates[field] !== undefined) {
+        updates[field] = parseNumber(updates[field]);
+      }
     });
 
-    // 🔥 ADD NEW CLOUDINARY IMAGES
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map((file) => file.path);
-      product.images.push(...newImages);
+    const booleanFields = [
+      'gstApplicable',
+      'taxInclusive',
+      'allowBackorders',
+      'returnAvailable',
+      'replacementAvailable',
+      'warrantyAvailable',
+      'isActive',
+    ];
+
+    booleanFields.forEach((field) => {
+      if (updates[field] !== undefined) {
+        updates[field] = parseBoolean(updates[field]);
+      }
+    });
+
+    [
+      'name',
+      'shortTitle',
+      'brandName',
+      'countryOfOrigin',
+      'hsnCode',
+      'shortDescription',
+      'fullDescription',
+      'usageInstructions',
+      'careInstructions',
+      'boxContents',
+      'warrantyPeriod',
+      'discountType',
+      'warrantyType',
+      'productType',
+      'stockStatus',
+      'availabilityStatus',
+    ].forEach((field) => {
+      if (updates[field] !== undefined) {
+        updates[field] = toTrimmedString(updates[field]);
+      }
+    });
+
+    const nextSellingPrice =
+      updates.sellingPrice !== undefined ? updates.sellingPrice : product.sellingPrice;
+    const nextDiscountType =
+      updates.discountType !== undefined ? updates.discountType : product.discountType;
+    const nextDiscountValue =
+      updates.discountValue !== undefined ? updates.discountValue : product.discountValue;
+    const nextGstApplicable =
+      updates.gstApplicable !== undefined ? updates.gstApplicable : product.gstApplicable;
+    const nextTaxInclusive =
+      updates.taxInclusive !== undefined ? updates.taxInclusive : product.taxInclusive;
+    const nextGstPercentage =
+      updates.gstPercentage !== undefined ? updates.gstPercentage : product.gstPercentage;
+
+    updates.finalPrice = calculateFinalPrice({
+      sellingPrice: nextSellingPrice,
+      discountType: nextDiscountType,
+      discountValue: nextDiscountValue,
+      gstApplicable: nextGstApplicable,
+      gstPercentage: nextGstPercentage,
+      taxInclusive: nextTaxInclusive,
+    });
+
+    if (updates.warrantyAvailable === false) {
+      updates.warrantyPeriod = undefined;
+      updates.warrantyType = undefined;
     }
 
-    // vendor edit → pending again
+    Object.keys(updates).forEach((key) => {
+      if (updates[key] !== undefined) {
+        product[key] = updates[key];
+      }
+    });
+
+    product.images = retainedImages;
+    if (req.files?.length) {
+      product.images.push(...req.files.map((file) => file.path));
+    }
+
     if (role === 'vendor') {
       product.status = 'pending';
       product.rejectionReason = '';
     }
 
     await product.save();
+    await product.populate({
+      path: 'category',
+      select: 'name type parent',
+      populate: {
+        path: 'parent',
+        select: 'name',
+      },
+    });
 
     return res.json({
       message: 'Product updated',
@@ -263,7 +406,8 @@ exports.updateProduct = async (req, res) => {
  * ================================
  * DELETE PRODUCT (VENDOR / ADMIN)
  * ================================
- */exports.deleteProduct = async (req, res) => {
+ */
+exports.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const userId = req.user?.userId;
@@ -273,7 +417,6 @@ exports.updateProduct = async (req, res) => {
       return res.status(401).json({ message: 'Authentication required' });
     }
 
-    // 🔥 VENDOR ACTIVE CHECK (AS REQUESTED)
     if (role === 'vendor' && !req.user.vendorActive) {
       return res.status(403).json({
         message: 'Vendor not active',
@@ -289,7 +432,7 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    if (role === 'vendor' && product.vendor.toString() !== userId) {
+    if (role === 'vendor' && product.vendor.toString() !== String(userId)) {
       return res.status(403).json({ message: 'Not allowed' });
     }
 
@@ -304,7 +447,6 @@ exports.updateProduct = async (req, res) => {
     });
   }
 };
-
 
 /**
  * ================================
@@ -405,7 +547,7 @@ exports.getPublicProductDetails = async (req, res) => {
     const userId = req.user?.userId;
     const role = req.user?.role;
 
-    if (userId && (role === 'admin' || product.vendor.toString() === userId)) {
+    if (userId && (role === 'admin' || product.vendor.toString() === String(userId))) {
       return res.json({ product });
     }
 
