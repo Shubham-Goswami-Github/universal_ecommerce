@@ -1,16 +1,33 @@
 // src/api/axiosClient.js
-import axios from 'axios';
+import axios from "axios";
+
+const BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:3000', // backend ka URL
+  baseURL: BASE_URL,
+  withCredentials: true, // future me cookies use kare toh helpful
 });
 
-axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// 🔐 Request interceptor (token attach)
+axiosClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ❌ Response interceptor (optional - error handle)
+axiosClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Error:", error?.response?.data || error.message);
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export default axiosClient;
