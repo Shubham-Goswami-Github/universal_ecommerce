@@ -68,6 +68,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/vendor', vendorRoutes);
+app.use('/api/vendors', vendorRoutes);
 
 /* ======================
    HEALTH CHECKS

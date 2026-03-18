@@ -1135,3 +1135,153 @@ exports.getDashboardStats = async (req, res) => {
   }
 };
 
+
+// ============================================
+// CATEGORY REQUESTS (Vendor Category Requests)
+// ============================================
+
+const CategoryRequest = require('../models/categoryRequestModel');
+
+// GET: all pending category requests
+exports.getPendingCategoryRequests = async (req, res) => {
+  try {
+    const requests = await CategoryRequest.find({ status: 'pending' })
+      .populate('vendor', 'name email businessName profilePicture mobileNumber')
+      .populate({
+        path: 'categories',
+        select: 'name type parent',
+        populate: { path: 'parent', select: 'name' }
+      })
+      .sort({ createdAt: -1 });
+
+    res.json({ requests });
+  } catch (error) {
+    console.error('Get category requests error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// POST: approve category request
+exports.approveCategoryRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const { response } = req.body; // optional admin response
+
+    const request = await CategoryRequest.findById(requestId)
+      .populate('categories', 'name');
+
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({ message: 'Request already processed' });
+    }
+
+    // Update request status
+    request.status = 'approved';
+    request.processedBy = req.user.userId;
+    request.processedAt = new Date();
+    request.adminResponse = response || 'Approved';
+    await request.save();
+
+    // Add categories to vendor's approved categories
+    const categoryIds = request.categories.map(c => c._id);
+    
+    await User.findByIdAndUpdate(request.vendor, {
+      $addToSet: { 
+        vendorCategoriesApproved: { $each: categoryIds } 
+      },
+      $pull: {
+        vendorCategoriesRequested: { $in: categoryIds },
+        vendorCategoriesRejected: { $in: categoryIds }
+      }
+    });
+
+    res.json({ 
+      message: 'Category request approved successfully', 
+      request 
+    });
+  } catch (error) {
+    console.error('Approve category request error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// POST: reject category request
+exports.rejectCategoryRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const { reason } = req.body;
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ message: 'Rejection reason is required' });
+    }
+
+    const request = await CategoryRequest.findById(requestId)
+      .populate('categories', 'name');
+
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({ message: 'Request already processed' });
+    }
+
+    // Update request status
+    request.status = 'rejected';
+    request.processedBy = req.user.userId;
+    request.processedAt = new Date();
+    request.adminResponse = reason.trim();
+    await request.save();
+
+    // Add to rejected categories in user model
+    const categoryIds = request.categories.map(c => c._id);
+    
+    await User.findByIdAndUpdate(request.vendor, {
+      $addToSet: { 
+        vendorCategoriesRejected: { $each: categoryIds } 
+      },
+      $pull: {
+        vendorCategoriesRequested: { $in: categoryIds }
+      }
+    });
+
+    res.json({ 
+      message: 'Category request rejected', 
+      request 
+    });
+  } catch (error) {
+    console.error('Reject category request error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// GET: all category requests (including processed) - for history
+exports.getAllCategoryRequests = async (req, res) => {
+  try {
+    const { status } = req.query; // optional filter: pending, approved, rejected
+    
+    const filter = {};
+    if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+      filter.status = status;
+    }
+
+    const requests = await CategoryRequest.find(filter)
+      .populate('vendor', 'name email businessName profilePicture')
+      .populate({
+        path: 'categories',
+        select: 'name type parent',
+        populate: { path: 'parent', select: 'name' }
+      })
+      .populate('processedBy', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json({ requests });
+  } catch (error) {
+    console.error('Get all category requests error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+

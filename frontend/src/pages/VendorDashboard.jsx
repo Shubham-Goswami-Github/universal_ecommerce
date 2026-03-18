@@ -214,7 +214,7 @@ const VendorDashboard = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-72 bg-white border-r border-slate-200 z-50 transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-16 lg:top-[72px] left-0 h-[calc(100vh-4rem)] lg:h-[calc(100vh-72px)] w-72 bg-white border-r border-slate-200 z-40 transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Sidebar Header */}
         <div className="h-16 border-b border-slate-200 flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -318,7 +318,7 @@ const VendorDashboard = () => {
       {/* Main Content */}
       <div className="lg:ml-72">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+        <header className="sticky top-16 lg:top-[72px] z-30 bg-white border-b border-slate-200">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6">
             <div className="flex items-center gap-4">
               <button 

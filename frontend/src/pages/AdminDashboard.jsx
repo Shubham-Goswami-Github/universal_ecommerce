@@ -793,7 +793,7 @@ export default function AdminDashboard() {
       <div className="flex">
         {/* ================= SIDEBAR ================= */}
         <aside
-          className={`fixed left-0 top-0 h-screen bg-white border-r border-slate-200 shadow-sm z-40 transition-all duration-300 ${
+          className={`fixed left-0 top-16 lg:top-[72px] h-[calc(100vh-4rem)] lg:h-[calc(100vh-72px)] bg-white border-r border-slate-200 shadow-sm z-40 transition-all duration-300 ${
             mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } ${
             sidebarCollapsed ? 'lg:w-24' : 'lg:w-72'
@@ -885,7 +885,7 @@ export default function AdminDashboard() {
           }`}
         >
           {/* Top Header */}
-          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
+          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-16 lg:top-[72px] z-20">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileSidebarOpen(true)}

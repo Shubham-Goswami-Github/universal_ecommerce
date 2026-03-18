@@ -32,10 +32,33 @@ export default function VendorApprovals({ token }) {
   const fetchPendingVendors = async () => {
     try {
       setLoading(true);
-      const res = await axiosClient.get('/api/admin/vendor-requests', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setVendors(res.data.vendors || []);
+      const [vendorRes, categoryRequestRes] = await Promise.all([
+        axiosClient.get('/api/admin/vendor-requests', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axiosClient.get('/api/admin/category-requests', {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const vendorRequests = (vendorRes.data.vendors || []).map((vendor) => ({
+        ...vendor,
+        requestType: 'vendor',
+        requestId: vendor._id,
+        requestReason: '',
+      }));
+
+      const categoryRequests = (categoryRequestRes.data.requests || []).map((request) => ({
+        ...request.vendor,
+        requestType: 'category',
+        requestId: request._id,
+        requestReason: request.reason || '',
+        requestCreatedAt: request.createdAt,
+        vendorCategoriesRequested: request.categories || [],
+        categoryRequest: request,
+      }));
+
+      setVendors([...categoryRequests, ...vendorRequests]);
     } catch (err) {
       console.error('fetchPendingVendors', err);
       setVendors([]);
@@ -182,11 +205,23 @@ export default function VendorApprovals({ token }) {
 
     try {
       setActionLoading(id);
-      await axiosClient.patch(
-        `/api/admin/vendors/${id}/approve`,
-        { vendorCategoriesApproved: selected },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const vendor = vendors.find((item) => item._id === id);
+      if (!vendor) return;
+
+      if (vendor.requestType === 'category') {
+        await axiosClient.post(
+          `/api/admin/category-requests/${vendor.requestId}/approve`,
+          { response: 'Approved' },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        await axiosClient.patch(
+          `/api/admin/vendors/${id}/approve`,
+          { vendorCategoriesApproved: selected },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
       fetchPendingVendors();
       setViewingVendor(null);
     } catch (err) {
@@ -204,11 +239,23 @@ export default function VendorApprovals({ token }) {
 
     try {
       setActionLoading(id);
-      await axiosClient.patch(
-        `/api/admin/vendors/${id}/reject`,
-        { reason: rejectReason },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const vendor = vendors.find((item) => item._id === id);
+      if (!vendor) return;
+
+      if (vendor.requestType === 'category') {
+        await axiosClient.post(
+          `/api/admin/category-requests/${vendor.requestId}/reject`,
+          { reason: rejectReason },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        await axiosClient.patch(
+          `/api/admin/vendors/${id}/reject`,
+          { reason: rejectReason },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
       fetchPendingVendors();
       setRejectModal(null);
       setRejectReason('');
@@ -278,7 +325,7 @@ export default function VendorApprovals({ token }) {
           </svg>
         </div>
         <h3 className="text-lg font-semibold text-slate-800 mb-1">All Caught Up!</h3>
-        <p className="text-slate-500">No pending vendor requests at the moment.</p>
+        <p className="text-slate-500">No pending approval requests at the moment.</p>
       </div>
     );
   }
@@ -341,7 +388,7 @@ export default function VendorApprovals({ token }) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-lg font-semibold text-slate-800">{vendor.name}</h3>
                         <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
-                          Pending Approval
+                          {vendor.requestType === 'category' ? 'Category Request' : 'Pending Approval'}
                         </span>
                       </div>
                       <p className="text-sm text-slate-500 mt-0.5">{vendor.email}</p>
@@ -356,7 +403,7 @@ export default function VendorApprovals({ token }) {
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          Applied: {formatDate(vendor.createdAt)}
+                          {vendor.requestType === 'category' ? 'Requested' : 'Applied'}: {formatDate(vendor.requestCreatedAt || vendor.createdAt)}
                         </span>
                       </div>
                     </div>
@@ -412,6 +459,11 @@ export default function VendorApprovals({ token }) {
                         </span>
                       )}
                     </div>
+                    {vendor.requestReason && (
+                      <p className="mt-2 text-xs text-slate-600">
+                        <span className="font-medium">Reason:</span> {vendor.requestReason}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -426,7 +478,7 @@ export default function VendorApprovals({ token }) {
                         <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        Vendor Details
+                        {vendor.requestType === 'category' ? 'Vendor Request Details' : 'Vendor Details'}
                       </h4>
                       <div className="bg-white rounded-xl p-4 space-y-3">
                         <div className="flex justify-between text-sm">
@@ -457,6 +509,12 @@ export default function VendorApprovals({ token }) {
                           <div className="flex justify-between text-sm">
                             <span className="text-slate-500">Business Type</span>
                             <span className="font-medium text-slate-800">{vendor.businessType}</span>
+                          </div>
+                        )}
+                        {vendor.requestReason && (
+                          <div className="pt-2 border-t border-slate-100">
+                            <span className="text-slate-500 text-sm">Request Reason</span>
+                            <p className="font-medium text-slate-800 text-sm mt-1">{vendor.requestReason}</p>
                           </div>
                         )}
                       </div>
@@ -532,7 +590,7 @@ export default function VendorApprovals({ token }) {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      Reject
+                      {vendor.requestType === 'category' ? 'Reject Request' : 'Reject'}
                     </button>
                     <button
                       onClick={() => approveVendor(vendor._id)}
@@ -549,7 +607,7 @@ export default function VendorApprovals({ token }) {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                          Approve ({selectedCount})
+                          {vendor.requestType === 'category' ? `Approve Request (${selectedCount})` : `Approve (${selectedCount})`}
                         </>
                       )}
                     </button>
@@ -573,7 +631,9 @@ export default function VendorApprovals({ token }) {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white">{viewingVendor.name}</h2>
-                  <p className="text-blue-100 text-sm">Vendor Application Review</p>
+                  <p className="text-blue-100 text-sm">
+                    {viewingVendor.requestType === 'category' ? 'Category Request Review' : 'Vendor Application Review'}
+                  </p>
                 </div>
               </div>
               <button
@@ -597,7 +657,7 @@ export default function VendorApprovals({ token }) {
                       <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      Personal Information
+                      {viewingVendor.requestType === 'category' ? 'Vendor Information' : 'Personal Information'}
                     </h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between py-2 border-b border-slate-200">
@@ -676,6 +736,12 @@ export default function VendorApprovals({ token }) {
                           </span>
                         ))}
                       </div>
+                      {viewingVendor.requestReason && (
+                        <div className="mt-4 pt-4 border-t border-purple-200">
+                          <p className="text-sm font-medium text-purple-800">Reason</p>
+                          <p className="text-sm text-purple-700 mt-1">{viewingVendor.requestReason}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -711,7 +777,7 @@ export default function VendorApprovals({ token }) {
                       <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Select Categories to Approve
+                      {viewingVendor.requestType === 'category' ? 'Approve Requested Categories' : 'Select Categories to Approve'}
                     </h3>
                     <div className="flex items-center gap-2">
                       <button
@@ -867,7 +933,7 @@ export default function VendorApprovals({ token }) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Reject
+                  {viewingVendor.requestType === 'category' ? 'Reject Request' : 'Reject'}
                 </button>
                 <button
                   onClick={() => approveVendor(viewingVendor._id)}
@@ -884,7 +950,9 @@ export default function VendorApprovals({ token }) {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
-                      Approve ({(selectedCategories[viewingVendor._id] || []).length})
+                      {viewingVendor.requestType === 'category'
+                        ? `Approve Request (${(selectedCategories[viewingVendor._id] || []).length})`
+                        : `Approve (${(selectedCategories[viewingVendor._id] || []).length})`}
                     </>
                   )}
                 </button>
@@ -906,7 +974,9 @@ export default function VendorApprovals({ token }) {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-white">Reject Vendor Application</h3>
+                <h3 className="font-semibold text-white">
+                  {rejectModal.requestType === 'category' ? 'Reject Category Request' : 'Reject Vendor Application'}
+                </h3>
                 <p className="text-red-100 text-xs">This action cannot be undone</p>
               </div>
             </div>

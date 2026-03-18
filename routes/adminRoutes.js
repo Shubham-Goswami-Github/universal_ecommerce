@@ -125,4 +125,19 @@ router.post(
   adminController.rejectProduct
 );
 
+/* =======================
+   CATEGORY REQUESTS (Vendor ke category requests)
+======================= */
+
+// Get all pending category requests
+router.get('/category-requests', adminController.getPendingCategoryRequests);
+
+// Get all category requests with optional status filter
+router.get('/category-requests/all', adminController.getAllCategoryRequests);
+
+// Approve category request
+router.post('/category-requests/:id/approve', adminController.approveCategoryRequest);
+
+// Reject category request
+router.post('/category-requests/:id/reject', adminController.rejectCategoryRequest);
 module.exports = router;

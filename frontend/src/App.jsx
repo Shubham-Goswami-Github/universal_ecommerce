@@ -26,16 +26,15 @@ import CategoriesPage from './pages/CategoriesPage';
 
 function AppInner() {
   const location = useLocation();
-  const isDashboardPage =
-    location.pathname.startsWith('/admin') ||
-    location.pathname.startsWith('/vendor');
-  const hideFooter = isDashboardPage;
+  const hideFooter =
+    /^\/admin(\/|$)/.test(location.pathname) ||
+    /^\/vendor(\/|$)/.test(location.pathname);
   const isFullBleedPage =
     location.pathname === '/' ||
     location.pathname === '/products' ||
     location.pathname === '/categories' ||
     location.pathname.startsWith('/category/') ||
-    isDashboardPage;
+    hideFooter;
 
   return (
     <div className="min-h-screen flex flex-col">
