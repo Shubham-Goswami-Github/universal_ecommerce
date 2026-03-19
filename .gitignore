@@ -59,3 +59,5 @@ logs/
 *.bson
 *.json.backup
 .env
+.env.development
+.env.production
