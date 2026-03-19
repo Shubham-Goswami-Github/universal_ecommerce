@@ -172,3 +172,6 @@ Built with **React + Tailwind CSS (Frontend)** and **Node.js + Express + MongoDB
 ├── README.md
 └── .gitignore
 
+
+Two Major Commands are : npm run prod:env for MongoDB Atlas
+and npm run fullstack:dev For Local MongoDB
