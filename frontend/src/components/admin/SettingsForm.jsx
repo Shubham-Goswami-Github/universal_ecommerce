@@ -49,6 +49,113 @@ const DEFAULT_HOME_FEATURE_ITEMS = [
   createContentItem({ icon: 'support', title: '24/7 Support', description: 'Round-the-clock customer support for all your queries.' })
 ];
 
+const SectionCard = ({ title, subtitle, icon, gradient, children }) => (
+  <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden hover:shadow-xl transition-shadow duration-300">
+    <div className={`${gradient} px-4 sm:px-6 py-4`}>
+      <div className="flex items-center gap-3">
+        {icon && (
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+            </svg>
+          </div>
+        )}
+        <div>
+          <h2 className="text-lg font-bold text-white">{title}</h2>
+          {subtitle && <p className="text-sm text-white/80 mt-0.5">{subtitle}</p>}
+        </div>
+      </div>
+    </div>
+    <div className="p-4 sm:p-6">{children}</div>
+  </div>
+);
+
+const InputField = ({ label, hint, ...props }) => (
+  <div className="space-y-1.5">
+    {label && (
+      <label className="block text-sm font-semibold text-slate-700">{label}</label>
+    )}
+    <input
+      {...props}
+      className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-700 placeholder-slate-400 
+        focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200
+        hover:border-slate-300"
+    />
+    {hint && <p className="text-xs text-slate-500">{hint}</p>}
+  </div>
+);
+
+const UploadBox = ({ id, label, hint, uploading, onUpload, accept = "image/*", cloudinaryBadge = true }) => (
+  <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 cursor-pointer group">
+    <input
+      type="file"
+      accept={accept}
+      onChange={onUpload}
+      className="hidden"
+      id={id}
+    />
+    <label htmlFor={id} className="cursor-pointer block">
+      <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+        {uploading ? (
+          <svg className="w-7 h-7 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+        ) : (
+          <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+        )}
+      </div>
+      <p className="text-sm font-semibold text-slate-700">
+        {uploading ? 'Uploading...' : label}
+      </p>
+      {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
+      {cloudinaryBadge && (
+        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
+          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.06-7.44 7-7.93v15.86zm2-15.86c3.94.49 7 3.85 7 7.93s-3.06 7.44-7 7.93V4.07z"/>
+          </svg>
+          Cloudinary CDN
+        </div>
+      )}
+    </label>
+  </div>
+);
+
+const PreviewBox = ({ label, hasImage, imageUrl, onRemove, aspectRatio = "aspect-square" }) => (
+  <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 rounded-2xl p-4 border border-slate-200">
+    <div className="flex items-center justify-between mb-3">
+      <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Preview</h4>
+      <span className={`w-2 h-2 rounded-full ${hasImage ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
+    </div>
+    <div className={`${aspectRatio} bg-white rounded-xl border-2 border-slate-200 overflow-hidden flex items-center justify-center`}>
+      {hasImage ? (
+        <img src={imageUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+      ) : (
+        <div className="text-center text-slate-400 p-4">
+          <svg className="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p className="text-xs">No {label}</p>
+        </div>
+      )}
+    </div>
+    {hasImage && (
+      <button
+        type="button"
+        onClick={onRemove}
+        className="mt-3 w-full py-2 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-1.5"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        Remove
+      </button>
+    )}
+  </div>
+);
+
 const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
   const [form, setForm] = useState({
     siteName: '',
@@ -377,117 +484,6 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     { id: 'contact', label: 'Contact', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', color: 'emerald' },
     { id: 'advanced', label: 'Advanced', icon: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4', color: 'orange' },
   ];
-
-  // Section Card Component
-  const SectionCard = ({ title, subtitle, icon, gradient, children }) => (
-    <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      <div className={`${gradient} px-4 sm:px-6 py-4`}>
-        <div className="flex items-center gap-3">
-          {icon && (
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
-              </svg>
-            </div>
-          )}
-          <div>
-            <h2 className="text-lg font-bold text-white">{title}</h2>
-            {subtitle && <p className="text-sm text-white/80 mt-0.5">{subtitle}</p>}
-          </div>
-        </div>
-      </div>
-      <div className="p-4 sm:p-6">{children}</div>
-    </div>
-  );
-
-  // Input Field Component
-  const InputField = ({ label, hint, ...props }) => (
-    <div className="space-y-1.5">
-      {label && (
-        <label className="block text-sm font-semibold text-slate-700">{label}</label>
-      )}
-      <input
-        {...props}
-        className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-700 placeholder-slate-400 
-          focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200
-          hover:border-slate-300"
-      />
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
-    </div>
-  );
-
-  // Upload Box Component
-  const UploadBox = ({ id, label, hint, uploading, onUpload, accept = "image/*", cloudinaryBadge = true }) => (
-    <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 cursor-pointer group">
-      <input
-        type="file"
-        accept={accept}
-        onChange={onUpload}
-        className="hidden"
-        id={id}
-      />
-      <label htmlFor={id} className="cursor-pointer block">
-        <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-          {uploading ? (
-            <svg className="w-7 h-7 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-            </svg>
-          ) : (
-            <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-          )}
-        </div>
-        <p className="text-sm font-semibold text-slate-700">
-          {uploading ? 'Uploading...' : label}
-        </p>
-        {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
-        {cloudinaryBadge && (
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-medium">
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.06-7.44 7-7.93v15.86zm2-15.86c3.94.49 7 3.85 7 7.93s-3.06 7.44-7 7.93V4.07z"/>
-            </svg>
-            Cloudinary CDN
-          </div>
-        )}
-      </label>
-    </div>
-  );
-
-  // Preview Box Component
-  const PreviewBox = ({ label, hasImage, imageUrl, onRemove, aspectRatio = "aspect-square" }) => (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 rounded-2xl p-4 border border-slate-200">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Preview</h4>
-        <span className={`w-2 h-2 rounded-full ${hasImage ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></span>
-      </div>
-      <div className={`${aspectRatio} bg-white rounded-xl border-2 border-slate-200 overflow-hidden flex items-center justify-center`}>
-        {hasImage ? (
-          <img src={imageUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
-        ) : (
-          <div className="text-center text-slate-400 p-4">
-            <svg className="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p className="text-xs">No {label}</p>
-          </div>
-        )}
-      </div>
-      {hasImage && (
-        <button
-          type="button"
-          onClick={onRemove}
-          className="mt-3 w-full py-2 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-1.5"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          Remove
-        </button>
-      )}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100">
