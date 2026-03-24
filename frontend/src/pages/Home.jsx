@@ -3,9 +3,9 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    DESIGN SYSTEM CONSTANTS
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const COLORS = {
   primary: {
     50: '#ecfdf5',
@@ -20,9 +20,79 @@ const COLORS = {
   }
 };
 
-/* ─────────────────────────────────────────────────────────────
+const DEFAULT_HOME_HERO_TAGLINE = "New Collection 2024";
+const DEFAULT_HOME_HERO_STATS = [
+  { value: "50K+", label: "Happy Customers" },
+  { value: "1000+", label: "Products" },
+  { value: "99%", label: "Satisfaction" },
+];
+const DEFAULT_HOME_HERO_HIGHLIGHTS = [
+  { icon: "shipping", title: "Free Shipping", description: "On orders over Rs499" },
+  { icon: "star", title: "Top Rated", description: "4.9 Average" },
+];
+const DEFAULT_HOME_TRUST_BADGES = [
+  { icon: "shipping", title: "Free Shipping", description: "On orders over Rs499" },
+  { icon: "shield", title: "Secure Payment", description: "100% Protected" },
+  { icon: "returns", title: "Easy Returns", description: "7-Day Returns" },
+  { icon: "support", title: "24/7 Support", description: "Dedicated Help" },
+];
+const DEFAULT_HOME_FEATURE_ITEMS = [
+  { icon: "shipping", title: "Free Shipping", description: "On orders over Rs499" },
+  { icon: "shield", title: "Secure Payment", description: "Multiple secure payment options including cards, UPI, and wallets." },
+  { icon: "returns", title: "Easy Returns", description: "Hassle-free 7-day return policy with full refund guarantee." },
+  { icon: "support", title: "24/7 Support", description: "Round-the-clock customer support for all your queries." },
+];
+
+const getContentItems = (items, fallback) => (
+  Array.isArray(items) && items.some((item) => item?.title || item?.description || item?.value || item?.label)
+    ? items
+    : fallback
+);
+
+const renderHomeIcon = (icon, className = "w-6 h-6") => {
+  switch (icon) {
+    case "shipping":
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+        </svg>
+      );
+    case "shield":
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      );
+    case "returns":
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      );
+    case "support":
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      );
+    case "star":
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      );
+  }
+};
+
+/* -------------------------------------------------------------
    STAR RATING COMPONENT
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const StarRating = ({ rating = 4, count = 0, size = "sm" }) => {
   const sizes = {
     sm: "w-3.5 h-3.5",
@@ -69,9 +139,9 @@ const StarRating = ({ rating = 4, count = 0, size = "sm" }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    SECTION HEADER COMPONENT
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const SectionHeader = ({ 
   title, 
   subtitle,
@@ -106,9 +176,9 @@ const SectionHeader = ({
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    BADGE COMPONENT
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const Badge = ({ children, variant = "default" }) => {
   const variants = {
     default: "bg-gray-100 text-gray-700",
@@ -125,9 +195,9 @@ const Badge = ({ children, variant = "default" }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    SKELETON LOADER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const Skeleton = ({ className }) => (
   <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] ${className}`} />
 );
@@ -148,9 +218,9 @@ const ProductCardSkeleton = () => (
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    HOME COMPONENT
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const Home = () => {
   const [settings, setSettings] = useState(null);
   const [products, setProducts] = useState([]);
@@ -202,17 +272,17 @@ const Home = () => {
 
   return (
     <div className="bg-gray-50/50 min-h-screen">
-      {/* ── Announcement Bar ── */}
+      {/* -- Announcement Bar -- */}
       <AnnouncementBar />
 
-      {/* ── Hero Banner ── */}
+      {/* -- Hero Banner -- */}
       <HeroBanner settings={settings} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ── Trust Badges ── */}
-        <TrustBadges />
+        {/* -- Trust Badges -- */}
+        <TrustBadges settings={settings} />
 
-        {/* ── Categories Section ── */}
+        {/* -- Categories Section -- */}
         {!loading && superCategories.length > 0 && (
           <section className="py-12 md:py-16">
             <SectionHeader 
@@ -227,7 +297,7 @@ const Home = () => {
           </section>
         )}
 
-        {/* ── Featured Products ── */}
+        {/* -- Featured Products -- */}
         {!loading && displayFeatured.length > 0 && (
           <section className="py-12 md:py-16">
             <SectionHeader 
@@ -239,10 +309,10 @@ const Home = () => {
           </section>
         )}
 
-        {/* ── Promotional Banner ── */}
+        {/* -- Promotional Banner -- */}
         {!loading && <PromoBanner />}
 
-        {/* ── Best Sellers ── */}
+        {/* -- Best Sellers -- */}
         {!loading && bestSellers.length > 0 && (
           <section className="py-12 md:py-16">
             <SectionHeader 
@@ -254,10 +324,10 @@ const Home = () => {
           </section>
         )}
 
-        {/* ── Loading State ── */}
+        {/* -- Loading State -- */}
         {loading && <LoadingState />}
 
-        {/* ── Category Product Rows ── */}
+        {/* -- Category Product Rows -- */}
         {!loading &&
           Object.keys(grouped).map((superCat) => (
             <section key={superCat} className="py-12 md:py-16 border-t border-gray-100">
@@ -269,22 +339,22 @@ const Home = () => {
             </section>
           ))}
 
-        {/* ── Empty State ── */}
+        {/* -- Empty State -- */}
         {!loading && products.length === 0 && <EmptyState />}
 
-        {/* ── Newsletter Section ── */}
+        {/* -- Newsletter Section -- */}
         {!loading && <Newsletter />}
       </div>
 
-      {/* ── Features Section ── */}
-      <FeaturesSection />
+      {/* -- Features Section -- */}
+      <FeaturesSection settings={settings} />
     </div>
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    ANNOUNCEMENT BAR
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const AnnouncementBar = () => {
   const [isVisible, setIsVisible] = useState(true);
 
@@ -305,9 +375,9 @@ const AnnouncementBar = () => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    HERO BANNER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const HeroBanner = ({ settings }) => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -339,6 +409,11 @@ const HeroBanner = ({ settings }) => {
     slideDirection: "left",
     imageSize: "cover",
   };
+  const heroTagline = settings?.homeHeroTagline || DEFAULT_HOME_HERO_TAGLINE;
+  const heroStats = getContentItems(settings?.homeHeroStats, DEFAULT_HOME_HERO_STATS);
+  const heroHighlights = getContentItems(settings?.homeHeroHighlights, DEFAULT_HOME_HERO_HIGHLIGHTS);
+  const overlayColor = settings?.heroBannerSettings?.overlayColor || "#0f172a";
+  const overlayOpacity = Math.min(Math.max(Number(settings?.heroBannerSettings?.overlayOpacity ?? 35), 0), 100) / 100;
 
   const hasImages = bannerImages.length > 0;
   const hasMultipleImages = bannerImages.length > 1;
@@ -365,7 +440,7 @@ const HeroBanner = ({ settings }) => {
     }
   };
 
-  /* ── Fallback Hero ── */
+  /* -- Fallback Hero -- */
   if (!hasImages) {
     return (
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900">
@@ -389,7 +464,7 @@ const HeroBanner = ({ settings }) => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <span className="text-emerald-300 text-sm font-medium">New Collection 2024</span>
+                <span className="text-emerald-300 text-sm font-medium">{heroTagline}</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
@@ -430,12 +505,8 @@ const HeroBanner = ({ settings }) => {
               </div>
 
               {/* Stats */}
-              <div className="mt-12 grid grid-cols-3 gap-8 max-w-md mx-auto lg:mx-0">
-                {[
-                  { value: "50K+", label: "Happy Customers" },
-                  { value: "1000+", label: "Products" },
-                  { value: "99%", label: "Satisfaction" },
-                ].map((stat, i) => (
+              <div className={`mt-12 grid gap-8 max-w-2xl mx-auto lg:mx-0 ${heroStats.length <= 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
+                {heroStats.map((stat, i) => (
                   <div key={i} className="text-center lg:text-left">
                     <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
                     <div className="text-sm text-gray-400">{stat.label}</div>
@@ -447,33 +518,20 @@ const HeroBanner = ({ settings }) => {
             {/* Hero Image/Illustration */}
             <div className="hidden lg:block relative">
               <div className="relative w-full h-[500px]">
-                {/* Floating Cards */}
-                <div className="absolute top-8 left-8 bg-white rounded-2xl p-4 shadow-2xl animate-float">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+                <div className={`grid gap-4 ${heroHighlights.length > 1 ? "md:grid-cols-2" : "grid-cols-1"}`}>
+                  {heroHighlights.map((item, index) => (
+                    <div key={`${item.title}-${index}`} className={index % 2 === 0 ? "bg-white rounded-2xl p-4 shadow-2xl animate-float" : "bg-white rounded-2xl p-4 shadow-2xl animate-float-delayed"}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${index % 2 === 0 ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}>
+                          {renderHomeIcon(item.icon, "w-6 h-6")}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{item.title}</p>
+                          <p className="text-sm text-gray-500">{item.description}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">Free Shipping</p>
-                      <p className="text-sm text-gray-500">On orders over ₹499</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute bottom-16 right-8 bg-white rounded-2xl p-4 shadow-2xl animate-float-delayed">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">Top Rated</p>
-                      <p className="text-sm text-gray-500">4.9★ Average</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
                 {/* Central Shopping Bag Icon */}
@@ -500,7 +558,7 @@ const HeroBanner = ({ settings }) => {
     );
   }
 
-  /* ── Slideshow Hero ── */
+  /* -- Slideshow Hero -- */
   return (
     <section 
       className="relative"
@@ -533,41 +591,69 @@ const HeroBanner = ({ settings }) => {
 
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            <div className="absolute inset-0" style={{ backgroundColor: overlayColor, opacity: overlayOpacity }} />
 
             {/* Content */}
             <div className="absolute inset-0 flex items-center">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                <div className="max-w-xl">
-                  <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
-                    <span className="text-emerald-300 text-sm font-medium">✨ New Arrivals</span>
-                  </span>
+                <div className="grid lg:grid-cols-2 gap-12 items-center">
+                  <div className="max-w-xl">
+                    <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
+                      <span className="text-emerald-300 text-sm font-medium">{heroTagline}</span>
+                    </span>
 
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                    {settings?.homepageTitle || "Shopping And Department Store"}
-                  </h1>
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                      {settings?.homepageTitle || "Shopping And Department Store"}
+                    </h1>
 
-                  <p className="mt-4 text-lg text-white/80 leading-relaxed">
-                    {settings?.homepageSubtitle || "Discover amazing products at unbeatable prices."}
-                  </p>
+                    <p className="mt-4 text-lg text-white/80 leading-relaxed">
+                      {settings?.homepageSubtitle || "Discover amazing products at unbeatable prices."}
+                    </p>
 
-                  <div className="mt-8 flex flex-wrap gap-4">
-                    <Link
-                      to="/products"
-                      className="group inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-lg"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Shop Now
-                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                    <Link
-                      to="/categories"
-                      className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition-all"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Browse Categories
-                    </Link>
+                    <div className="mt-8 flex flex-wrap gap-4">
+                      <Link
+                        to="/products"
+                        className="group inline-flex items-center gap-2 bg-white text-gray-900 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-lg"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Shop Now
+                        <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      </Link>
+                      <Link
+                        to="/categories"
+                        className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition-all"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Browse Categories
+                      </Link>
+                    </div>
+
+                    <div className={`mt-10 grid gap-6 max-w-2xl ${heroStats.length <= 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
+                      {heroStats.map((stat, statIndex) => (
+                        <div key={`${stat.label}-${statIndex}`}>
+                          <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
+                          <div className="text-sm text-gray-200/80">{stat.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="hidden lg:grid gap-4">
+                    {heroHighlights.map((item, itemIndex) => (
+                      <div key={`${item.title}-${itemIndex}`} className="bg-white/95 rounded-2xl p-4 shadow-2xl backdrop-blur-sm max-w-sm justify-self-end">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${itemIndex % 2 === 0 ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"}`}>
+                            {renderHomeIcon(item.icon, "w-6 h-6")}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">{item.title}</p>
+                            <p className="text-sm text-gray-500">{item.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -625,60 +711,23 @@ const HeroBanner = ({ settings }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    TRUST BADGES
-───────────────────────────────────────────────────────────── */
-const TrustBadges = () => {
-  const badges = [
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-        </svg>
-      ),
-      title: "Free Shipping",
-      description: "On orders over ₹499",
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      ),
-      title: "Secure Payment",
-      description: "100% Protected",
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      ),
-      title: "Easy Returns",
-      description: "7-Day Returns",
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      title: "24/7 Support",
-      description: "Dedicated Help",
-    },
-  ];
+------------------------------------------------------------- */
+const TrustBadges = ({ settings }) => {
+  const badges = getContentItems(settings?.homeTrustBadges, DEFAULT_HOME_TRUST_BADGES);
 
   return (
     <div className="py-8 -mt-8 relative z-10">
       <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 border border-gray-100 p-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className={`grid gap-6 ${badges.length <= 2 ? "grid-cols-1 sm:grid-cols-2" : badges.length <= 4 ? "grid-cols-2 md:grid-cols-4" : "grid-cols-2 md:grid-cols-3 xl:grid-cols-5"}`}>
           {badges.map((badge, index) => (
             <div
-              key={index}
+              key={`${badge.title}-${index}`}
               className="flex items-center gap-4 group"
             >
               <div className="flex-shrink-0 w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-100 group-hover:scale-110 transition-all duration-300">
-                {badge.icon}
+                {typeof badge.icon === "string" ? renderHomeIcon(badge.icon, "w-6 h-6") : badge.icon}
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">{badge.title}</h4>
@@ -692,9 +741,9 @@ const TrustBadges = () => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    CATEGORY GRID
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const CategoryGrid = ({ categories, allCategories }) => {
   const getSubCategoryCount = (categoryId) =>
     allCategories.filter((c) => c.parent === categoryId || c.parent?._id === categoryId).length;
@@ -784,9 +833,9 @@ const CategoryGrid = ({ categories, allCategories }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    PRODUCT GRID
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const ProductGrid = ({ products }) => (
   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
     {products.map((product) => (
@@ -795,9 +844,9 @@ const ProductGrid = ({ products }) => (
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    PRODUCT SCROLLER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const ProductScroller = ({ products }) => {
   const scrollRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -866,9 +915,9 @@ const ProductScroller = ({ products }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    PRODUCT CARD
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const ProductCard = ({ product, variant = "scroll" }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -997,11 +1046,11 @@ const ProductCard = ({ product, variant = "scroll" }) => {
         {/* Price */}
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-xl font-bold text-gray-900">
-            ₹{price.toLocaleString()}
+            ?{price.toLocaleString()}
           </span>
           {product.mrp > product.sellingPrice && (
             <span className="text-sm text-gray-400 line-through">
-              ₹{product.mrp.toLocaleString()}
+              ?{product.mrp.toLocaleString()}
             </span>
           )}
         </div>
@@ -1021,9 +1070,9 @@ const ProductCard = ({ product, variant = "scroll" }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    PROMOTIONAL BANNER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const PromoBanner = () => (
   <section className="py-12">
     <div className="grid md:grid-cols-2 gap-6">
@@ -1074,9 +1123,9 @@ const PromoBanner = () => (
   </section>
 );
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    LOADING STATE
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const LoadingState = () => (
   <div className="py-12 space-y-12">
     {/* Categories Skeleton */}
@@ -1101,9 +1150,9 @@ const LoadingState = () => (
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    EMPTY STATE
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const EmptyState = () => (
   <div className="py-20 text-center">
     <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1122,9 +1171,9 @@ const EmptyState = () => (
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    NEWSLETTER
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState(null);
@@ -1147,107 +1196,36 @@ const Newsletter = () => {
           }} />
         </div>
 
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <span className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Newsletter
-          </span>
-
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Subscribe & Get 10% Off
-          </h2>
-          <p className="text-gray-400 mb-8 max-w-md mx-auto">
-            Stay updated with our latest offers, new arrivals, and exclusive deals delivered straight to your inbox.
-          </p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 px-5 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              required
-            />
-            <button
-              type="submit"
-              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-            >
-              Subscribe
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </button>
-          </form>
-
-          {status === "success" && (
-            <div className="mt-4 text-emerald-400 text-sm font-medium">
-              ✓ Successfully subscribed! Check your inbox for confirmation.
-            </div>
-          )}
-
-          <p className="mt-6 text-gray-500 text-sm">
-            By subscribing, you agree to our Privacy Policy and consent to receive updates.
-          </p>
-        </div>
       </div>
     </section>
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    FEATURES SECTION
-───────────────────────────────────────────────────────────── */
-const FeaturesSection = () => {
-  const features = [
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      ),
-      title: "Secure Payment",
-      description: "Multiple secure payment options including cards, UPI, and wallets.",
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      ),
-      title: "Fast Delivery",
-      description: "Quick and reliable shipping to your doorstep within 2-5 days.",
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      ),
-      title: "Easy Returns",
-      description: "Hassle-free 7-day return policy with full refund guarantee.",
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      title: "24/7 Support",
-      description: "Round-the-clock customer support for all your queries.",
-    },
-  ];
+------------------------------------------------------------- */
+const FeaturesSection = ({ settings }) => {
+  const features = getContentItems(settings?.homeFeatureItems, DEFAULT_HOME_FEATURE_ITEMS);
 
   return (
     <section className="bg-gray-100 py-16 mt-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-2xl mx-auto text-center mb-12">
+          <span className="inline-block text-emerald-600 text-sm font-semibold tracking-wide uppercase mb-2">
+            Store Benefits
+          </span>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
+            Why Customers Shop With Us
+          </h2>
+          <p className="mt-3 text-gray-500">
+            This section is controlled from site settings and updates automatically when you add or edit items.
+          </p>
+        </div>
+        <div className={`grid gap-8 ${features.length <= 2 ? "grid-cols-1 sm:grid-cols-2" : features.length <= 4 ? "grid-cols-2 md:grid-cols-4" : "grid-cols-2 md:grid-cols-3 xl:grid-cols-5"}`}>
           {features.map((feature, index) => (
-            <div key={index} className="text-center">
+            <div key={`${feature.title}-${index}`} className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-sm text-emerald-600 mb-4">
-                {feature.icon}
+                {typeof feature.icon === "string" ? renderHomeIcon(feature.icon, "w-8 h-8") : feature.icon}
               </div>
               <h4 className="font-semibold text-gray-900 mb-2">{feature.title}</h4>
               <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
@@ -1259,9 +1237,9 @@ const FeaturesSection = () => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------
    CUSTOM STYLES (Add to your global CSS)
-───────────────────────────────────────────────────────────── */
+------------------------------------------------------------- */
 const styles = `
 @keyframes float {
   0%, 100% { transform: translateY(0px); }

@@ -5,6 +5,7 @@ import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useEffect, useState } from 'react';
 import axiosClient from './api/axiosClient';
+import { useAuth } from './context/AuthContext';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -22,12 +23,22 @@ import Profile from './pages/Profile';
 // In your router configuration (e.g., App.jsx)
 import CategoryPage from './pages/CategoryPage';
 import CategoriesPage from './pages/CategoriesPage';
+import MaintenancePage from './pages/MaintenancePage';
 
-
-function AppInner() {
+function AppInner({ maintenanceMode }) {
+  const { auth } = useAuth();
   const location = useLocation();
+  const isAdminRoute = /^\/admin(\/|$)/.test(location.pathname);
+  const isLoginRoute = location.pathname === '/login';
+  const isAdminUser = auth?.user?.role === 'admin';
+  const shouldShowMaintenancePage =
+    maintenanceMode &&
+    !isAdminRoute &&
+    !isLoginRoute &&
+    !isAdminUser;
+
   const hideFooter =
-    /^\/admin(\/|$)/.test(location.pathname) ||
+    isAdminRoute ||
     /^\/vendor(\/|$)/.test(location.pathname);
   const isFullBleedPage =
     location.pathname === '/' ||
@@ -35,6 +46,10 @@ function AppInner() {
     location.pathname === '/categories' ||
     location.pathname.startsWith('/category/') ||
     hideFooter;
+
+  if (shouldShowMaintenancePage) {
+    return <MaintenancePage />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -101,25 +116,46 @@ export default function ThemedApp() {
   const [appearance, setAppearance] = useState(null);
   const [loadingAppearance, setLoadingAppearance] = useState(true);
 
-  useEffect(() => {
-    let mounted = true;
+  const fetchAppearance = () => {
     axiosClient
       .get('/api/settings/public')
       .then((res) => {
-        if (!mounted) return;
-        setAppearance(res.data || {});
+        const nextAppearance = res.data || {};
+        setAppearance(nextAppearance);
+        localStorage.setItem('maintenanceMode', nextAppearance.isMaintenanceMode ? 'true' : 'false');
       })
       .catch((err) => {
         console.warn('Could not load appearance settings', err);
       })
       .finally(() => {
-        if (mounted) setLoadingAppearance(false);
+        setLoadingAppearance(false);
       });
+  };
 
-    return () => {
-      mounted = false;
-    };
+  useEffect(() => {
+    fetchAppearance();
+    window.addEventListener('settings:updated', fetchAppearance);
+    return () => window.removeEventListener('settings:updated', fetchAppearance);
   }, []);
+
+  useEffect(() => {
+    const nextTitle = appearance?.tabName?.trim() || appearance?.siteName?.trim() || 'My Ecommerce Store';
+    document.title = nextTitle;
+
+    const faviconHref = appearance?.tabIconUrl?.trim() || '/vite.svg';
+
+    let favicon = document.querySelector('#app-favicon');
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.id = 'app-favicon';
+      favicon.rel = 'icon';
+      document.head.appendChild(favicon);
+    }
+
+    favicon.type = faviconHref.toLowerCase().includes('.svg') ? 'image/svg+xml' : 'image/x-icon';
+    favicon.href = faviconHref;
+  }, [appearance]);
+  const maintenanceMode = Boolean(appearance?.isMaintenanceMode);
 
   // build inline style
   const style = appearance
@@ -147,7 +183,7 @@ export default function ThemedApp() {
       </div>
     ) : (
       <BrowserRouter>
-        <AppInner />
+        <AppInner maintenanceMode={maintenanceMode} />
       </BrowserRouter>
     )}
   </div>
