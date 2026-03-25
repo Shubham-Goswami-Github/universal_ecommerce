@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
     "server": "nodemon index.js",
     "client": "cd frontend && npm run dev",
+
     "fullstack": "concurrently \"npm run server\" \"npm run client\"",
-    "dev:env": "set NODE_ENV=development && nodemon index.js",
-    "prod:env": "set NODE_ENV=production && node index.js",
-    "fullstack:dev": "set NODE_ENV=development && concurrently \"npm run server\" \"npm run client\"",
+
+    "fullstack:dev": "cross-env NODE_ENV=development concurrently \"npm run server\" \"npm run client\"",
+    "fullstack:prod": "cross-env NODE_ENV=production concurrently \"npm run server\" \"npm run client\"",
+
+    "dev": "cross-env NODE_ENV=development nodemon index.js",
+    "prod": "cross-env NODE_ENV=production node index.js",
+
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -18,7 +22,6 @@
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
-    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "framer-motion": "^12.23.26",
@@ -31,6 +34,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "cross-env": "^7.0.3"
   }
 }

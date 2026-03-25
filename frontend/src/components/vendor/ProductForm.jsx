@@ -10,18 +10,8 @@ const normalizeCategoryId = (value) => {
   return value.toString();
 };
 
-const ALLOWED_ALL_KEYWORD = 'AllowedAll';
-
-const getStoredAuthUser = () => {
-  try {
-    const rawUser = localStorage.getItem('authUser');
-    return rawUser ? JSON.parse(rawUser) : null;
-  } catch {
-    return null;
-  }
-};
-
-const ProductForm = ({ token, vendor = null, product = null, onSaved, onCancel }) => {
+const ProductForm = ({ token, product = null, onSaved, onCancel }) => {
+  const [approvedCategories, setApprovedCategories] = useState([]);
   const [form, setForm] = useState({
     // BASIC INFO
     name: '',
@@ -79,12 +69,6 @@ const ProductForm = ({ token, vendor = null, product = null, onSaved, onCancel }
   const [categories, setCategories] = useState([]);
   const [superCategory, setSuperCategory] = useState('');
   const [subCategory, setSubCategory] = useState('');
-  const [approvedCategoryIds, setApprovedCategoryIds] = useState(() => {
-    const initialUser = vendor || getStoredAuthUser();
-    return Array.isArray(initialUser?.vendorCategoriesApproved)
-      ? initialUser.vendorCategoriesApproved.map(normalizeCategoryId).filter(Boolean)
-      : [];
-  });
 
   // Dropdown states
   const [superDropdownOpen, setSuperDropdownOpen] = useState(false);
@@ -284,45 +268,19 @@ const ProductForm = ({ token, vendor = null, product = null, onSaved, onCancel }
     });
   }, []);
 
-  useEffect(() => {
-    const currentUser = vendor || getStoredAuthUser();
-    setApprovedCategoryIds(
-      Array.isArray(currentUser?.vendorCategoriesApproved)
-        ? currentUser.vendorCategoriesApproved.map(normalizeCategoryId).filter(Boolean)
-        : []
+const superCategories = categories
+  .filter((c) => c.type === 'super')
+  .map((superCat) => {
+    const filteredSubs = superCat.subCategories.filter((sub) =>
+      approvedCategories.includes(sub._id)
     );
-  }, [vendor]);
 
-  const hasAllowedAllAccess = approvedCategoryIds.includes(ALLOWED_ALL_KEYWORD);
-
-  const allowedCategoryIds = new Set(
-    product?.category
-      ? [...approvedCategoryIds, normalizeCategoryId(product.category), normalizeCategoryId(product.category?.parent)]
-      : approvedCategoryIds
-  );
-
-  const approvedCategories = hasAllowedAllAccess ? categories : categories
-    .map((category) => {
-      const approvedSubCategories = Array.isArray(category.subCategories)
-        ? category.subCategories.filter((subCategory) =>
-            allowedCategoryIds.has(normalizeCategoryId(subCategory._id))
-          )
-        : [];
-
-      const isSuperApproved = allowedCategoryIds.has(normalizeCategoryId(category._id));
-
-      if (!isSuperApproved && approvedSubCategories.length === 0) {
-        return null;
-      }
-
-      return {
-        ...category,
-        subCategories: approvedSubCategories,
-      };
-    })
-    .filter(Boolean);
-
-  const superCategories = approvedCategories.filter((c) => c.type === 'super');
+    return {
+      ...superCat,
+      subCategories: filteredSubs,
+    };
+  })
+  .filter((c) => c.subCategories.length > 0);
   const selectedSuperCategory = superCategories.find(
     (c) => normalizeCategoryId(c._id) === normalizeCategoryId(superCategory)
   );
@@ -338,28 +296,27 @@ const ProductForm = ({ token, vendor = null, product = null, onSaved, onCancel }
   const filteredSubCategories = subCategories.filter((c) =>
     c.name.toLowerCase().includes(subSearch.toLowerCase())
   );
-
   useEffect(() => {
-    if (
-      superCategory &&
-      !superCategories.some((category) => normalizeCategoryId(category._id) === normalizeCategoryId(superCategory))
-    ) {
-      setSuperCategory('');
-      setSubCategory('');
-      setSuperSearch('');
-      setSubSearch('');
+    if (!token) {
+      setApprovedCategories([]);
       return;
     }
 
-    if (
-      subCategory &&
-      !subCategories.some((category) => normalizeCategoryId(category._id) === normalizeCategoryId(subCategory))
-    ) {
-      setSubCategory('');
-      setSubSearch('');
-    }
-  }, [superCategory, subCategory, superCategories, subCategories]);
+    const fetchVendor = async () => {
+      try {
+        const res = await axiosClient.get('/api/users/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
+        setApprovedCategories(res.data.user.vendorCategoriesApproved || []);
+      } catch (err) {
+        console.error('Vendor fetch error', err);
+        setApprovedCategories([]);
+      }
+    };
+
+    fetchVendor();
+  }, [token]);
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({
@@ -724,7 +681,15 @@ const ProductForm = ({ token, vendor = null, product = null, onSaved, onCancel }
         );
 
       case 2:
+        if (approvedCategories.length === 0) {
+  return (
+    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600">
+      No approved categories. Contact admin.
+    </div>
+  );
+}
         return (
+          
           <div className="space-y-5">
             {errors.category && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-center gap-2">

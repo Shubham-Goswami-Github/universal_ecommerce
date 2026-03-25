@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 const cloudinary = require('../config/cloudinary');
 const { requireLogin } = require('../middleware/authMiddleware');
@@ -24,6 +25,32 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter
+});
+
+const categoryUploadDir = path.join(__dirname, '..', 'uploads', 'categories');
+fs.mkdirSync(categoryUploadDir, { recursive: true });
+
+const categoryStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, categoryUploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const baseName = path
+      .basename(file.originalname, ext)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 50) || 'category-image';
+
+    cb(null, `${Date.now()}-${baseName}${ext}`);
+  }
+});
+
+const categoryUpload = multer({
+  storage: categoryStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter
 });
 
@@ -87,6 +114,33 @@ router.post('/image', requireLogin, upload.single('image'), async (req, res) => 
     res.status(500).json({
       success: false,
       message: 'Upload failed',
+      error: error.message
+    });
+  }
+});
+
+router.post('/category-image', requireLogin, categoryUpload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded'
+      });
+    }
+
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/categories/${req.file.filename}`;
+
+    res.json({
+      success: true,
+      message: 'Category image uploaded successfully',
+      url: imageUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error('Category image upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Category image upload failed',
       error: error.message
     });
   }
