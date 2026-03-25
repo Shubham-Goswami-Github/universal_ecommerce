@@ -60,4 +60,4 @@ logs/
 *.json.backup
 .env
 .env.development
-.env.productionj
+.env.production
