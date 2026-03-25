@@ -25,6 +25,33 @@ import CategoryPage from './pages/CategoryPage';
 import CategoriesPage from './pages/CategoriesPage';
 import MaintenancePage from './pages/MaintenancePage';
 
+const buildBackgroundStyle = ({ color, image, repeat, size, fitScreen }) => ({
+  backgroundColor: color || undefined,
+  backgroundImage: image ? `url(${image})` : undefined,
+  backgroundRepeat: repeat || undefined,
+  backgroundSize: size || undefined,
+  backgroundPosition: image ? 'center top' : undefined,
+  backgroundAttachment: fitScreen ? 'fixed' : undefined,
+});
+
+function ScrollToTop() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search, location.hash]);
+
+  return null;
+}
+
 function AppInner({ maintenanceMode }) {
   const { auth } = useAuth();
   const location = useLocation();
@@ -53,6 +80,7 @@ function AppInner({ maintenanceMode }) {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ScrollToTop />
       <Navbar />
       <main className={isFullBleedPage ? 'flex-1' : 'flex-1 py-4'}>
         <div className={isFullBleedPage ? '' : 'px-3 sm:px-4'}>
@@ -112,6 +140,51 @@ function AppInner({ maintenanceMode }) {
   );
 }
 
+function AppShell({ appearance, loadingAppearance }) {
+  const location = useLocation();
+  const isAdminRoute = /^\/admin(\/|$)/.test(location.pathname);
+  const isVendorRoute = /^\/vendor(\/|$)/.test(location.pathname);
+  const isHomeRoute = location.pathname === '/';
+  const isRestBackgroundRoute = !isHomeRoute && !isAdminRoute && !isVendorRoute;
+  const maintenanceMode = Boolean(appearance?.isMaintenanceMode);
+
+  const style = {
+    color: appearance?.fontColor || undefined,
+    fontFamily: appearance?.fontFamily || undefined,
+    ...(isRestBackgroundRoute
+      ? buildBackgroundStyle({
+          color: appearance?.restBackgroundColor || appearance?.backgroundColor,
+          image: appearance?.restBackgroundImage || appearance?.backgroundImage,
+          repeat: appearance?.restBackgroundRepeat || appearance?.backgroundRepeat,
+          size: appearance?.restBackgroundSize || appearance?.backgroundSize,
+          fitScreen: appearance?.restBackgroundFitScreen,
+        })
+      : {}),
+  };
+
+  return (
+    <div
+      style={style}
+      className={`min-h-screen bg-white text-slate-900 ${isRestBackgroundRoute ? 'rest-background-mode' : ''}`}
+    >
+      {isRestBackgroundRoute && (
+        <style>{`
+          .rest-background-mode main > div > * {
+            background-color: transparent !important;
+          }
+        `}</style>
+      )}
+      {loadingAppearance ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-slate-400">Loading...</div>
+        </div>
+      ) : (
+        <AppInner maintenanceMode={maintenanceMode} />
+      )}
+    </div>
+  );
+}
+
 export default function ThemedApp() {
   const [appearance, setAppearance] = useState(null);
   const [loadingAppearance, setLoadingAppearance] = useState(true);
@@ -155,39 +228,11 @@ export default function ThemedApp() {
     favicon.type = faviconHref.toLowerCase().includes('.svg') ? 'image/svg+xml' : 'image/x-icon';
     favicon.href = faviconHref;
   }, [appearance]);
-  const maintenanceMode = Boolean(appearance?.isMaintenanceMode);
-
-  // build inline style
-  const style = appearance
-    ? {
-        backgroundColor: appearance.backgroundColor || undefined,
-        backgroundImage: appearance.backgroundImage
-          ? `url(${appearance.backgroundImage})`
-          : undefined,
-        backgroundRepeat: appearance.backgroundRepeat || undefined,
-        backgroundSize: appearance.backgroundSize || undefined,
-        color: appearance.fontColor || undefined,
-        fontFamily: appearance.fontFamily || undefined,
-      }
-    : {};
-
-  // minimal fallback classes so Tailwind styles still apply for unknown props
- return (
-  <div
-    style={style}
-    className="min-h-screen bg-white text-slate-900"
-  >
-    {loadingAppearance ? (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-400">Loading...</div>
-      </div>
-    ) : (
-      <BrowserRouter>
-        <AppInner maintenanceMode={maintenanceMode} />
-      </BrowserRouter>
-    )}
-  </div>
-);
+  return (
+    <BrowserRouter>
+      <AppShell appearance={appearance} loadingAppearance={loadingAppearance} />
+    </BrowserRouter>
+  );
 
 }
 

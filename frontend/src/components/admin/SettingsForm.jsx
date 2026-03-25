@@ -49,6 +49,19 @@ const DEFAULT_HOME_FEATURE_ITEMS = [
   createContentItem({ icon: 'support', title: '24/7 Support', description: 'Round-the-clock customer support for all your queries.' })
 ];
 
+const BACKGROUND_REPEAT_OPTIONS = [
+  { value: 'no-repeat', label: 'No Repeat' },
+  { value: 'repeat', label: 'Repeat' },
+  { value: 'repeat-x', label: 'Repeat X' },
+  { value: 'repeat-y', label: 'Repeat Y' }
+];
+
+const BACKGROUND_SIZE_OPTIONS = [
+  { value: 'cover', label: 'Cover' },
+  { value: 'contain', label: 'Contain' },
+  { value: 'auto', label: 'Auto' }
+];
+
 const SectionCard = ({ title, subtitle, icon, gradient, children }) => (
   <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden hover:shadow-xl transition-shadow duration-300">
     <div className={`${gradient} px-4 sm:px-6 py-4`}>
@@ -186,9 +199,19 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     address: '',
     footerText: '',
     isMaintenanceMode: false,
-    backgroundImage: '',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: 'cover',
+    homeBackgroundColor: '#f8fafc',
+    homeBackgroundImage: '',
+    homeBackgroundRepeat: 'no-repeat',
+    homeBackgroundSize: 'cover',
+    homeBackgroundOpacity: 100,
+    homeBackgroundFitScreen: false,
+    homeBackgroundWidth: 'auto',
+    homeBackgroundHeight: 'auto',
+    restBackgroundColor: '#ffffff',
+    restBackgroundImage: '',
+    restBackgroundRepeat: 'no-repeat',
+    restBackgroundSize: 'cover',
+    restBackgroundFitScreen: false,
     socialLinks: {
       facebook: '',
       instagram: '',
@@ -201,7 +224,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
   const [uploading, setUploading] = useState({
     logoUrl: false,
     tabIconUrl: false,
-    backgroundImage: false,
+    homeBackgroundImage: false,
+    restBackgroundImage: false,
     banner: false
   });
   const [activeTab, setActiveTab] = useState('general');
@@ -249,9 +273,19 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         address: initialSettings.address || '',
         footerText: initialSettings.footerText || '',
         isMaintenanceMode: initialSettings.isMaintenanceMode || false,
-        backgroundImage: initialSettings.backgroundImage || '',
-        backgroundRepeat: initialSettings.backgroundRepeat || 'no-repeat',
-        backgroundSize: initialSettings.backgroundSize || 'cover',
+        homeBackgroundColor: initialSettings.homeBackgroundColor || '#f8fafc',
+        homeBackgroundImage: initialSettings.homeBackgroundImage || '',
+        homeBackgroundRepeat: initialSettings.homeBackgroundRepeat || 'no-repeat',
+        homeBackgroundSize: initialSettings.homeBackgroundSize || 'cover',
+        homeBackgroundOpacity: initialSettings.homeBackgroundOpacity ?? 100,
+        homeBackgroundFitScreen: initialSettings.homeBackgroundFitScreen || false,
+        homeBackgroundWidth: initialSettings.homeBackgroundWidth || 'auto',
+        homeBackgroundHeight: initialSettings.homeBackgroundHeight || 'auto',
+        restBackgroundColor: initialSettings.restBackgroundColor || initialSettings.backgroundColor || '#ffffff',
+        restBackgroundImage: initialSettings.restBackgroundImage || initialSettings.backgroundImage || '',
+        restBackgroundRepeat: initialSettings.restBackgroundRepeat || initialSettings.backgroundRepeat || 'no-repeat',
+        restBackgroundSize: initialSettings.restBackgroundSize || initialSettings.backgroundSize || 'cover',
+        restBackgroundFitScreen: initialSettings.restBackgroundFitScreen || false,
         socialLinks: {
           facebook: initialSettings.socialLinks?.facebook || '',
           instagram: initialSettings.socialLinks?.instagram || '',
@@ -339,7 +373,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     const uploadConfig = {
       logoUrl: { label: 'Logo', acceptSvgOnly: false },
       tabIconUrl: { label: 'Tab icon', acceptSvgOnly: true },
-      backgroundImage: { label: 'Background', acceptSvgOnly: false }
+      homeBackgroundImage: { label: 'Home background', acceptSvgOnly: false },
+      restBackgroundImage: { label: 'Rest pages background', acceptSvgOnly: false }
     };
     const config = uploadConfig[field] || { label: 'Image', acceptSvgOnly: false };
 
@@ -1316,8 +1351,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                 </SectionCard>
 
                 <SectionCard
-                  title="Background Image"
-                  subtitle="Set a custom site background"
+                  title="Home Page Background"
+                  subtitle="Apply only on the home page without changing the hero banner"
                   icon="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   gradient="bg-gradient-to-r from-indigo-600 to-violet-600"
                 >
@@ -1325,47 +1360,200 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                     <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
                       <div className="space-y-4">
                         <UploadBox
-                          id="bg-upload"
-                          label="Click to upload background"
+                          id="home-bg-upload"
+                          label="Click to upload home background"
                           hint="Recommended: 1920x1080px"
-                          uploading={uploading.backgroundImage}
-                          onUpload={(e) => handleUpload(e, 'backgroundImage')}
+                          uploading={uploading.homeBackgroundImage}
+                          onUpload={(e) => handleUpload(e, 'homeBackgroundImage')}
                         />
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Background Color</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="homeBackgroundColor"
+                                value={form.homeBackgroundColor}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="homeBackgroundColor"
+                                value={form.homeBackgroundColor}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
+                              />
+                            </div>
+                          </div>
                           <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700">Size</label>
                             <select
-                              name="backgroundSize"
-                              value={form.backgroundSize}
+                              name="homeBackgroundSize"
+                              value={form.homeBackgroundSize}
                               onChange={handleChange}
                               className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
                             >
-                              <option value="cover">Cover</option>
-                              <option value="contain">Contain</option>
-                              <option value="auto">Auto</option>
+                              {BACKGROUND_SIZE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                              <option value="custom">Custom Width / Height</option>
                             </select>
                           </div>
                           <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700">Repeat</label>
                             <select
-                              name="backgroundRepeat"
-                              value={form.backgroundRepeat}
+                              name="homeBackgroundRepeat"
+                              value={form.homeBackgroundRepeat}
                               onChange={handleChange}
                               className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
                             >
-                              <option value="no-repeat">No Repeat</option>
-                              <option value="repeat">Repeat</option>
-                              <option value="repeat-x">Repeat X</option>
-                              <option value="repeat-y">Repeat Y</option>
+                              {BACKGROUND_REPEAT_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Opacity</label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                name="homeBackgroundOpacity"
+                                value={form.homeBackgroundOpacity}
+                                onChange={handleChange}
+                                className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
+                              />
+                              <span className="text-sm font-medium text-slate-500">%</span>
+                            </div>
+                          </div>
+                        </div>
+                        {form.homeBackgroundSize === 'custom' && (
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <InputField
+                              label="Custom Width"
+                              name="homeBackgroundWidth"
+                              value={form.homeBackgroundWidth}
+                              onChange={handleChange}
+                              placeholder="100%, 1200px, auto"
+                            />
+                            <InputField
+                              label="Custom Height"
+                              name="homeBackgroundHeight"
+                              value={form.homeBackgroundHeight}
+                              onChange={handleChange}
+                              placeholder="100vh, 700px, auto"
+                            />
+                          </div>
+                        )}
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                          <input
+                            type="checkbox"
+                            name="homeBackgroundFitScreen"
+                            checked={form.homeBackgroundFitScreen}
+                            onChange={handleChange}
+                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-slate-700">Fit To Screen</div>
+                            <p className="text-xs text-slate-500">Viewport ke hisaab se background ko fit rakhta hai.</p>
+                          </div>
+                        </label>
+                      </div>
+                      <PreviewBox
+                        label="home background"
+                        hasImage={!!form.homeBackgroundImage}
+                        imageUrl={form.homeBackgroundImage}
+                        onRemove={() => handleRemoveImage('homeBackgroundImage')}
+                        aspectRatio="aspect-video"
+                      />
+                    </div>
+                  </div>
+                </SectionCard>
+
+                <SectionCard
+                  title="Rest Pages Background"
+                  subtitle="Apply on all non-home user pages"
+                  icon="M3 3h18v18H3V3zm4 4h10v10H7V7z"
+                  gradient="bg-gradient-to-r from-sky-600 to-cyan-600"
+                >
+                  <div className="space-y-6">
+                    <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+                      <div className="space-y-4">
+                        <UploadBox
+                          id="rest-bg-upload"
+                          label="Click to upload rest pages background"
+                          hint="Products, categories, profile aur baki non-home pages ke liye"
+                          uploading={uploading.restBackgroundImage}
+                          onUpload={(e) => handleUpload(e, 'restBackgroundImage')}
+                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Background Color</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="restBackgroundColor"
+                                value={form.restBackgroundColor}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="restBackgroundColor"
+                                value={form.restBackgroundColor}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-sky-500"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Size</label>
+                            <select
+                              name="restBackgroundSize"
+                              value={form.restBackgroundSize}
+                              onChange={handleChange}
+                              className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-sky-500"
+                            >
+                              {BACKGROUND_SIZE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
                             </select>
                           </div>
                         </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-700">Repeat</label>
+                          <select
+                            name="restBackgroundRepeat"
+                            value={form.restBackgroundRepeat}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-sky-500"
+                          >
+                            {BACKGROUND_REPEAT_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                          <input
+                            type="checkbox"
+                            name="restBackgroundFitScreen"
+                            checked={form.restBackgroundFitScreen}
+                            onChange={handleChange}
+                            className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-slate-700">Fit To Screen</div>
+                            <p className="text-xs text-slate-500">Viewport ke saath background ko fixed rakhta hai.</p>
+                          </div>
+                        </label>
                       </div>
                       <PreviewBox
-                        label="background"
-                        hasImage={!!form.backgroundImage}
-                        imageUrl={form.backgroundImage}
-                        onRemove={() => handleRemoveImage('backgroundImage')}
+                        label="rest pages background"
+                        hasImage={!!form.restBackgroundImage}
+                        imageUrl={form.restBackgroundImage}
+                        onRemove={() => handleRemoveImage('restBackgroundImage')}
                         aspectRatio="aspect-video"
                       />
                     </div>

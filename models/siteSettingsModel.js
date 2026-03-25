@@ -98,6 +98,21 @@ const siteSettingsSchema = new mongoose.Schema(
     
     isMaintenanceMode: { type: Boolean, default: false },
 
+    homeBackgroundColor: { type: String, default: '#f8fafc' },
+    homeBackgroundImage: { type: String, default: '' },
+    homeBackgroundRepeat: { type: String, enum: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'], default: 'no-repeat' },
+    homeBackgroundSize: { type: String, enum: ['cover', 'contain', 'auto', 'custom'], default: 'cover' },
+    homeBackgroundOpacity: { type: Number, default: 100 },
+    homeBackgroundFitScreen: { type: Boolean, default: false },
+    homeBackgroundWidth: { type: String, default: 'auto' },
+    homeBackgroundHeight: { type: String, default: 'auto' },
+
+    restBackgroundColor: { type: String, default: '#ffffff' },
+    restBackgroundImage: { type: String, default: '' },
+    restBackgroundRepeat: { type: String, enum: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'], default: 'no-repeat' },
+    restBackgroundSize: { type: String, enum: ['cover', 'contain', 'auto'], default: 'cover' },
+    restBackgroundFitScreen: { type: Boolean, default: false },
+
     // Appearance customizations
     backgroundColor: { type: String, default: '#0b1220' },
     backgroundImage: { type: String, default: '' },

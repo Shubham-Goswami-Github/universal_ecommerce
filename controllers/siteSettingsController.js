@@ -33,6 +33,19 @@ exports.getPublicSettings = async (req, res) => {
       address: settings.address,
       socialLinks: settings.socialLinks,
       isMaintenanceMode: settings.isMaintenanceMode,
+      homeBackgroundColor: settings.homeBackgroundColor,
+      homeBackgroundImage: settings.homeBackgroundImage,
+      homeBackgroundRepeat: settings.homeBackgroundRepeat,
+      homeBackgroundSize: settings.homeBackgroundSize,
+      homeBackgroundOpacity: settings.homeBackgroundOpacity,
+      homeBackgroundFitScreen: settings.homeBackgroundFitScreen,
+      homeBackgroundWidth: settings.homeBackgroundWidth,
+      homeBackgroundHeight: settings.homeBackgroundHeight,
+      restBackgroundColor: settings.restBackgroundColor || settings.backgroundColor,
+      restBackgroundImage: settings.restBackgroundImage || settings.backgroundImage,
+      restBackgroundRepeat: settings.restBackgroundRepeat || settings.backgroundRepeat,
+      restBackgroundSize: settings.restBackgroundSize || settings.backgroundSize,
+      restBackgroundFitScreen: settings.restBackgroundFitScreen,
     });
   } catch (error) {
     console.error('Get public settings error:', error);
@@ -70,7 +83,20 @@ const allowedByAdmin = [
   'contactPhone',
   'address',
   'socialLinks',
-  'isMaintenanceMode'
+  'isMaintenanceMode',
+  'homeBackgroundColor',
+  'homeBackgroundImage',
+  'homeBackgroundRepeat',
+  'homeBackgroundSize',
+  'homeBackgroundOpacity',
+  'homeBackgroundFitScreen',
+  'homeBackgroundWidth',
+  'homeBackgroundHeight',
+  'restBackgroundColor',
+  'restBackgroundImage',
+  'restBackgroundRepeat',
+  'restBackgroundSize',
+  'restBackgroundFitScreen'
 ];
 
 exports.upsertPublicSettingsByAdmin = async (req, res) => {
