@@ -38,7 +38,7 @@ export default function AdminCategories({ token }) {
     setTimeout(() => setNotification({ show: false, type: '', message: '' }), 4000);
   };
 
-  // Upload category image using the local category upload endpoint.
+  // Upload category image using the shared Cloudinary upload endpoint.
   const uploadImage = async (file) => {
     if (!file) return null;
 
@@ -56,7 +56,7 @@ export default function AdminCategories({ token }) {
     formData.append('image', file);
 
     try {
-      const res = await axiosClient.post('/api/upload/category-image', formData, {
+      const res = await axiosClient.post('/api/upload/image', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`

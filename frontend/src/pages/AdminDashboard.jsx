@@ -1407,7 +1407,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Custom Scrollbar Styles */}
-      <style jsx global>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }

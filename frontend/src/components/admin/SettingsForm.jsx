@@ -1737,7 +1737,7 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         </div>
       </form>
 
-      <style jsx>{`
+      <style>{`
         @keyframes slide-down {
           from {
             transform: translateX(-50%) translateY(-100%);
