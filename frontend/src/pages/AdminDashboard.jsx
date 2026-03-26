@@ -1,5 +1,6 @@
 // src/pages/AdminDashboard.jsx
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
 
@@ -69,6 +70,11 @@ const Icons = {
   Products: () => (
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  ),
+  Home: () => (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10.5l9-7 9 7M5.25 9.75V20.25H18.75V9.75M9 20.25V14.25H15V20.25" />
     </svg>
   ),
   Orders: () => (
@@ -156,6 +162,7 @@ const TABS = [
   { key: 'vendors', label: 'Vendor Logins', icon: Icons.Vendor, badge: null },
   { key: 'users', label: 'User Logins', icon: Icons.Users, badge: null },
   { key: 'allproducts', label: 'All Products', icon: Icons.Products, badge: null },
+  { key: 'homepage', label: 'Go to Homepage', icon: Icons.Home, badge: null, to: '/' },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -1159,19 +1166,17 @@ export default function AdminDashboard() {
             {TABS.map((t) => {
               const Icon = t.icon;
               const badge = t.badge ? badgeCounts[t.badge] : 0;
+              const isLinkItem = Boolean(t.to);
+              const isActive = !isLinkItem && activeTab === t.key;
+              const itemClassName = `group relative w-full flex items-center px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                isActive
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-200'
+                  : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
+              } ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`;
               
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => handleTabChange(t.key)}
-                  className={`group relative w-full flex items-center px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                    activeTab === t.key
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-200'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
-                  } ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}
-                  title={sidebarCollapsed ? t.label : undefined}
-                >
-                  <div className={activeTab === t.key ? 'scale-110' : 'group-hover:scale-110 transition-transform'}>
+              const itemContent = (
+                <>
+                  <div className={isActive ? 'scale-110' : 'group-hover:scale-110 transition-transform'}>
                     <Icon />
                   </div>
                   {!sidebarCollapsed && (
@@ -1179,9 +1184,7 @@ export default function AdminDashboard() {
                       <span className="flex-1 text-left">{t.label}</span>
                       {badge > 0 && (
                         <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
-                          activeTab === t.key 
-                            ? 'bg-white text-blue-600' 
-                            : 'bg-red-500 text-white'
+                          isActive ? 'bg-white text-blue-600' : 'bg-red-500 text-white'
                         }`}>
                           {badge}
                         </span>
@@ -1193,6 +1196,31 @@ export default function AdminDashboard() {
                       {badge}
                     </span>
                   )}
+                </>
+              );
+
+              if (isLinkItem) {
+                return (
+                  <Link
+                    key={t.key}
+                    to={t.to}
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className={itemClassName}
+                    title={sidebarCollapsed ? t.label : undefined}
+                  >
+                    {itemContent}
+                  </Link>
+                );
+              }
+
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => handleTabChange(t.key)}
+                  className={itemClassName}
+                  title={sidebarCollapsed ? t.label : undefined}
+                >
+                  {itemContent}
                 </button>
               );
             })}

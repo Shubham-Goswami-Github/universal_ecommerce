@@ -50,6 +50,18 @@ const siteSettingsSchema = new mongoose.Schema(
     homeHeroTagline: { type: String, default: 'New Collection 2024' },
     homeAccentPrimary: { type: String, default: '#0056b3' },
     homeAccentSecondary: { type: String, default: '#00a0ff' },
+    homeAnnouncementEnabled: { type: Boolean, default: true },
+    homeAnnouncementText: { type: String, default: '🎉 Free shipping on orders over ₹499 | Use code: WELCOME10 for 10% off' },
+    homeNewsletterEnabled: { type: Boolean, default: true },
+    homeNewsletterBadgeText: { type: String, default: 'Join 10,000+ subscribers' },
+    homeNewsletterTitle: { type: String, default: 'Stay Updated' },
+    homeNewsletterDescription: {
+      type: String,
+      default: 'Subscribe to get exclusive offers, new arrivals updates, and special discounts directly in your inbox.'
+    },
+    homeNewsletterInputPlaceholder: { type: String, default: 'Enter your email' },
+    homeNewsletterButtonLabel: { type: String, default: 'Subscribe' },
+    homeNewsletterButtonLink: { type: String, default: '' },
     homeHeroStats: {
       type: [statItemSchema],
       default: [

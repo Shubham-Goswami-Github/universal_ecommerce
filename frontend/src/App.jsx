@@ -87,7 +87,7 @@ function AppInner({ maintenanceMode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <ScrollToTop />
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       <main className={isFullBleedPage ? 'flex-1' : 'flex-1 py-4'}>
         <div className={isFullBleedPage ? '' : 'px-3 sm:px-4'}>
           <Routes>

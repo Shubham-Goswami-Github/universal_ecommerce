@@ -191,6 +191,15 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     homeHeroTagline: '',
     homeAccentPrimary: '#0056b3',
     homeAccentSecondary: '#00a0ff',
+    homeAnnouncementEnabled: true,
+    homeAnnouncementText: '🎉 Free shipping on orders over ₹499 | Use code: WELCOME10 for 10% off',
+    homeNewsletterEnabled: true,
+    homeNewsletterBadgeText: 'Join 10,000+ subscribers',
+    homeNewsletterTitle: 'Stay Updated',
+    homeNewsletterDescription: 'Subscribe to get exclusive offers, new arrivals updates, and special discounts directly in your inbox.',
+    homeNewsletterInputPlaceholder: 'Enter your email',
+    homeNewsletterButtonLabel: 'Subscribe',
+    homeNewsletterButtonLink: '',
     homeHeroStats: DEFAULT_HOME_HERO_STATS,
     homeHeroHighlights: DEFAULT_HOME_HERO_HIGHLIGHTS,
     homeTrustBadges: DEFAULT_HOME_TRUST_BADGES,
@@ -263,6 +272,15 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         homeHeroTagline: initialSettings.homeHeroTagline || '',
         homeAccentPrimary: initialSettings.homeAccentPrimary || '#0056b3',
         homeAccentSecondary: initialSettings.homeAccentSecondary || '#00a0ff',
+        homeAnnouncementEnabled: initialSettings.homeAnnouncementEnabled ?? true,
+        homeAnnouncementText: initialSettings.homeAnnouncementText || '🎉 Free shipping on orders over ₹499 | Use code: WELCOME10 for 10% off',
+        homeNewsletterEnabled: initialSettings.homeNewsletterEnabled ?? true,
+        homeNewsletterBadgeText: initialSettings.homeNewsletterBadgeText || 'Join 10,000+ subscribers',
+        homeNewsletterTitle: initialSettings.homeNewsletterTitle || 'Stay Updated',
+        homeNewsletterDescription: initialSettings.homeNewsletterDescription || 'Subscribe to get exclusive offers, new arrivals updates, and special discounts directly in your inbox.',
+        homeNewsletterInputPlaceholder: initialSettings.homeNewsletterInputPlaceholder || 'Enter your email',
+        homeNewsletterButtonLabel: initialSettings.homeNewsletterButtonLabel || 'Subscribe',
+        homeNewsletterButtonLink: initialSettings.homeNewsletterButtonLink || '',
         homeHeroStats: initialSettings.homeHeroStats?.length
           ? initialSettings.homeHeroStats.map(createStatItem)
           : DEFAULT_HOME_HERO_STATS,
@@ -773,6 +791,112 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                       onChange={handleChange}
                       placeholder="© 2024 Your Company. All rights reserved."
                     />
+                  </div>
+                </SectionCard>
+
+                <SectionCard
+                  title="Homepage Promo Sections"
+                  subtitle="Control the announcement bar and newsletter content"
+                  icon="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  gradient="bg-gradient-to-r from-fuchsia-600 to-pink-600"
+                >
+                  <div className="space-y-6">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="text-base font-bold text-slate-800">Top Announcement Bar</h3>
+                          <p className="text-sm text-slate-500">Homepage ke top promo message ko yahan se control karo.</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="homeAnnouncementEnabled"
+                            checked={form.homeAnnouncementEnabled}
+                            onChange={handleChange}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-fuchsia-500 peer-checked:to-pink-600 shadow-inner"></div>
+                        </label>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-semibold text-slate-700">Announcement Text</label>
+                        <textarea
+                          name="homeAnnouncementText"
+                          value={form.homeAnnouncementText}
+                          onChange={handleChange}
+                          rows={3}
+                          placeholder="🎉 Free shipping on orders over ₹499 | Use code: WELCOME10 for 10% off"
+                          className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-700 placeholder-slate-400 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="text-base font-bold text-slate-800">Newsletter Section</h3>
+                          <p className="text-sm text-slate-500">Subscribe wale homepage block ko on/off aur customize karo.</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="homeNewsletterEnabled"
+                            checked={form.homeNewsletterEnabled}
+                            onChange={handleChange}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-fuchsia-500 peer-checked:to-pink-600 shadow-inner"></div>
+                        </label>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <InputField
+                          label="Badge Text"
+                          name="homeNewsletterBadgeText"
+                          value={form.homeNewsletterBadgeText}
+                          onChange={handleChange}
+                          placeholder="Join 10,000+ subscribers"
+                        />
+                        <InputField
+                          label="Title"
+                          name="homeNewsletterTitle"
+                          value={form.homeNewsletterTitle}
+                          onChange={handleChange}
+                          placeholder="Stay Updated"
+                        />
+                        <InputField
+                          label="Input Placeholder"
+                          name="homeNewsletterInputPlaceholder"
+                          value={form.homeNewsletterInputPlaceholder}
+                          onChange={handleChange}
+                          placeholder="Enter your email"
+                        />
+                        <InputField
+                          label="Button Label"
+                          name="homeNewsletterButtonLabel"
+                          value={form.homeNewsletterButtonLabel}
+                          onChange={handleChange}
+                          placeholder="Subscribe"
+                        />
+                        <InputField
+                          label="Button Link"
+                          name="homeNewsletterButtonLink"
+                          value={form.homeNewsletterButtonLink}
+                          onChange={handleChange}
+                          placeholder="/products or https://example.com"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-semibold text-slate-700">Description</label>
+                        <textarea
+                          name="homeNewsletterDescription"
+                          value={form.homeNewsletterDescription}
+                          onChange={handleChange}
+                          rows={3}
+                          placeholder="Subscribe to get exclusive offers, new arrivals updates, and special discounts directly in your inbox."
+                          className="w-full rounded-xl border-2 border-slate-200 px-4 py-3 text-slate-700 placeholder-slate-400 focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 resize-none"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </SectionCard>
 
