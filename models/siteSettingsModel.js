@@ -48,6 +48,8 @@ const siteSettingsSchema = new mongoose.Schema(
     },
 
     homeHeroTagline: { type: String, default: 'New Collection 2024' },
+    homeAccentPrimary: { type: String, default: '#0056b3' },
+    homeAccentSecondary: { type: String, default: '#00a0ff' },
     homeHeroStats: {
       type: [statItemSchema],
       default: [
@@ -99,6 +101,8 @@ const siteSettingsSchema = new mongoose.Schema(
     isMaintenanceMode: { type: Boolean, default: false },
 
     homeBackgroundColor: { type: String, default: '#f8fafc' },
+    homeBackgroundAccentPrimary: { type: String, default: '#0056b3' },
+    homeBackgroundAccentSecondary: { type: String, default: '#00a0ff' },
     homeBackgroundImage: { type: String, default: '' },
     homeBackgroundRepeat: { type: String, enum: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'], default: 'no-repeat' },
     homeBackgroundSize: { type: String, enum: ['cover', 'contain', 'auto', 'custom'], default: 'cover' },
@@ -108,6 +112,8 @@ const siteSettingsSchema = new mongoose.Schema(
     homeBackgroundHeight: { type: String, default: 'auto' },
 
     restBackgroundColor: { type: String, default: '#ffffff' },
+    restBackgroundAccentPrimary: { type: String, default: '#0056b3' },
+    restBackgroundAccentSecondary: { type: String, default: '#00a0ff' },
     restBackgroundImage: { type: String, default: '' },
     restBackgroundRepeat: { type: String, enum: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'], default: 'no-repeat' },
     restBackgroundSize: { type: String, enum: ['cover', 'contain', 'auto'], default: 'cover' },

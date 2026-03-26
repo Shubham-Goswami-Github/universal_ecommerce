@@ -94,12 +94,17 @@ const ProductQuickView = ({
       onClose?.();
       return;
     }
+    if (role && role !== 'user') {
+      showMessage('Access denied: only customers can add items to cart', true);
+      return;
+    }
     try {
       setActionLoading(true);
       await axiosClient.post('/api/cart/add', {
         productId: product._id,
         quantity: quantity,
       });
+      window.dispatchEvent(new Event('cart:updated'));
       showMessage('✓ Added to cart successfully!');
     } catch (err) {
       showMessage(err.response?.data?.message || 'Failed to add to cart', true);
@@ -132,12 +137,17 @@ const ProductQuickView = ({
       onClose?.();
       return;
     }
+    if (role && role !== 'user') {
+      showMessage('Access denied: only customers can continue to checkout', true);
+      return;
+    }
     try {
       setActionLoading(true);
       await axiosClient.post('/api/cart/add', {
         productId: product._id,
         quantity: quantity,
       });
+      window.dispatchEvent(new Event('cart:updated'));
       onClose?.();
       navigate('/cart');
     } catch (err) {
@@ -193,7 +203,7 @@ const ProductQuickView = ({
 
   const handleViewFullDetails = () => {
     onClose?.();
-    navigate(`/product/${product._id}`);
+    navigate(`/products/${product._id}`);
   };
 
   // ============ RENDER HELPERS ============
@@ -575,14 +585,18 @@ const ProductQuickView = ({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-x-0 bottom-0 z-[90] bg-black/60 backdrop-blur-sm transition-opacity"
+        style={{ top: 'clamp(64px, 10vh, 72px)' }}
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-        <div 
-          className="relative w-full max-w-5xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col md:flex-row"
+      <div
+        className="fixed inset-x-0 bottom-0 z-[90] flex items-start justify-center p-2 pt-3 sm:p-4 sm:pt-4 lg:p-6 lg:pt-5 pointer-events-none overflow-y-auto"
+        style={{ top: 'clamp(64px, 10vh, 72px)' }}
+      >
+        <div
+          className="relative w-full max-w-[96vw] lg:max-w-6xl max-h-full bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col lg:flex-row"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -596,9 +610,9 @@ const ProductQuickView = ({
           </button>
 
           {/* LEFT: Image Gallery */}
-          <div className="w-full md:w-2/5 bg-gray-50 border-r border-gray-200 flex flex-col">
+          <div className="w-full lg:w-[42%] bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col min-h-0">
             {/* Main Image */}
-            <div className="relative flex-1 flex items-center justify-center p-4 min-h-[280px] md:min-h-[400px]">
+            <div className="relative flex-1 flex items-center justify-center p-4 min-h-[240px] sm:min-h-[280px] lg:min-h-[420px] max-h-[38vh] lg:max-h-none">
               <img
                 src={mainImage}
                 alt={product.name}
@@ -617,7 +631,7 @@ const ProductQuickView = ({
                 <button
                   onClick={handleAddToWishlist}
                   disabled={actionLoading}
-                  className={`absolute top-3 right-12 md:right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition ${
+                  className={`absolute top-3 right-12 sm:right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition ${
                     isWishlisted 
                       ? 'bg-red-500 text-white' 
                       : 'bg-white text-gray-600 hover:text-red-500 hover:bg-red-50'
@@ -680,7 +694,7 @@ const ProductQuickView = ({
           </div>
 
           {/* RIGHT: Product Details */}
-          <div className="w-full md:w-3/5 flex flex-col max-h-[90vh] md:max-h-none">
+          <div className="w-full lg:w-[58%] flex flex-col min-h-0 max-h-[56vh] lg:max-h-[94vh]">
             {/* Header Section */}
             <div className="p-4 md:p-5 border-b border-gray-100">
               {/* Role Badge - Admin/Vendor only */}
@@ -819,7 +833,7 @@ const ProductQuickView = ({
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-5">
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 md:p-5">
               {activeTab === 'overview' && renderOverviewTab()}
               {activeTab === 'specifications' && showAdvancedDetails && renderSpecificationsTab()}
               {activeTab === 'description' && showAdvancedDetails && renderDescriptionTab()}

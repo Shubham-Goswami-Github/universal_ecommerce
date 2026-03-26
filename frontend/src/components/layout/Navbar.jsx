@@ -4,6 +4,31 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axiosClient from '../../api/axiosClient';
 
+const normalizeHex = (value, fallback) => {
+  if (typeof value !== 'string') return fallback;
+  const trimmed = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed;
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
+  }
+  return fallback;
+};
+
+const hexToRgb = (hex) => {
+  const safeHex = normalizeHex(hex, '#10b981');
+  const value = safeHex.replace('#', '');
+  return {
+    r: Number.parseInt(value.slice(0, 2), 16),
+    g: Number.parseInt(value.slice(2, 4), 16),
+    b: Number.parseInt(value.slice(4, 6), 16),
+  };
+};
+
+const rgba = (hex, alpha) => {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 /* ─────────────────────────────────────────────────────────────
    NAVBAR COMPONENT
 ───────────────────────────────────────────────────────────── */
@@ -31,6 +56,10 @@ const Navbar = () => {
   const [siteName, setSiteName] = useState('ShopCart');
   const [logoUrl, setLogoUrl] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [brandAccent, setBrandAccent] = useState({
+    primary: '#10b981',
+    secondary: '#14b8a6',
+  });
 
   // User stats
   const [userStats, setUserStats] = useState({});
@@ -42,6 +71,11 @@ const Navbar = () => {
   const isDashboardRoute =
     /^\/admin(\/|$)/.test(location.pathname) ||
     /^\/vendor(\/|$)/.test(location.pathname);
+  const accentPrimary = brandAccent.primary;
+  const accentSecondary = brandAccent.secondary;
+  const accentSoft = rgba(accentPrimary, 0.1);
+  const accentSoftBorder = rgba(accentPrimary, 0.18);
+  const accentShadow = rgba(accentPrimary, 0.25);
 
   // Handle scroll effect
   useEffect(() => {
@@ -82,8 +116,17 @@ const Navbar = () => {
     }
     
     const onSettingsUpdated = () => fetchSettings();
+    const onCartUpdated = () => {
+      if (user && role === 'user') {
+        fetchCartCount();
+      }
+    };
     window.addEventListener('settings:updated', onSettingsUpdated);
-    return () => window.removeEventListener('settings:updated', onSettingsUpdated);
+    window.addEventListener('cart:updated', onCartUpdated);
+    return () => {
+      window.removeEventListener('settings:updated', onSettingsUpdated);
+      window.removeEventListener('cart:updated', onCartUpdated);
+    };
   }, [user, role]);
 
   const normalizeLogoUrl = (rawUrl) => {
@@ -115,6 +158,10 @@ const Navbar = () => {
       if (data.siteName) setSiteName(data.siteName);
       const normalized = normalizeLogoUrl(data.logoUrl || '');
       setLogoUrl(normalized || null);
+      setBrandAccent({
+        primary: normalizeHex(data.homeAccentPrimary, '#10b981'),
+        secondary: normalizeHex(data.homeAccentSecondary, '#14b8a6'),
+      });
     } catch {
       // silent fallback
     }
@@ -268,7 +315,15 @@ const Navbar = () => {
           MAIN NAVBAR
       ═══════════════════════════════════════════════════════════════ */}
       <nav
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        style={{
+          '--navbar-accent-primary': accentPrimary,
+          '--navbar-accent-secondary': accentSecondary,
+          '--navbar-accent-soft': accentSoft,
+          '--navbar-accent-border': accentSoftBorder,
+          '--navbar-height': '64px',
+          '--navbar-height-desktop': '72px',
+        }}
+        className={`navbar-theme sticky top-0 z-[80] transition-all duration-300 ${
           scrolled
             ? 'bg-white/95 backdrop-blur-xl shadow-lg shadow-gray-200/50 border-b border-gray-100'
             : 'bg-white border-b border-gray-100'
@@ -294,19 +349,22 @@ const Navbar = () => {
                     />
                   </div>
                 ) : (
-                  <div className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-emerald-500/30 group-hover:shadow-xl group-hover:shadow-emerald-500/40 transition-all duration-300 group-hover:scale-105">
+                  <div
+                    className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg transition-all duration-300 group-hover:scale-105"
+                    style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})`, boxShadow: `0 12px 28px ${accentShadow}` }}
+                  >
                     {siteName?.charAt(0) || 'S'}
                   </div>
                 )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></span>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white" style={{ backgroundColor: accentPrimary }}></span>
               </div>
               <div className="hidden sm:block">
-                <span className="text-gray-900 font-bold text-xl tracking-tight group-hover:text-emerald-600 transition-colors">
+                <span className="text-gray-900 font-bold text-xl tracking-tight transition-colors group-hover:opacity-90" style={{ color: accentPrimary }}>
                   {siteName}
                 </span>
                 <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
                   <span className="flex items-center gap-0.5">
-                    <svg className="w-2.5 h-2.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-2.5 h-2.5" style={{ color: accentPrimary }} fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     Trusted
@@ -333,8 +391,9 @@ const Navbar = () => {
                     type="button"
                     onClick={() => setShowCategoryMenu(!showCategoryMenu)}
                     className={`h-11 px-4 flex items-center gap-2 bg-gray-100 border border-r-0 rounded-l-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors ${
-                      searchFocused ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200'
+                      searchFocused ? '' : 'border-gray-200'
                     }`}
+                    style={searchFocused ? { borderColor: accentPrimary, backgroundColor: accentSoft } : undefined}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -353,7 +412,8 @@ const Navbar = () => {
                         <Link 
                           to="/categories" 
                           onClick={() => setShowCategoryMenu(false)}
-                          className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+                          className="text-sm font-medium flex items-center gap-1"
+                          style={{ color: accentPrimary }}
                         >
                           View All
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,7 +439,7 @@ const Navbar = () => {
                               )}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900 group-hover:text-emerald-600 transition-colors">{cat.name}</p>
+                              <p className="font-medium text-gray-900 transition-colors group-hover:opacity-80" style={{ color: accentPrimary }}>{cat.name}</p>
                               <p className="text-xs text-gray-400">{getSubCategories(cat._id).length} items</p>
                             </div>
                           </Link>
@@ -400,13 +460,15 @@ const Navbar = () => {
                     placeholder="Search for products, brands and more..."
                     className={`w-full h-11 pl-4 pr-12 bg-gray-50 border text-sm placeholder:text-gray-400 focus:outline-none transition-all ${
                       searchFocused 
-                        ? 'border-emerald-500 bg-white ring-4 ring-emerald-500/10' 
+                        ? 'bg-white' 
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
+                    style={searchFocused ? { borderColor: accentPrimary, boxShadow: `0 0 0 4px ${accentSoft}` } : undefined}
                   />
                   <button
                     type="submit"
-                    className="absolute right-0 top-0 h-11 w-12 bg-emerald-500 hover:bg-emerald-600 rounded-r-xl flex items-center justify-center text-white transition-colors"
+                    className="absolute right-0 top-0 h-11 w-12 rounded-r-xl flex items-center justify-center text-white transition-colors"
+                    style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})` }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -424,24 +486,26 @@ const Navbar = () => {
                 to="/"
                 end
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'text-emerald-600 bg-emerald-50'
-                      : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                      ? 'bg-gray-50'
+                      : 'text-gray-600 hover:bg-gray-50'
                   }`
                 }
+                style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
               >
                 Home
               </NavLink>
               <NavLink
                 to="/products"
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'text-emerald-600 bg-emerald-50'
-                      : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                      ? 'bg-gray-50'
+                      : 'text-gray-600 hover:bg-gray-50'
                   }`
                 }
+                style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
               >
                 Products
               </NavLink>
@@ -471,7 +535,8 @@ const Navbar = () => {
               {/* Mobile Search Toggle */}
               <button
                 onClick={() => setShowSearch(!showSearch)}
-                className="lg:hidden p-2.5 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+                className="lg:hidden p-2.5 rounded-xl text-gray-500 transition-all"
+                style={{ color: showSearch ? accentPrimary : undefined, backgroundColor: showSearch ? accentSoft : undefined }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -508,16 +573,17 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `relative p-2.5 rounded-xl transition-all duration-200 group ${
                       isActive
-                        ? 'text-emerald-600 bg-emerald-50'
-                        : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
+                        ? ''
+                        : 'text-gray-500'
                     }`
                   }
+                  style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-emerald-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-lg shadow-emerald-500/30 animate-scale-in">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-lg animate-scale-in" style={{ backgroundColor: accentPrimary, boxShadow: `0 10px 18px ${accentShadow}` }}>
                       {cartCount > 99 ? '99+' : cartCount}
                     </span>
                   )}
@@ -531,10 +597,11 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `relative p-2.5 rounded-xl transition-all duration-200 hidden md:flex ${
                       isActive
-                        ? 'text-emerald-600 bg-emerald-50'
-                        : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
+                        ? ''
+                        : 'text-gray-500'
                     }`
                   }
+                  style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -550,13 +617,15 @@ const Navbar = () => {
                 <div className="flex items-center gap-2">
                   <NavLink
                     to="/login"
-                    className="hidden sm:flex px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+                    className="hidden sm:flex px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 transition-all"
+                    style={{ color: location.pathname === '/login' ? accentPrimary : undefined, backgroundColor: location.pathname === '/login' ? accentSoft : undefined }}
                   >
                     Login
                   </NavLink>
                   <NavLink
                     to="/register"
-                    className="hidden sm:flex px-5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5"
+                    className="hidden sm:flex px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})`, boxShadow: `0 12px 28px ${accentShadow}` }}
                   >
                     Sign Up
                   </NavLink>
@@ -568,11 +637,12 @@ const Navbar = () => {
                     onClick={() => setShowUserDropdown(!showUserDropdown)}
                     className={`flex items-center gap-2 p-1.5 pr-3 rounded-xl border transition-all duration-200 ${
                       showUserDropdown
-                        ? 'bg-emerald-50 border-emerald-200'
+                        ? ''
                         : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
                     }`}
+                    style={showUserDropdown ? { backgroundColor: accentSoft, borderColor: accentSoftBorder } : undefined}
                   >
-                    <div className="h-8 w-8 rounded-lg overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm font-bold text-white shadow-sm">
+                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow-sm" style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})` }}>
                       {user.profilePicture ? (
                         <img
                           src={user.profilePicture}
@@ -618,7 +688,8 @@ const Navbar = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden p-2.5 rounded-xl text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+                className="lg:hidden p-2.5 rounded-xl text-gray-600 transition-all"
+                style={{ color: isOpen ? accentPrimary : undefined, backgroundColor: isOpen ? accentSoft : undefined }}
               >
                 {isOpen ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -664,17 +735,18 @@ const Navbar = () => {
         {/* ─────────────────────────────────────────────
             MOBILE MENU
         ───────────────────────────────────────────── */}
-        <MobileMenu
-          isOpen={isOpen}
-          user={user}
-          role={role}
-          categories={superCategories}
-          getInitials={getInitials}
-          openProfilePanel={openProfilePanel}
-          handleLogout={handleLogout}
-          setIsOpen={setIsOpen}
-        />
       </nav>
+
+      <MobileMenu
+        isOpen={isOpen}
+        user={user}
+        role={role}
+        categories={superCategories}
+        getInitials={getInitials}
+        openProfilePanel={openProfilePanel}
+        handleLogout={handleLogout}
+        setIsOpen={setIsOpen}
+      />
 
       {/* ═══════════════════════════════════════════════════════════════
           PROFILE PANEL (Slide-out Drawer)
@@ -724,6 +796,17 @@ const Navbar = () => {
         .animate-slide-down { animation: slide-down 0.2s ease-out; }
         .animate-scale-in { animation: scale-in 0.2s ease-out; }
         .animate-slide-up { animation: slide-up 0.3s ease-out; }
+
+        .navbar-theme .text-emerald-600 { color: var(--brand-accent-primary, var(--navbar-accent-primary)) !important; }
+        .navbar-theme .bg-emerald-50 { background-color: color-mix(in srgb, var(--brand-accent-primary, var(--navbar-accent-primary)) 10%, white) !important; }
+        .navbar-theme .border-emerald-200 { border-color: color-mix(in srgb, var(--brand-accent-primary, var(--navbar-accent-primary)) 18%, white) !important; }
+        .navbar-theme .bg-emerald-500 { background-color: var(--brand-accent-primary, var(--navbar-accent-primary)) !important; }
+        .navbar-theme .bg-emerald-100 { background-color: color-mix(in srgb, var(--brand-accent-primary, var(--navbar-accent-primary)) 12%, white) !important; }
+        .navbar-theme .text-emerald-700 { color: var(--brand-accent-primary, var(--navbar-accent-primary)) !important; }
+        .navbar-theme .text-emerald-100 { color: rgba(255,255,255,0.82) !important; }
+        .navbar-theme .hover\\:text-emerald-600:hover { color: var(--brand-accent-primary, var(--navbar-accent-primary)) !important; }
+        .navbar-theme .hover\\:bg-emerald-50:hover { background-color: color-mix(in srgb, var(--brand-accent-primary, var(--navbar-accent-primary)) 10%, white) !important; }
+        .navbar-theme .focus\\:border-emerald-500:focus { border-color: var(--brand-accent-primary, var(--navbar-accent-primary)) !important; }
       `}</style>
     </>
   );
@@ -740,7 +823,7 @@ const UserDropdown = ({
   setShowUserDropdown,
   handleLogout,
 }) => (
-  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden animate-dropdown-in z-50">
+  <div className="navbar-theme absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 overflow-hidden animate-dropdown-in z-50">
     {/* User Header */}
     <div className="p-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
       <div className="flex items-center gap-3">
@@ -909,7 +992,10 @@ const MobileMenu = ({
   if (!isOpen) return null;
 
   return (
-    <div className="lg:hidden fixed inset-0 z-50">
+    <div
+      className="navbar-theme lg:hidden fixed left-0 right-0 bottom-0 z-[70]"
+      style={{ top: 'var(--navbar-height, 64px)' }}
+    >
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
@@ -1228,7 +1314,7 @@ const ProfilePanel = ({
   handleLogout,
   navigate,
 }) => (
-  <div className="fixed inset-0 z-50 flex">
+  <div className="navbar-theme fixed inset-0 z-50 flex">
     {/* Backdrop */}
     <div
       className="flex-1 bg-black/50 backdrop-blur-sm animate-fade-in"

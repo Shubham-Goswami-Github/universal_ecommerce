@@ -25,14 +25,20 @@ import CategoryPage from './pages/CategoryPage';
 import CategoriesPage from './pages/CategoriesPage';
 import MaintenancePage from './pages/MaintenancePage';
 
-const buildBackgroundStyle = ({ color, image, repeat, size, fitScreen }) => ({
-  backgroundColor: color || undefined,
-  backgroundImage: image ? `url(${image})` : undefined,
-  backgroundRepeat: repeat || undefined,
-  backgroundSize: size || undefined,
-  backgroundPosition: image ? 'center top' : undefined,
-  backgroundAttachment: fitScreen ? 'fixed' : undefined,
-});
+const buildBackgroundStyle = ({ color, image, repeat, size, fitScreen, accentPrimary, accentSecondary }) => {
+  const overlay = accentPrimary || accentSecondary
+    ? `linear-gradient(135deg, ${accentPrimary || color || '#ffffff'}52 0%, ${accentSecondary || accentPrimary || color || '#ffffff'}38 100%)`
+    : undefined;
+
+  return {
+    backgroundColor: color || undefined,
+    backgroundImage: [overlay, image ? `url(${image})` : undefined].filter(Boolean).join(', ') || undefined,
+    backgroundRepeat: overlay && image ? `no-repeat, ${repeat || 'no-repeat'}` : 'no-repeat',
+    backgroundSize: overlay && image ? `cover, ${size || 'cover'}` : (overlay ? 'cover' : (size || undefined)),
+    backgroundPosition: image ? (overlay ? 'center center, center top' : 'center top') : 'center center',
+    backgroundAttachment: fitScreen ? 'fixed' : undefined,
+  };
+};
 
 function ScrollToTop() {
   const location = useLocation();
@@ -151,9 +157,13 @@ function AppShell({ appearance, loadingAppearance }) {
   const style = {
     color: appearance?.fontColor || undefined,
     fontFamily: appearance?.fontFamily || undefined,
+    '--brand-accent-primary': appearance?.homeAccentPrimary || '#0056b3',
+    '--brand-accent-secondary': appearance?.homeAccentSecondary || '#00a0ff',
     ...(isRestBackgroundRoute
       ? buildBackgroundStyle({
           color: appearance?.restBackgroundColor || appearance?.backgroundColor,
+          accentPrimary: appearance?.restBackgroundAccentPrimary || appearance?.homeAccentPrimary,
+          accentSecondary: appearance?.restBackgroundAccentSecondary || appearance?.homeAccentSecondary,
           image: appearance?.restBackgroundImage || appearance?.backgroundImage,
           repeat: appearance?.restBackgroundRepeat || appearance?.backgroundRepeat,
           size: appearance?.restBackgroundSize || appearance?.backgroundSize,
@@ -165,8 +175,23 @@ function AppShell({ appearance, loadingAppearance }) {
   return (
     <div
       style={style}
-      className={`min-h-screen bg-white text-slate-900 ${isRestBackgroundRoute ? 'rest-background-mode' : ''}`}
+      className={`relative isolate min-h-screen text-slate-900 ${isRestBackgroundRoute ? 'rest-background-mode' : ''}`}
     >
+      {isRestBackgroundRoute && (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-0 pointer-events-none"
+          style={buildBackgroundStyle({
+            color: appearance?.restBackgroundColor || appearance?.backgroundColor,
+            accentPrimary: appearance?.restBackgroundAccentPrimary || appearance?.homeAccentPrimary,
+            accentSecondary: appearance?.restBackgroundAccentSecondary || appearance?.homeAccentSecondary,
+            image: appearance?.restBackgroundImage || appearance?.backgroundImage,
+            repeat: appearance?.restBackgroundRepeat || appearance?.backgroundRepeat,
+            size: appearance?.restBackgroundSize || appearance?.backgroundSize,
+            fitScreen: appearance?.restBackgroundFitScreen,
+          })}
+        />
+      )}
       {isRestBackgroundRoute && (
         <style>{`
           .rest-background-mode main > div > * {
@@ -175,11 +200,13 @@ function AppShell({ appearance, loadingAppearance }) {
         `}</style>
       )}
       {loadingAppearance ? (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="relative z-10 min-h-screen flex items-center justify-center">
           <div className="text-slate-400">Loading...</div>
         </div>
       ) : (
-        <AppInner maintenanceMode={maintenanceMode} />
+        <div className="relative z-10">
+          <AppInner maintenanceMode={maintenanceMode} />
+        </div>
       )}
     </div>
   );

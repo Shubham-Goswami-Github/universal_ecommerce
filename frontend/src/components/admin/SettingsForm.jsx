@@ -189,6 +189,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
       overlayOpacity: 35
     },
     homeHeroTagline: '',
+    homeAccentPrimary: '#0056b3',
+    homeAccentSecondary: '#00a0ff',
     homeHeroStats: DEFAULT_HOME_HERO_STATS,
     homeHeroHighlights: DEFAULT_HOME_HERO_HIGHLIGHTS,
     homeTrustBadges: DEFAULT_HOME_TRUST_BADGES,
@@ -200,6 +202,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     footerText: '',
     isMaintenanceMode: false,
     homeBackgroundColor: '#f8fafc',
+    homeBackgroundAccentPrimary: '#0056b3',
+    homeBackgroundAccentSecondary: '#00a0ff',
     homeBackgroundImage: '',
     homeBackgroundRepeat: 'no-repeat',
     homeBackgroundSize: 'cover',
@@ -208,6 +212,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     homeBackgroundWidth: 'auto',
     homeBackgroundHeight: 'auto',
     restBackgroundColor: '#ffffff',
+    restBackgroundAccentPrimary: '#0056b3',
+    restBackgroundAccentSecondary: '#00a0ff',
     restBackgroundImage: '',
     restBackgroundRepeat: 'no-repeat',
     restBackgroundSize: 'cover',
@@ -255,6 +261,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
           overlayOpacity: initialSettings.heroBannerSettings?.overlayOpacity ?? 35
         },
         homeHeroTagline: initialSettings.homeHeroTagline || '',
+        homeAccentPrimary: initialSettings.homeAccentPrimary || '#0056b3',
+        homeAccentSecondary: initialSettings.homeAccentSecondary || '#00a0ff',
         homeHeroStats: initialSettings.homeHeroStats?.length
           ? initialSettings.homeHeroStats.map(createStatItem)
           : DEFAULT_HOME_HERO_STATS,
@@ -274,6 +282,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         footerText: initialSettings.footerText || '',
         isMaintenanceMode: initialSettings.isMaintenanceMode || false,
         homeBackgroundColor: initialSettings.homeBackgroundColor || '#f8fafc',
+        homeBackgroundAccentPrimary: initialSettings.homeBackgroundAccentPrimary || initialSettings.homeAccentPrimary || '#0056b3',
+        homeBackgroundAccentSecondary: initialSettings.homeBackgroundAccentSecondary || initialSettings.homeAccentSecondary || '#00a0ff',
         homeBackgroundImage: initialSettings.homeBackgroundImage || '',
         homeBackgroundRepeat: initialSettings.homeBackgroundRepeat || 'no-repeat',
         homeBackgroundSize: initialSettings.homeBackgroundSize || 'cover',
@@ -282,6 +292,8 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         homeBackgroundWidth: initialSettings.homeBackgroundWidth || 'auto',
         homeBackgroundHeight: initialSettings.homeBackgroundHeight || 'auto',
         restBackgroundColor: initialSettings.restBackgroundColor || initialSettings.backgroundColor || '#ffffff',
+        restBackgroundAccentPrimary: initialSettings.restBackgroundAccentPrimary || initialSettings.homeAccentPrimary || '#0056b3',
+        restBackgroundAccentSecondary: initialSettings.restBackgroundAccentSecondary || initialSettings.homeAccentSecondary || '#00a0ff',
         restBackgroundImage: initialSettings.restBackgroundImage || initialSettings.backgroundImage || '',
         restBackgroundRepeat: initialSettings.restBackgroundRepeat || initialSettings.backgroundRepeat || 'no-repeat',
         restBackgroundSize: initialSettings.restBackgroundSize || initialSettings.backgroundSize || 'cover',
@@ -1351,6 +1363,78 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                 </SectionCard>
 
                 <SectionCard
+                  title="Home Accent Colors"
+                  subtitle="Control product cards and major home page highlights"
+                  icon="M17.657 16.657L13.414 12.414m0 0L9.172 8.172a4 4 0 115.656 5.656l-1.414-1.414zM7 21l3.5-3.5"
+                  gradient="bg-gradient-to-r from-fuchsia-600 to-blue-600"
+                >
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700">Primary Accent</label>
+                      <div className="flex gap-3">
+                        <input
+                          type="color"
+                          name="homeAccentPrimary"
+                          value={form.homeAccentPrimary}
+                          onChange={handleChange}
+                          className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                        />
+                        <input
+                          type="text"
+                          name="homeAccentPrimary"
+                          value={form.homeAccentPrimary}
+                          onChange={handleChange}
+                          className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                          placeholder="#0056b3"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700">Secondary Accent</label>
+                      <div className="flex gap-3">
+                        <input
+                          type="color"
+                          name="homeAccentSecondary"
+                          value={form.homeAccentSecondary}
+                          onChange={handleChange}
+                          className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                        />
+                        <input
+                          type="text"
+                          name="homeAccentSecondary"
+                          value={form.homeAccentSecondary}
+                          onChange={handleChange}
+                          className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                          placeholder="#00a0ff"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-semibold text-slate-700 mb-3">Live Preview</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div
+                        className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                        style={{ background: `linear-gradient(135deg, ${form.homeAccentPrimary}, ${form.homeAccentSecondary})` }}
+                      >
+                        Accent Button
+                      </div>
+                      <div
+                        className="rounded-xl border px-4 py-2 text-sm font-semibold"
+                        style={{
+                          color: form.homeAccentPrimary,
+                          backgroundColor: `${form.homeAccentPrimary}14`,
+                          borderColor: `${form.homeAccentPrimary}33`,
+                        }}
+                      >
+                        Product Badge
+                      </div>
+                    </div>
+                  </div>
+                </SectionCard>
+
+                <SectionCard
                   title="Home Page Background"
                   subtitle="Apply only on the home page without changing the hero banner"
                   icon="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
@@ -1383,6 +1467,46 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                                 value={form.homeBackgroundColor}
                                 onChange={handleChange}
                                 className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Primary Accent</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="homeBackgroundAccentPrimary"
+                                value={form.homeBackgroundAccentPrimary}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="homeBackgroundAccentPrimary"
+                                value={form.homeBackgroundAccentPrimary}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
+                                placeholder="#0056b3"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Secondary Accent</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="homeBackgroundAccentSecondary"
+                                value={form.homeBackgroundAccentSecondary}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="homeBackgroundAccentSecondary"
+                                value={form.homeBackgroundAccentSecondary}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
+                                placeholder="#00a0ff"
                               />
                             </div>
                           </div>
@@ -1426,6 +1550,29 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                                 className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-indigo-500"
                               />
                               <span className="text-sm font-medium text-slate-500">%</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-semibold text-slate-700 mb-3">Background Color Preview</p>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm border border-white/60"
+                              style={{ backgroundColor: form.homeBackgroundColor }}
+                            >
+                              Solid Background
+                            </div>
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                              style={{ background: `linear-gradient(135deg, ${form.homeBackgroundColor}, ${form.homeAccentSecondary || '#00a0ff'})` }}
+                            >
+                              Gradient Preview
+                            </div>
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                              style={{ background: `linear-gradient(135deg, ${form.homeBackgroundAccentPrimary || '#0056b3'}, ${form.homeBackgroundAccentSecondary || '#00a0ff'})` }}
+                            >
+                              Background Accent
                             </div>
                           </div>
                         </div>
@@ -1509,6 +1656,46 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                             </div>
                           </div>
                           <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Primary Accent</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="restBackgroundAccentPrimary"
+                                value={form.restBackgroundAccentPrimary}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="restBackgroundAccentPrimary"
+                                value={form.restBackgroundAccentPrimary}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-sky-500"
+                                placeholder="#0056b3"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Secondary Accent</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="restBackgroundAccentSecondary"
+                                value={form.restBackgroundAccentSecondary}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="restBackgroundAccentSecondary"
+                                value={form.restBackgroundAccentSecondary}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-sky-500"
+                                placeholder="#00a0ff"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700">Size</label>
                             <select
                               name="restBackgroundSize"
@@ -1534,6 +1721,29 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                               <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
                           </select>
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-semibold text-slate-700 mb-3">Background Color Preview</p>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm border border-white/60"
+                              style={{ backgroundColor: form.restBackgroundColor }}
+                            >
+                              Solid Background
+                            </div>
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                              style={{ background: `linear-gradient(135deg, ${form.restBackgroundColor}, ${form.restBackgroundAccentSecondary || '#00a0ff'})` }}
+                            >
+                              Gradient Preview
+                            </div>
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                              style={{ background: `linear-gradient(135deg, ${form.restBackgroundAccentPrimary || '#0056b3'}, ${form.restBackgroundAccentSecondary || '#00a0ff'})` }}
+                            >
+                              Background Accent
+                            </div>
+                          </div>
                         </div>
                         <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                           <input
