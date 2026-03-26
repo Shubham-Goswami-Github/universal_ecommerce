@@ -681,6 +681,23 @@ const HeroBanner = ({ settings }) => {
   const heroTagline = settings?.homeHeroTagline || DEFAULT_HOME_HERO_TAGLINE;
   const heroStats = getContentItems(settings?.homeHeroStats, DEFAULT_HOME_HERO_STATS);
   const heroHighlights = getContentItems(settings?.homeHeroHighlights, DEFAULT_HOME_HERO_HIGHLIGHTS);
+  const heroTitle = settings?.homepageTitle || "Shopping And Department Store";
+  const heroSubtitle = settings?.homepageSubtitle || "Discover amazing products at unbeatable prices.";
+  const hasExtendedDesktopHeroContent =
+    heroStats.length > 3 ||
+    heroHighlights.length > 2 ||
+    heroTitle.length > 32;
+  const desktopHeroHeightClass = hasExtendedDesktopHeroContent
+    ? "lg:h-[620px] xl:h-[680px]"
+    : "lg:h-[540px] xl:h-[600px]";
+  const desktopStatGridClass =
+    heroStats.length >= 5
+      ? "lg:grid-cols-5"
+      : heroStats.length === 4
+        ? "lg:grid-cols-4"
+        : "lg:grid-cols-3";
+  const desktopStatMaxWidthClass =
+    heroStats.length >= 4 ? "lg:max-w-4xl" : "lg:max-w-3xl";
 
   const hasImages = bannerImages.length > 0;
   const hasMultipleImages = bannerImages.length > 1;
@@ -887,7 +904,7 @@ const HeroBanner = ({ settings }) => {
           </div>
 
           {/* Stats Row */}
-          <div className="mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 lg:gap-8 max-w-xl lg:max-w-2xl mx-auto lg:mx-0">
+          <div className={`mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 lg:gap-8 max-w-xl ${desktopStatGridClass} ${desktopStatMaxWidthClass} mx-auto lg:mx-0`}>
             {heroStats.map((stat, i) => (
               <div key={i} className="text-center lg:text-left p-2.5 sm:p-3 md:p-4 bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/50">
                 <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-extrabold bg-gradient-to-r from-[#0056b3] to-[#00a0ff] bg-clip-text text-transparent">
@@ -909,7 +926,7 @@ const HeroBanner = ({ settings }) => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative w-full h-[280px] xs:h-[320px] sm:h-[380px] md:h-[460px] lg:h-[540px] xl:h-[600px] overflow-hidden">
+      <div className={`relative w-full h-[280px] xs:h-[320px] sm:h-[380px] md:h-[460px] ${desktopHeroHeightClass} overflow-hidden`}>
         {bannerImages.map((img, index) => (
           <div
             key={index}
@@ -944,11 +961,11 @@ const HeroBanner = ({ settings }) => {
                     <Badge variant="glass">{heroTagline}</Badge>
 
                     <h1 className="mt-2 sm:mt-3 md:mt-4 lg:mt-6 text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight">
-                      {settings?.homepageTitle || "Shopping And Department Store"}
+                      {heroTitle}
                     </h1>
 
                     <p className="mt-2 sm:mt-3 md:mt-4 lg:mt-6 text-xs sm:text-sm md:text-base lg:text-lg text-white/80 leading-relaxed max-w-sm sm:max-w-md line-clamp-2 sm:line-clamp-none">
-                      {settings?.homepageSubtitle || "Discover amazing products at unbeatable prices."}
+                      {heroSubtitle}
                     </p>
 
                     <div className="mt-4 sm:mt-5 md:mt-6 lg:mt-8 flex flex-wrap gap-2 sm:gap-3 md:gap-4">
@@ -975,7 +992,7 @@ const HeroBanner = ({ settings }) => {
                     </div>
 
                     {/* Stats - Hidden on very small screens */}
-                    <div className="mt-4 sm:mt-6 md:mt-8 lg:mt-12 grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-sm sm:max-w-md lg:max-w-3xl">
+                    <div className={`mt-4 sm:mt-6 md:mt-8 lg:mt-12 grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-sm sm:max-w-md ${desktopStatGridClass} ${desktopStatMaxWidthClass}`}>
                       {heroStats.map((stat, statIndex) => (
                         <div
                           key={`${stat.label}-${statIndex}`}
@@ -989,7 +1006,7 @@ const HeroBanner = ({ settings }) => {
                   </div>
 
                   {/* Highlights Cards - Desktop only */}
-                  <div className="hidden lg:flex flex-col gap-3 xl:gap-4 justify-center">
+                  <div className="hidden lg:flex flex-col gap-3 xl:gap-4 justify-center self-center">
                     {heroHighlights.slice(0, 2).map((highlight, index) => (
                       <div
                         key={`${highlight.title}-${index}`}
