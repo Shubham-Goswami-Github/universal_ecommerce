@@ -474,7 +474,7 @@ const Home = () => {
 
   return (
     <div
-      className="relative isolate min-h-screen overflow-x-hidden"
+      className="home-page-shell relative isolate min-h-screen overflow-x-hidden"
       style={{
         "--home-accent-primary": homeTheme.primary,
         "--home-accent-secondary": homeTheme.secondary,
@@ -501,7 +501,7 @@ const Home = () => {
       )}
 
       {/* Background decorations */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div 
           className="absolute top-0 right-0 w-[300px] sm:w-[400px] md:w-[500px] lg:w-[600px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-full blur-[100px] sm:blur-[120px] md:blur-[150px] -translate-y-1/2 translate-x-1/2" 
           style={{ background: `linear-gradient(135deg, ${rgba(homeTheme.primary, 0.12)}, ${rgba(homeTheme.secondary, 0.12)})` }} 
@@ -514,7 +514,8 @@ const Home = () => {
 
       <div
         aria-hidden="true"
-        className="absolute inset-0 z-0"
+        className="home-background-layer absolute inset-0 z-0"
+        data-fit-screen={settings?.homeBackgroundFitScreen ? "true" : "false"}
         style={homeBackgroundStyle}
       />
 
@@ -683,21 +684,36 @@ const HeroBanner = ({ settings }) => {
   const heroHighlights = getContentItems(settings?.homeHeroHighlights, DEFAULT_HOME_HERO_HIGHLIGHTS);
   const heroTitle = settings?.homepageTitle || "Shopping And Department Store";
   const heroSubtitle = settings?.homepageSubtitle || "Discover amazing products at unbeatable prices.";
+  const hasLongMobileHeroCopy =
+    heroTitle.length > 32 ||
+    heroSubtitle.length > 90 ||
+    heroStats.length > 3;
   const hasExtendedDesktopHeroContent =
     heroStats.length > 3 ||
     heroHighlights.length > 2 ||
     heroTitle.length > 32;
+  const mobileHeroHeightClass = hasLongMobileHeroCopy
+    ? "h-[340px] xs:h-[390px] sm:h-[450px] md:h-[540px]"
+    : "h-[300px] xs:h-[340px] sm:h-[400px] md:h-[500px]";
   const desktopHeroHeightClass = hasExtendedDesktopHeroContent
     ? "lg:h-[620px] xl:h-[680px]"
     : "lg:h-[540px] xl:h-[600px]";
-  const desktopStatGridClass =
+  const heroStatGridClass =
     heroStats.length >= 5
-      ? "lg:grid-cols-5"
+      ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5"
       : heroStats.length === 4
-        ? "lg:grid-cols-4"
-        : "lg:grid-cols-3";
-  const desktopStatMaxWidthClass =
-    heroStats.length >= 4 ? "lg:max-w-4xl" : "lg:max-w-3xl";
+        ? "grid-cols-2 sm:grid-cols-4"
+        : heroStats.length === 2
+          ? "grid-cols-2"
+          : "grid-cols-3";
+  const heroStatMaxWidthClass =
+    heroStats.length >= 5
+      ? "max-w-md sm:max-w-2xl lg:max-w-5xl"
+      : heroStats.length === 4
+        ? "max-w-sm sm:max-w-2xl lg:max-w-4xl"
+        : heroStats.length === 2
+          ? "max-w-xs sm:max-w-sm lg:max-w-xl"
+          : "max-w-sm sm:max-w-md lg:max-w-3xl";
 
   const hasImages = bannerImages.length > 0;
   const hasMultipleImages = bannerImages.length > 1;
@@ -736,7 +752,7 @@ const HeroBanner = ({ settings }) => {
   /* -- Fallback Hero (No Images) -- */
   if (!hasImages) {
     return (
-      <section className="relative overflow-hidden">
+      <section className="home-hero-stage relative overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#f7faff] via-[#eaf2ff] to-[#f7faff]" />
         
@@ -904,7 +920,7 @@ const HeroBanner = ({ settings }) => {
           </div>
 
           {/* Stats Row */}
-          <div className={`mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 lg:gap-8 max-w-xl ${desktopStatGridClass} ${desktopStatMaxWidthClass} mx-auto lg:mx-0`}>
+          <div className={`mt-8 sm:mt-10 md:mt-12 lg:mt-16 grid ${heroStatGridClass} auto-rows-fr gap-2 sm:gap-4 md:gap-6 lg:gap-8 ${heroStatMaxWidthClass} mx-auto lg:mx-0`}>
             {heroStats.map((stat, i) => (
               <div key={i} className="text-center lg:text-left p-2.5 sm:p-3 md:p-4 bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/50">
                 <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-extrabold bg-gradient-to-r from-[#0056b3] to-[#00a0ff] bg-clip-text text-transparent">
@@ -922,11 +938,11 @@ const HeroBanner = ({ settings }) => {
   /* -- Slideshow Hero -- */
   return (
     <section 
-      className="relative"
+      className="home-hero-stage relative"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className={`relative w-full h-[280px] xs:h-[320px] sm:h-[380px] md:h-[460px] ${desktopHeroHeightClass} overflow-hidden`}>
+      <div className={`relative w-full ${mobileHeroHeightClass} ${desktopHeroHeightClass} overflow-hidden`}>
         {bannerImages.map((img, index) => (
           <div
             key={index}
@@ -954,10 +970,10 @@ const HeroBanner = ({ settings }) => {
             <div className="absolute inset-0 bg-gradient-to-r from-[#0d1b2a]/80 via-[#0d1b2a]/50 to-transparent" />
 
             {/* Content */}
-            <div className="absolute inset-0 flex items-center">
+            <div className="absolute inset-0 flex items-center py-8 sm:py-10 md:py-12">
               <div className="max-w-[92rem] mx-auto px-3 sm:px-4 lg:px-6 w-full">
                 <div className="grid items-center gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1fr)_240px] xl:grid-cols-[minmax(0,1fr)_280px]">
-                  <div className="max-w-lg lg:max-w-xl xl:max-w-2xl">
+                  <div className="max-w-lg pr-10 sm:pr-14 md:pr-16 lg:max-w-xl lg:pr-0 xl:max-w-2xl">
                     <Badge variant="glass">{heroTagline}</Badge>
 
                     <h1 className="mt-2 sm:mt-3 md:mt-4 lg:mt-6 text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight">
@@ -992,7 +1008,7 @@ const HeroBanner = ({ settings }) => {
                     </div>
 
                     {/* Stats - Hidden on very small screens */}
-                    <div className={`mt-4 sm:mt-6 md:mt-8 lg:mt-12 grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4 max-w-sm sm:max-w-md ${desktopStatGridClass} ${desktopStatMaxWidthClass}`}>
+                    <div className={`mt-4 sm:mt-6 md:mt-8 lg:mt-12 grid ${heroStatGridClass} auto-rows-fr gap-2 sm:gap-3 lg:gap-4 ${heroStatMaxWidthClass}`}>
                       {heroStats.map((stat, statIndex) => (
                         <div
                           key={`${stat.label}-${statIndex}`}
@@ -1088,7 +1104,7 @@ const TrustBadges = ({ settings, theme = getHomeTheme() }) => {
   const badges = getContentItems(settings?.homeTrustBadges, DEFAULT_HOME_TRUST_BADGES);
 
   return (
-    <div className="py-4 sm:py-6 md:py-8 -mt-4 sm:-mt-6 md:-mt-8 lg:-mt-12 relative z-20">
+    <div className="py-4 sm:py-6 md:py-8 -mt-3 sm:-mt-4 md:-mt-6 lg:-mt-10 relative z-20">
       <div 
         className="bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-2xl md:rounded-3xl border border-white/50 p-3 sm:p-4 md:p-6 lg:p-8" 
         style={{ boxShadow: `0 12px 30px ${rgba(theme.primary, 0.08)}` }}
@@ -1825,6 +1841,18 @@ const FeaturesSection = ({ settings, theme = getHomeTheme() }) => {
    CUSTOM STYLES - ANIMATIONS & UTILITIES
 ------------------------------------------------------------- */
 const styles = `
+.home-page-shell {
+  width: 100%;
+}
+
+.home-background-layer {
+  background-attachment: scroll !important;
+}
+
+.home-hero-stage {
+  contain: layout paint;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px) translateX(-50%); }
   50% { transform: translateY(-12px) translateX(-50%); }
@@ -1947,6 +1975,12 @@ const styles = `
   .xs\\:text-\\[9px\\] { font-size: 9px; }
   .xs\\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .xs\\:gap-4 { gap: 1rem; }
+}
+
+@media (min-width: 1024px) and (hover: hover) {
+  .home-background-layer[data-fit-screen="true"] {
+    background-attachment: fixed !important;
+  }
 }
 
 /* Ensure smooth scrolling on touch devices */
