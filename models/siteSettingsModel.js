@@ -46,6 +46,13 @@ const siteSettingsSchema = new mongoose.Schema(
       overlayColor: { type: String, default: '#0f172a' },
       overlayOpacity: { type: Number, default: 35 }
     },
+    heroBannerFallbackColor: { type: String, default: '#ffffff' },
+    heroBannerFallbackAccentPrimary: { type: String, default: '#2cd6e2' },
+    heroBannerFallbackAccentSecondary: { type: String, default: '#0056b3' },
+    heroBannerFallbackImage: { type: String, default: '' },
+    heroBannerFallbackRepeat: { type: String, enum: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'], default: 'no-repeat' },
+    heroBannerFallbackSize: { type: String, enum: ['cover', 'contain', 'auto'], default: 'cover' },
+    heroBannerFallbackFitScreen: { type: Boolean, default: false },
 
     homeHeroTagline: { type: String, default: 'New Collection 2024' },
     homeAccentPrimary: { type: String, default: '#0056b3' },

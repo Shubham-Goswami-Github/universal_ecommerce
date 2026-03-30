@@ -188,6 +188,13 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
       overlayColor: '#0f172a',
       overlayOpacity: 35
     },
+    heroBannerFallbackColor: '#ffffff',
+    heroBannerFallbackAccentPrimary: '#2cd6e2',
+    heroBannerFallbackAccentSecondary: '#0056b3',
+    heroBannerFallbackImage: '',
+    heroBannerFallbackRepeat: 'no-repeat',
+    heroBannerFallbackSize: 'cover',
+    heroBannerFallbackFitScreen: false,
     homeHeroTagline: '',
     homeAccentPrimary: '#0056b3',
     homeAccentSecondary: '#00a0ff',
@@ -239,6 +246,7 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
   const [uploading, setUploading] = useState({
     logoUrl: false,
     tabIconUrl: false,
+    heroBannerFallbackImage: false,
     homeBackgroundImage: false,
     restBackgroundImage: false,
     banner: false
@@ -269,6 +277,13 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
           overlayColor: initialSettings.heroBannerSettings?.overlayColor || '#0f172a',
           overlayOpacity: initialSettings.heroBannerSettings?.overlayOpacity ?? 35
         },
+        heroBannerFallbackColor: initialSettings.heroBannerFallbackColor || '#ffffff',
+        heroBannerFallbackAccentPrimary: initialSettings.heroBannerFallbackAccentPrimary || initialSettings.homeAccentPrimary || '#2cd6e2',
+        heroBannerFallbackAccentSecondary: initialSettings.heroBannerFallbackAccentSecondary || initialSettings.homeAccentSecondary || '#0056b3',
+        heroBannerFallbackImage: initialSettings.heroBannerFallbackImage || '',
+        heroBannerFallbackRepeat: initialSettings.heroBannerFallbackRepeat || 'no-repeat',
+        heroBannerFallbackSize: initialSettings.heroBannerFallbackSize || 'cover',
+        heroBannerFallbackFitScreen: initialSettings.heroBannerFallbackFitScreen || false,
         homeHeroTagline: initialSettings.homeHeroTagline || '',
         homeAccentPrimary: initialSettings.homeAccentPrimary || '#0056b3',
         homeAccentSecondary: initialSettings.homeAccentSecondary || '#00a0ff',
@@ -403,6 +418,7 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     const uploadConfig = {
       logoUrl: { label: 'Logo', acceptSvgOnly: false },
       tabIconUrl: { label: 'Tab icon', acceptSvgOnly: true },
+      heroBannerFallbackImage: { label: 'Hero banner background', acceptSvgOnly: false },
       homeBackgroundImage: { label: 'Home background', acceptSvgOnly: false },
       restBackgroundImage: { label: 'Rest pages background', acceptSvgOnly: false }
     };
@@ -1177,6 +1193,158 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                         </div>
                       </div>
                     )}
+                  </div>
+                </SectionCard>
+
+                <SectionCard
+                  title="Banner Background"
+                  subtitle="Use this when you want a branded hero background without slideshow images"
+                  icon="M3 3h18v18H3V3zm4 4h10v10H7V7z"
+                  gradient="bg-gradient-to-r from-fuchsia-600 to-violet-600"
+                >
+                  <div className="space-y-6">
+                    <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+                      <div className="space-y-4">
+                        <UploadBox
+                          id="hero-banner-bg-upload"
+                          label="Click to upload banner background"
+                          hint="Image optional hai. Banner images na ho to ye hero section me dikhega."
+                          uploading={uploading.heroBannerFallbackImage}
+                          onUpload={(e) => handleUpload(e, 'heroBannerFallbackImage')}
+                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Background Color</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="heroBannerFallbackColor"
+                                value={form.heroBannerFallbackColor}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="heroBannerFallbackColor"
+                                value={form.heroBannerFallbackColor}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                                placeholder="#ffffff"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Primary Accent</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="heroBannerFallbackAccentPrimary"
+                                value={form.heroBannerFallbackAccentPrimary}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="heroBannerFallbackAccentPrimary"
+                                value={form.heroBannerFallbackAccentPrimary}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                                placeholder="#2cd6e2"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Secondary Accent</label>
+                            <div className="flex gap-3">
+                              <input
+                                type="color"
+                                name="heroBannerFallbackAccentSecondary"
+                                value={form.heroBannerFallbackAccentSecondary}
+                                onChange={handleChange}
+                                className="h-11 w-14 rounded-xl border-2 border-slate-200 bg-white p-1"
+                              />
+                              <input
+                                type="text"
+                                name="heroBannerFallbackAccentSecondary"
+                                value={form.heroBannerFallbackAccentSecondary}
+                                onChange={handleChange}
+                                className="flex-1 rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                                placeholder="#0056b3"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Size</label>
+                            <select
+                              name="heroBannerFallbackSize"
+                              value={form.heroBannerFallbackSize}
+                              onChange={handleChange}
+                              className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                            >
+                              {BACKGROUND_SIZE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-slate-700">Repeat</label>
+                          <select
+                            name="heroBannerFallbackRepeat"
+                            value={form.heroBannerFallbackRepeat}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border-2 border-slate-200 px-3 py-2.5 text-sm focus:border-fuchsia-500"
+                          >
+                            {BACKGROUND_REPEAT_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <p className="text-sm font-semibold text-slate-700 mb-3">Banner Background Preview</p>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm border border-white/60"
+                              style={{ backgroundColor: form.heroBannerFallbackColor }}
+                            >
+                              Solid Background
+                            </div>
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                              style={{ background: `linear-gradient(135deg, ${form.heroBannerFallbackColor}, ${form.heroBannerFallbackAccentSecondary || '#0056b3'})` }}
+                            >
+                              Gradient Preview
+                            </div>
+                            <div
+                              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg"
+                              style={{ background: `linear-gradient(135deg, ${form.heroBannerFallbackAccentPrimary || '#2cd6e2'}, ${form.heroBannerFallbackAccentSecondary || '#0056b3'})` }}
+                            >
+                              Background Accent
+                            </div>
+                          </div>
+                        </div>
+                        <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                          <input
+                            type="checkbox"
+                            name="heroBannerFallbackFitScreen"
+                            checked={form.heroBannerFallbackFitScreen}
+                            onChange={handleChange}
+                            className="h-4 w-4 rounded border-slate-300 text-fuchsia-600 focus:ring-fuchsia-500"
+                          />
+                          <div>
+                            <div className="text-sm font-semibold text-slate-700">Fit To Screen</div>
+                            <p className="text-xs text-slate-500">Hero fallback background ko viewport feel deta hai.</p>
+                          </div>
+                        </label>
+                      </div>
+                      <PreviewBox
+                        label="hero banner background"
+                        hasImage={!!form.heroBannerFallbackImage}
+                        imageUrl={form.heroBannerFallbackImage}
+                        onRemove={() => handleRemoveImage('heroBannerFallbackImage')}
+                        aspectRatio="aspect-video"
+                      />
+                    </div>
                   </div>
                 </SectionCard>
 
