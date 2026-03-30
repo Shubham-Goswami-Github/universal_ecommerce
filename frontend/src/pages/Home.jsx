@@ -1362,22 +1362,71 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
     }
   };
 
+  const scrollProducts = useCallback((direction) => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const firstCard = container.querySelector("[data-product-card='true']");
+    const computedStyle = window.getComputedStyle(container);
+    const gap = Number.parseFloat(computedStyle.columnGap || computedStyle.gap || "0");
+    const cardWidth = firstCard?.getBoundingClientRect().width || container.clientWidth * 0.8;
+    const cardsPerJump = window.innerWidth < 640 ? 3 : window.innerWidth < 1024 ? 2 : 1;
+    const scrollAmount = Math.max((cardWidth + gap) * cardsPerJump, container.clientWidth * 0.72);
+
+    container.scrollBy({
+      left: direction * scrollAmount,
+      behavior: "smooth",
+    });
+  }, []);
+
   const scrollHint = showRightArrow
     ? showLeftArrow
-      ? "Keep scrolling for more picks"
-      : "Swipe or drag to explore"
+      ? "Use arrows, swipe, or drag for more picks"
+      : "Swipe, drag, or tap arrows to explore"
     : "You've reached the last card";
 
   return (
     <div className="relative group/strip -mx-2 sm:-mx-3 lg:-mx-5 xl:-mx-6">
-      {/* Gradient Fades */}
-      <div className={`absolute left-0 top-0 bottom-0 w-16 sm:w-20 bg-gradient-to-r from-gray-50 via-gray-50/90 to-transparent z-10 pointer-events-none transition-opacity duration-300 ${showLeftArrow ? 'opacity-100' : 'opacity-0'}`} />
-      <div className={`absolute right-0 top-0 bottom-0 w-16 sm:w-20 bg-gradient-to-l from-gray-50 via-gray-50/90 to-transparent z-10 pointer-events-none transition-opacity duration-300 ${showRightArrow ? 'opacity-100' : 'opacity-0'}`} />
+      {(showLeftArrow || showRightArrow) && (
+        <>
+          <button
+            type="button"
+            onClick={() => scrollProducts(-1)}
+            disabled={!showLeftArrow}
+            aria-label="Scroll products left"
+            className={`absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${
+              showLeftArrow
+                ? "pointer-events-auto opacity-100 hover:-translate-x-1 hover:scale-105"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => scrollProducts(1)}
+            disabled={!showRightArrow}
+            aria-label="Scroll products right"
+            className={`absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${
+              showRightArrow
+                ? "pointer-events-auto opacity-100 hover:translate-x-1 hover:scale-105"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
+        </>
+      )}
 
       {/* Products Container */}
       <div
         ref={scrollRef}
-        className={`flex gap-4 sm:gap-6 overflow-x-auto pb-4 pt-2 px-2 sm:px-3 lg:px-5 xl:px-6 scroll-smooth scrollbar-hide snap-x snap-mandatory ${isDragging ? "cursor-grabbing select-none" : "lg:cursor-grab"}`}
+        className={`flex gap-3 sm:gap-5 lg:gap-6 overflow-x-auto pb-4 pt-2 px-2 sm:px-3 lg:px-5 xl:px-6 scroll-smooth scrollbar-hide snap-x snap-mandatory ${isDragging ? "cursor-grabbing select-none" : "lg:cursor-grab"}`}
         style={{ scrollbarWidth: "none", msOverflowStyle: "none", touchAction: "pan-y" }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -1411,7 +1460,40 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
           {showLeftArrow || showRightArrow ? scrollHint : "All cards visible"}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3 sm:justify-end">
+          <div className="flex items-center gap-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() => scrollProducts(-1)}
+              disabled={!showLeftArrow}
+              aria-label="Scroll products left"
+              className={`flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${
+                showLeftArrow
+                  ? "opacity-100 hover:-translate-x-0.5 hover:shadow-md"
+                  : "opacity-40"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 6l-6 6 6 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollProducts(1)}
+              disabled={!showRightArrow}
+              aria-label="Scroll products right"
+              className={`flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${
+                showRightArrow
+                  ? "opacity-100 hover:translate-x-0.5 hover:shadow-md"
+                  : "opacity-40"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 6l6 6-6 6" />
+              </svg>
+            </button>
+          </div>
+
           <div className="h-2 w-full min-w-[140px] sm:w-40 rounded-full bg-gray-200/80 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
@@ -1449,9 +1531,12 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
   const price = product.finalPrice || product.sellingPrice;
 
   return (
-    <div className="flex-shrink-0 w-[220px] sm:w-[260px] lg:w-[280px] bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group flex flex-col">
+    <div
+      data-product-card="true"
+      className="group flex w-[calc((100%-1.5rem)/3)] min-w-[96px] max-w-[148px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-xl sm:w-[240px] sm:min-w-[240px] sm:max-w-[240px] sm:rounded-3xl lg:w-[280px] lg:min-w-[280px] lg:max-w-[280px]"
+    >
       {/* Image Container */}
-      <Link to={`/products/${product._id}`} className="relative block h-48 sm:h-56 overflow-hidden bg-gray-100">
+      <Link to={`/products/${product._id}`} className="relative block h-28 overflow-hidden bg-gray-100 sm:h-56">
         {/* Loading Skeleton */}
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" />
@@ -1470,14 +1555,14 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         />
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        <div className="absolute left-2 top-2 flex flex-col gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
           {discount > 0 && (
-            <span className="px-2.5 py-1 bg-red-500 text-white text-[11px] font-bold rounded-lg shadow-lg">
+            <span className="rounded-md bg-red-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg sm:rounded-lg sm:px-2.5 sm:text-[11px]">
               -{discount}%
             </span>
           )}
           {product.isNew && (
-            <span className="px-2.5 py-1 bg-emerald-500 text-white text-[11px] font-bold rounded-lg shadow-lg">
+            <span className="rounded-md bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg sm:rounded-lg sm:px-2.5 sm:text-[11px]">
               NEW
             </span>
           )}
@@ -1486,13 +1571,13 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         {/* Wishlist Button */}
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted(!isWishlisted); }}
-          className={`absolute top-3 right-3 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 ${
+          className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg border shadow-md transition-all duration-300 hover:scale-110 sm:right-3 sm:top-3 sm:h-10 sm:w-10 sm:rounded-xl sm:shadow-lg ${
             isWishlisted 
-              ? 'bg-red-50 text-red-500 border border-red-200' 
-              : 'bg-white/90 backdrop-blur-sm text-gray-500 hover:text-red-500'
+              ? 'border-red-200 bg-red-50 text-red-500' 
+              : 'border-white bg-white/95 text-gray-500 hover:text-red-500'
           }`}
         >
-          <svg className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <svg className={`h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? 'fill-current' : ''}`} fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </button>
@@ -1502,43 +1587,42 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
           aria-label={`Quick view ${product.name}`}
-          className="absolute bottom-3 right-3 sm:w-10 sm:h-10 px-3 sm:px-0 h-10 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center gap-2 shadow-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 translate-y-0 sm:translate-y-2 sm:group-hover:translate-y-0 hover:scale-110"
+          className="absolute bottom-3 right-3 hidden h-10 w-10 items-center justify-center rounded-xl border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
         >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          <span className="sm:hidden text-xs font-semibold text-gray-700">Quick View</span>
         </button>
       </Link>
 
       {/* Card Content */}
-      <div className="p-4 sm:p-5 flex flex-col flex-1">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-5">
         {/* Category */}
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <span className="truncate text-[9px] font-medium uppercase tracking-[0.18em] text-gray-500 sm:text-xs sm:tracking-wider">
           {product.category?.name || "General"}
         </span>
 
         {/* Product Name */}
         <Link to={`/products/${product._id}`}>
-          <h3 className="mt-2 font-semibold text-gray-900 text-sm sm:text-base leading-snug line-clamp-2 hover:text-gray-600 transition-colors">
+          <h3 className="mt-1.5 min-h-[2rem] font-semibold text-gray-900 text-[12px] leading-snug line-clamp-2 hover:text-gray-600 transition-colors sm:mt-2 sm:min-h-[2.75rem] sm:text-base">
             {product.name}
           </h3>
         </Link>
 
         {/* Rating */}
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-1.5 flex items-center gap-1.5 sm:mt-2 sm:gap-2">
           <div className="flex items-center gap-1">
-            <svg className="w-4 h-4 text-amber-400 fill-current" viewBox="0 0 20 20">
+            <svg className="h-3.5 w-3.5 text-amber-400 fill-current sm:h-4 sm:w-4" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            <span className="text-sm font-medium text-gray-700">{product.rating || "4.5"}</span>
+            <span className="text-[11px] font-medium text-gray-700 sm:text-sm">{product.rating || "4.5"}</span>
           </div>
-          <span className="text-xs text-gray-400">({product.ratingCount || 0} reviews)</span>
+          <span className="hidden text-xs text-gray-400 sm:inline">({product.ratingCount || 0} reviews)</span>
         </div>
 
         {/* Price */}
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-2 flex flex-wrap items-center gap-1 sm:mt-3 sm:gap-2">
           <span className="text-xl font-bold text-gray-900">₹{price?.toLocaleString()}</span>
           {product.mrp > product.sellingPrice && (
             <span className="text-sm text-gray-400 line-through">₹{product.mrp?.toLocaleString()}</span>
@@ -1546,9 +1630,10 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         </div>
 
         {/* Stock Status */}
-        <div className="mt-3">
+        <div className="mt-2 sm:mt-3">
           <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+            title={inventory.stockLabel}
+            className={`inline-flex max-w-full items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold sm:gap-1.5 sm:px-3 sm:text-xs ${
               inventory.isComingSoon
                 ? "bg-sky-50 text-sky-700"
                 : inventory.isOutOfStock
@@ -1559,7 +1644,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
             }`}
           >
             <span
-              className={`w-2 h-2 rounded-full ${
+              className={`h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2 ${
                 inventory.isComingSoon
                   ? "bg-sky-500"
                   : inventory.isOutOfStock
@@ -1569,23 +1654,24 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
                   : "bg-emerald-500"
               }`}
             />
-            {inventory.stockLabel}
+            <span className="truncate">{inventory.stockLabel}</span>
           </span>
         </div>
 
         {/* Spacer */}
-        <div className="flex-1 min-h-4" />
+        <div className="min-h-2 flex-1 sm:min-h-4" />
 
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
-          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm border border-gray-200 bg-gray-50 text-gray-700 transition-all duration-300 hover:bg-gray-100"
+          className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold text-[11px] border border-gray-200 bg-gray-50 text-gray-700 transition-all duration-300 hover:bg-gray-100 sm:mt-3 sm:gap-2 sm:py-2.5 sm:rounded-xl sm:text-sm"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
-          Quick View
+          <span className="sm:hidden">View</span>
+          <span className="hidden sm:inline">Quick View</span>
         </button>
 
         {/* Add to Cart Button */}
@@ -1593,17 +1679,18 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart?.(product); }}
           type="button"
           disabled={isAddingToCart || !inventory.canAddToCart}
-          className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-white"
+          className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-semibold text-[11px] transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-white sm:mt-4 sm:gap-2 sm:py-3 sm:rounded-xl sm:text-sm"
           style={{ background: inventory.canAddToCart ? theme.accentGradient : '#9ca3af' }}
         >
           {isAddingToCart ? (
-            <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin sm:h-5 sm:w-5" />
           ) : inventory.canAddToCart ? (
             <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              {inventory.totalStock > 0 ? "Add to Cart" : "Order Now"}
+              <span className="sm:hidden">{inventory.totalStock > 0 ? "Cart" : "Order"}</span>
+              <span className="hidden sm:inline">{inventory.totalStock > 0 ? "Add to Cart" : "Order Now"}</span>
             </>
           ) : (
             inventory.stockLabel
