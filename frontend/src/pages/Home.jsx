@@ -5,36 +5,6 @@ import axiosClient from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
 import ProductQuickView from "../components/product/ProductQuickView";
 
-/* -------------------------------------------------------------
-   DESIGN SYSTEM CONSTANTS - MODERN THEME
-------------------------------------------------------------- */
-const COLORS = {
-  primary: {
-    50: '#f0f9ff',
-    100: '#e0f2fe',
-    200: '#bae6fd',
-    300: '#7dd3fc',
-    400: '#38bdf8',
-    500: '#0ea5e9',
-    600: '#0284c7',
-    700: '#0369a1',
-    800: '#075985',
-    900: '#0c4a6e',
-  },
-  neutral: {
-    50: '#fafafa',
-    100: '#f4f4f5',
-    200: '#e4e4e7',
-    300: '#d4d4d8',
-    400: '#a1a1aa',
-    500: '#71717a',
-    600: '#52525b',
-    700: '#3f3f46',
-    800: '#27272a',
-    900: '#18181b',
-  },
-};
-
 const DEFAULT_HOME_HERO_TAGLINE = "New Collection 2024";
 const DEFAULT_HOME_ANNOUNCEMENT_TEXT = "🎉 Free shipping on orders over ₹499 | Use code: WELCOME10 for 10% off";
 const DEFAULT_HOME_NEWSLETTER_BADGE = "Join 10,000+ subscribers";
@@ -96,8 +66,8 @@ const rgba = (hex, alpha) => {
 };
 
 const getHomeTheme = (settings) => {
-  const primary = normalizeHex(settings?.homeAccentPrimary, "#0ea5e9");
-  const secondary = normalizeHex(settings?.homeAccentSecondary, "#8b5cf6");
+  const primary = normalizeHex(settings?.homeAccentPrimary, "#0f766e");
+  const secondary = normalizeHex(settings?.homeAccentSecondary, "#db2777");
   return {
     primary,
     secondary,
@@ -106,7 +76,7 @@ const getHomeTheme = (settings) => {
     border: rgba(primary, 0.15),
     shadow: rgba(primary, 0.15),
     glow: rgba(secondary, 0.2),
-    heroBackground: `linear-gradient(180deg, ${rgba(primary, 0.04)} 0%, #ffffff 60%, ${rgba(secondary, 0.06)} 100%)`,
+    heroBackground: `linear-gradient(180deg, ${rgba(primary, 0.06)} 0%, #ffffff 58%, ${rgba(secondary, 0.05)} 100%)`,
     accentGradient: `linear-gradient(135deg, ${primary}, ${secondary})`,
   };
 };
@@ -220,10 +190,10 @@ const renderHomeIcon = (icon, className = "w-6 h-6") => {
 /* -------------------------------------------------------------
    SECTION HEADER COMPONENT
 ------------------------------------------------------------- */
-const SectionHeader = ({ 
-  title, 
+const SectionHeader = ({
+  title,
   subtitle,
-  viewAllLink, 
+  viewAllLink,
   viewAllLabel = "View All",
   centered = false,
   count = null,
@@ -232,8 +202,8 @@ const SectionHeader = ({
   <div className={`mb-6 sm:mb-8 lg:mb-12 ${centered ? 'text-center' : 'flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4'}`}>
     <div className="space-y-1 sm:space-y-2">
       {subtitle && (
-        <span 
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wider uppercase" 
+        <span
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wider uppercase"
           style={{ color: theme.primary }}
         >
           <span className="w-8 h-0.5 rounded-full" style={{ backgroundColor: theme.primary }} />
@@ -247,14 +217,14 @@ const SectionHeader = ({
     {(viewAllLink || count !== null) && !centered && (
       <div className="flex items-center gap-3">
         {count !== null && (
-          <span className="hidden sm:inline-flex px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+          <span className="hidden rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 sm:inline-flex">
             {count} Items
           </span>
         )}
         {viewAllLink && (
           <Link
             to={viewAllLink}
-            className="group inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105"
+            className="group inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
             style={{ background: theme.accentGradient }}
           >
             {viewAllLabel}
@@ -277,12 +247,12 @@ const Badge = ({ children, variant = "default", className = "" }) => {
     success: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     danger: "bg-red-50 text-red-600 border border-red-200",
     warning: "bg-amber-50 text-amber-700 border border-amber-200",
-    premium: "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg",
+    premium: "bg-gray-950 text-white shadow-lg",
     glass: "bg-white/20 backdrop-blur-md text-white border border-white/30 shadow-lg",
   };
 
   return (
-    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}>
+    <span className={`inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium ${variants[variant]} ${className}`}>
       {children}
     </span>
   );
@@ -296,16 +266,14 @@ const HeroStatsGrid = ({ items, theme, variant = "solid", className = "" }) => {
       {items.slice(0, 4).map((stat, index) => (
         <div
           key={`${stat.label}-${index}`}
-          className={`rounded-2xl border p-4 ${
-            isGlass
-              ? "border-white/15 bg-white/10 backdrop-blur-xl shadow-lg shadow-black/20"
-              : "border-gray-100 bg-white shadow-lg shadow-gray-200/40"
-          }`}
+          className={`rounded-lg border p-4 ${isGlass
+            ? "border-white/15 bg-white/10 backdrop-blur-xl shadow-lg shadow-black/20"
+            : "border-gray-100 bg-white shadow-lg shadow-gray-200/40"
+            }`}
         >
           <p
-            className={`text-xl sm:text-2xl font-bold ${
-              isGlass ? "text-white" : "bg-clip-text text-transparent"
-            }`}
+            className={`text-xl sm:text-2xl font-bold ${isGlass ? "text-white" : "bg-clip-text text-transparent"
+              }`}
             style={isGlass ? undefined : { backgroundImage: theme.accentGradient }}
           >
             {stat.value}
@@ -327,17 +295,15 @@ const HeroHighlightsGrid = ({ items, theme, variant = "solid", className = "" })
       {items.slice(0, 3).map((item, index) => (
         <div
           key={`${item.title}-${index}`}
-          className={`rounded-2xl border p-4 ${
-            isGlass
-              ? "border-white/15 bg-white/10 backdrop-blur-xl shadow-lg shadow-black/20"
-              : "border-gray-100 bg-white shadow-lg shadow-gray-200/40"
-          }`}
+          className={`rounded-lg border p-4 ${isGlass
+            ? "border-white/15 bg-white/10 backdrop-blur-xl shadow-lg shadow-black/20"
+            : "border-gray-100 bg-white shadow-lg shadow-gray-200/40"
+            }`}
         >
           <div className="flex items-start gap-3">
             <div
-              className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
-                isGlass ? "bg-white/12 text-white" : ""
-              }`}
+              className={`flex h-11 w-11 items-center justify-center rounded-lg ${isGlass ? "bg-white/12 text-white" : ""
+                }`}
               style={isGlass ? undefined : { background: theme.soft, color: theme.primary }}
             >
               {renderHomeIcon(item.icon, "w-5 h-5")}
@@ -358,45 +324,20 @@ const HeroHighlightsGrid = ({ items, theme, variant = "solid", className = "" })
 };
 
 /* -------------------------------------------------------------
-   SKELETON LOADER
-------------------------------------------------------------- */
-const Skeleton = ({ className }) => (
-  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] rounded-2xl ${className}`} />
-);
-
-const ProductCardSkeleton = () => (
-  <div className="min-w-[200px] sm:min-w-[240px] lg:min-w-[280px] bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
-    <Skeleton className="h-48 sm:h-56 w-full rounded-none" />
-    <div className="p-5 space-y-3">
-      <Skeleton className="h-3 w-20 rounded-full" />
-      <Skeleton className="h-5 w-full rounded-lg" />
-      <Skeleton className="h-3 w-32 rounded-lg" />
-      <div className="flex gap-2 pt-2">
-        <Skeleton className="h-6 w-20 rounded-lg" />
-        <Skeleton className="h-4 w-16 rounded-lg" />
-      </div>
-      <Skeleton className="h-12 w-full rounded-xl" />
-    </div>
-  </div>
-);
-
-/* -------------------------------------------------------------
    CART NOTIFICATION COMPONENT
 ------------------------------------------------------------- */
 const CartNotification = ({ message, type = "success", onClose }) => {
   const isError = type === "error" || message?.toLowerCase().includes("denied") || message?.toLowerCase().includes("failed");
-  
+
   return (
     <div className="fixed top-20 right-4 z-[95] max-w-sm w-full animate-slide-in-right">
-      <div className={`rounded-2xl p-4 shadow-2xl backdrop-blur-xl border ${
-        isError 
-          ? 'bg-red-50/95 border-red-200 text-red-800' 
-          : 'bg-white/95 border-emerald-200 text-emerald-800'
-      }`}>
+      <div className={`rounded-lg border p-4 shadow-2xl backdrop-blur-xl ${isError
+        ? 'bg-red-50/95 border-red-200 text-red-800'
+        : 'bg-white/95 border-emerald-200 text-emerald-800'
+        }`}>
         <div className="flex items-center gap-3">
-          <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${
-            isError ? 'bg-red-100' : 'bg-emerald-100'
-          }`}>
+          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${isError ? 'bg-red-100' : 'bg-emerald-100'
+            }`}>
             {isError ? (
               <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -415,7 +356,7 @@ const CartNotification = ({ message, type = "success", onClose }) => {
               {message}
             </p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="flex-shrink-0 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
@@ -539,7 +480,7 @@ const Home = () => {
 
   return (
     <div
-      className="home-page relative min-h-screen bg-gray-50/50"
+      className="home-page relative min-h-screen bg-white"
       style={{
         "--home-accent-primary": homeTheme.primary,
         "--home-accent-secondary": homeTheme.secondary,
@@ -552,15 +493,14 @@ const Home = () => {
         style={homeBackgroundStyle}
       />
 
-      {/* Decorative Background Elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full blur-[150px] opacity-30" 
-          style={{ background: homeTheme.accentGradient }} 
-        />
-        <div 
-          className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full blur-[150px] opacity-20" 
-          style={{ background: homeTheme.accentGradient }} 
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(90deg, #111827 1px, transparent 1px), linear-gradient(180deg, #111827 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
         />
       </div>
 
@@ -575,8 +515,8 @@ const Home = () => {
 
       {/* Cart Notification */}
       {cartMessage && (
-        <CartNotification 
-          message={cartMessage} 
+        <CartNotification
+          message={cartMessage}
           onClose={() => setCartMessage("")}
         />
       )}
@@ -586,20 +526,20 @@ const Home = () => {
         <AnnouncementBar settings={settings} theme={homeTheme} />
         <HeroBanner settings={settings} theme={homeTheme} />
 
-        <main className="max-w-[1560px] mx-auto px-3 sm:px-4 lg:px-5 xl:px-6">
+        <main className="mx-auto max-w-[1560px] px-3 sm:px-4 lg:px-5 xl:px-6">
           <TrustBadges settings={settings} theme={homeTheme} />
 
           {/* Categories Section */}
           {!loading && superCategories.length > 0 && (
             <section className="py-12 sm:py-16 lg:py-20">
-              <SectionHeader 
-                title="Shop by Category" 
+              <SectionHeader
+                title="Shop by Category"
                 subtitle="Collections"
-                viewAllLink="/categories" 
+                viewAllLink="/categories"
                 theme={homeTheme}
               />
-              <CategoryGrid 
-                categories={superCategories} 
+              <CategoryGrid
+                categories={superCategories}
                 allCategories={categories}
                 theme={homeTheme}
               />
@@ -609,19 +549,19 @@ const Home = () => {
           {/* Featured Products Section */}
           {!loading && displayFeatured.length > 0 && (
             <section className="py-12 sm:py-16 lg:py-20">
-              <SectionHeader 
-                title="Featured Products" 
+              <SectionHeader
+                title="Featured Products"
                 subtitle="Handpicked"
                 viewAllLink="/products?featured=true"
                 count={displayFeatured.length}
                 theme={homeTheme}
               />
-              <ProductGrid 
-                products={displayFeatured} 
-                theme={homeTheme} 
-                onQuickView={handleQuickView} 
-                onAddToCart={handleAddToCart} 
-                addingToCartId={addingToCartId} 
+              <ProductGrid
+                products={displayFeatured}
+                theme={homeTheme}
+                onQuickView={handleQuickView}
+                onAddToCart={handleAddToCart}
+                addingToCartId={addingToCartId}
               />
             </section>
           )}
@@ -632,30 +572,30 @@ const Home = () => {
           {/* Best Sellers Section */}
           {!loading && bestSellers.length > 0 && (
             <section className="py-12 sm:py-16 lg:py-20">
-              <SectionHeader 
-                title="Best Sellers" 
+              <SectionHeader
+                title="Best Sellers"
                 subtitle="Top Picks"
                 viewAllLink="/products?sort=bestselling"
                 count={bestSellers.length}
                 theme={homeTheme}
               />
-              <ProductGrid 
-                products={bestSellers} 
-                theme={homeTheme} 
-                onQuickView={handleQuickView} 
-                onAddToCart={handleAddToCart} 
-                addingToCartId={addingToCartId} 
+              <ProductGrid
+                products={bestSellers}
+                theme={homeTheme}
+                onQuickView={handleQuickView}
+                onAddToCart={handleAddToCart}
+                addingToCartId={addingToCartId}
               />
             </section>
           )}
 
           {/* Loading State */}
-          {loading && <LoadingState />}
+          {loading && <LoadingState theme={homeTheme} />}
 
           {/* Category Product Sections */}
           {!loading &&
             Object.keys(grouped).map((superCat) => (
-              <section key={superCat} className="py-12 sm:py-16 lg:py-20 border-t border-gray-200/50">
+              <section key={superCat} className="py-12 sm:py-16 lg:py-20 border-t border-gray-200/70">
                 <SectionHeader
                   title={superCat}
                   subtitle="Explore"
@@ -663,12 +603,12 @@ const Home = () => {
                   count={grouped[superCat].length}
                   theme={homeTheme}
                 />
-                <ProductGrid 
-                  products={grouped[superCat]} 
-                  theme={homeTheme} 
-                  onQuickView={handleQuickView} 
-                  onAddToCart={handleAddToCart} 
-                  addingToCartId={addingToCartId} 
+                <ProductGrid
+                  products={grouped[superCat]}
+                  theme={homeTheme}
+                  onQuickView={handleQuickView}
+                  onAddToCart={handleAddToCart}
+                  addingToCartId={addingToCartId}
                 />
               </section>
             ))}
@@ -701,7 +641,7 @@ const AnnouncementBar = ({ settings, theme }) => {
   if (settings?.homeAnnouncementEnabled === false || !announcementText || !isVisible) return null;
 
   return (
-    <div 
+    <div
       className="relative text-white py-2.5 overflow-hidden"
       style={{ background: theme.accentGradient }}
     >
@@ -714,9 +654,9 @@ const AnnouncementBar = ({ settings, theme }) => {
           <p className="text-xs sm:text-sm font-medium text-center">{announcementText}</p>
         </div>
       </div>
-      <button 
+      <button
         onClick={() => setIsVisible(false)}
-        className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/20 transition-colors"
+        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-lg p-1 transition-colors hover:bg-white/20"
         aria-label="Close announcement"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -733,7 +673,6 @@ const AnnouncementBar = ({ settings, theme }) => {
 const HeroBanner = ({ settings, theme }) => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState({});
   const [isPaused, setIsPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const slideInterval = useRef(null);
@@ -820,21 +759,24 @@ const HeroBanner = ({ settings, theme }) => {
       <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0" style={heroBackgroundStyle} />
-        <div 
+        <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }}
         />
-        
-        {/* Decorative Blobs */}
-        <div 
-          className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-40 -translate-y-1/2 translate-x-1/4"
-          style={{ background: `linear-gradient(135deg, ${rgba(heroFallbackAccentPrimary, 0.4)}, ${rgba(heroFallbackAccentSecondary, 0.3)})` }}
+
+        <div
+          className="absolute inset-x-0 top-0 h-px"
+          style={{ background: theme.accentGradient }}
         />
-        <div 
-          className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full blur-[100px] opacity-30 translate-y-1/2 -translate-x-1/4"
-          style={{ background: `linear-gradient(135deg, ${rgba(heroFallbackAccentSecondary, 0.3)}, ${rgba(heroFallbackAccentPrimary, 0.2)})` }}
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "linear-gradient(90deg, #111827 1px, transparent 1px), linear-gradient(180deg, #111827 1px, transparent 1px)",
+            backgroundSize: "42px 42px",
+          }}
         />
 
         <div className="relative max-w-[1560px] mx-auto px-3 sm:px-4 lg:px-5 xl:px-6 py-20">
@@ -842,7 +784,7 @@ const HeroBanner = ({ settings, theme }) => {
             {/* Left Content */}
             <div className="text-center lg:text-left space-y-6">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-sm border border-gray-100">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: theme.primary }} />
                   <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: theme.primary }} />
@@ -871,7 +813,7 @@ const HeroBanner = ({ settings, theme }) => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search for products..."
-                    className="w-full pl-14 pr-32 py-4 rounded-2xl border border-gray-200 bg-white shadow-lg shadow-gray-200/50 focus:border-transparent focus:ring-2 focus:ring-offset-2 transition-all text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-200 bg-white py-4 pl-14 pr-32 text-gray-900 shadow-lg shadow-gray-200/50 transition-all placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-offset-2"
                     style={{ '--tw-ring-color': theme.primary }}
                   />
                   <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -879,7 +821,7 @@ const HeroBanner = ({ settings, theme }) => {
                   </svg>
                   <button
                     type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 text-white text-sm font-semibold rounded-xl transition-all hover:opacity-90 hover:shadow-lg"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
                     style={{ background: theme.accentGradient }}
                   >
                     Search
@@ -894,7 +836,7 @@ const HeroBanner = ({ settings, theme }) => {
                   <Link
                     key={tag}
                     to={`/products?category=${encodeURIComponent(tag)}`}
-                    className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                    className="rounded-lg bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
                   >
                     {tag}
                   </Link>
@@ -917,7 +859,7 @@ const HeroBanner = ({ settings, theme }) => {
             {/* Right - Stats & Visual */}
             <div className="hidden lg:block">
               <div className="mx-auto max-w-[430px] space-y-4">
-                <div className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-2xl shadow-gray-300/30 backdrop-blur-sm">
+                <div className="rounded-lg border border-gray-200 bg-white/90 p-6 shadow-2xl shadow-gray-300/30 backdrop-blur-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
@@ -928,7 +870,7 @@ const HeroBanner = ({ settings, theme }) => {
                       </h3>
                     </div>
                     <div
-                      className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                      className="flex h-14 w-14 items-center justify-center rounded-lg"
                       style={{ background: theme.soft, color: theme.primary }}
                     >
                       {renderHomeIcon("sparkles", "w-7 h-7")}
@@ -953,7 +895,7 @@ const HeroBanner = ({ settings, theme }) => {
 
   /* Slideshow Hero */
   return (
-    <section 
+    <section
       className="relative h-[500px] sm:h-[600px] lg:h-[700px] overflow-hidden"
       style={heroBackgroundStyle}
       onMouseEnter={() => setIsPaused(true)}
@@ -963,23 +905,21 @@ const HeroBanner = ({ settings, theme }) => {
       {bannerImages.map((img, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-all duration-1000 ${
-            index === currentSlide 
-              ? "opacity-100 scale-100 z-10" 
-              : "opacity-0 scale-105 z-0"
-          } ${img.link ? "cursor-pointer" : ""}`}
+          className={`absolute inset-0 transition-all duration-1000 ${index === currentSlide
+            ? "opacity-100 scale-100 z-10"
+            : "opacity-0 scale-105 z-0"
+            } ${img.link ? "cursor-pointer" : ""}`}
           onClick={() => handleImageClick(img.link)}
         >
           {/* Image */}
           <img
             src={img.url}
             alt={`Banner ${index + 1}`}
-            className={`w-full h-full object-cover transition-opacity duration-500 ${
-              imageLoaded[index] ? "opacity-100" : "opacity-0"
-            }`}
+            className="h-full w-full object-cover"
             style={{ objectFit: heroImageFit }}
-            onLoad={() => setImageLoaded((prev) => ({ ...prev, [index]: true }))}
-            onError={(e) => { e.target.src = "https://via.placeholder.com/1920x700?text=Banner"; }}
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
           />
 
           {/* Overlay */}
@@ -1008,7 +948,7 @@ const HeroBanner = ({ settings, theme }) => {
                   <div className="flex flex-wrap gap-4 pt-2">
                     <Link
                       to="/products"
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-xl font-semibold hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl hover:scale-105"
+                    className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-4 font-semibold text-gray-900 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 hover:shadow-xl"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Shop Now
@@ -1018,7 +958,7 @@ const HeroBanner = ({ settings, theme }) => {
                     </Link>
                     <Link
                       to="/categories"
-                      className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white rounded-xl font-semibold hover:bg-white/20 transition-all"
+                      className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Browse Categories
@@ -1045,7 +985,7 @@ const HeroBanner = ({ settings, theme }) => {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="space-y-4">
-                    <div className="rounded-[32px] border border-white/20 bg-white/12 p-6 shadow-2xl shadow-black/25 backdrop-blur-xl">
+                    <div className="rounded-lg border border-white/20 bg-white/12 p-6 shadow-2xl shadow-black/25 backdrop-blur-xl">
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/50">
@@ -1055,7 +995,7 @@ const HeroBanner = ({ settings, theme }) => {
                             Visitor-first confidence
                           </h3>
                         </div>
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/12 text-white">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/12 text-white">
                           {renderHomeIcon("sparkles", "w-7 h-7")}
                         </div>
                       </div>
@@ -1080,10 +1020,10 @@ const HeroBanner = ({ settings, theme }) => {
       {/* Slide Controls */}
       {hasMultipleImages && (
         <div className="absolute bottom-5 right-3 sm:right-4 lg:right-6 z-20">
-          <div className="flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-2.5 py-2 text-white shadow-xl backdrop-blur-xl">
+          <div className="flex items-center gap-2 rounded-lg border border-white/20 bg-black/20 px-2.5 py-2 text-white shadow-xl backdrop-blur-xl">
             <button
               onClick={(e) => { e.stopPropagation(); prevSlide(); }}
-              className="rounded-full bg-white/10 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+              className="rounded-lg bg-white/10 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
               aria-label="Previous slide"
             >
               Prev
@@ -1093,7 +1033,7 @@ const HeroBanner = ({ settings, theme }) => {
             </span>
             <button
               onClick={(e) => { e.stopPropagation(); nextSlide(); }}
-              className="rounded-full bg-white/10 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+              className="rounded-lg bg-white/10 px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
               aria-label="Next slide"
             >
               Next
@@ -1109,11 +1049,10 @@ const HeroBanner = ({ settings, theme }) => {
             <button
               key={index}
               onClick={(e) => { e.stopPropagation(); goToSlide(index); }}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index === currentSlide 
-                  ? "bg-white w-8" 
-                  : "bg-white/50 hover:bg-white/70 w-2"
-              }`}
+              className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide
+                ? "bg-white w-8"
+                : "bg-white/50 hover:bg-white/70 w-2"
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
@@ -1131,15 +1070,15 @@ const TrustBadges = ({ settings, theme }) => {
 
   return (
     <div className="py-6 -mt-8 sm:-mt-12 relative z-20">
-      <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/40 p-6 sm:p-8">
+      <div className="rounded-lg border border-gray-200 bg-white/95 p-5 shadow-xl shadow-gray-200/50 backdrop-blur sm:p-7">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {badges.slice(0, 4).map((badge, index) => (
             <div
               key={`${badge.title}-${index}`}
-              className="flex items-center gap-4 group"
+              className="group flex items-center gap-4"
             >
-              <div 
-                className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
+              <div
+                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105 sm:h-14 sm:w-14"
                 style={{ background: theme.soft, color: theme.primary }}
               >
                 {typeof badge.icon === "string" ? renderHomeIcon(badge.icon, "w-6 h-6") : badge.icon}
@@ -1165,8 +1104,8 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
 
   const gradients = [
     "from-rose-500 to-pink-500",
-    "from-violet-500 to-purple-500",
-    "from-blue-500 to-cyan-500",
+    "from-fuchsia-500 to-rose-500",
+    "from-sky-500 to-cyan-500",
     "from-emerald-500 to-teal-500",
     "from-amber-500 to-orange-500",
     "from-red-500 to-rose-500",
@@ -1185,7 +1124,7 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
               to={`/category/${category._id}`}
               className="group relative"
             >
-              <div className="relative bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
+              <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gray-300 hover:shadow-xl">
                 {/* Image/Icon Container */}
                 <div className="relative h-32 sm:h-40 overflow-hidden">
                   {category.image ? (
@@ -1201,13 +1140,13 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
                       </svg>
                     </div>
                   )}
-                  
+
                   {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
                   {/* Sub-category Badge */}
                   {subCount > 0 && (
-                    <span className="absolute top-3 right-3 w-6 h-6 bg-white text-gray-900 text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                    <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-xs font-bold text-gray-900 shadow-lg">
                       {subCount}
                     </span>
                   )}
@@ -1215,13 +1154,13 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
 
                 {/* Content */}
                 <div className="p-4 text-center">
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate group-hover:text-transparent group-hover:bg-clip-text transition-all" style={{ '--tw-gradient-from': theme.primary, '--tw-gradient-to': theme.secondary }}>
+                  <h3 className="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-gray-700 sm:text-base">
                     {category.name}
                   </h3>
                 </div>
 
                 {/* Hover Arrow */}
-                <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                <div className="absolute bottom-4 right-4 flex h-8 w-8 translate-y-2 items-center justify-center rounded-lg bg-white text-gray-700 opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                   <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -1394,11 +1333,10 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
             onClick={() => scrollProducts(-1)}
             disabled={!showLeftArrow}
             aria-label="Scroll products left"
-            className={`absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${
-              showLeftArrow
-                ? "pointer-events-auto opacity-100 hover:-translate-x-1 hover:scale-105"
-                : "pointer-events-none opacity-0"
-            }`}
+            className={`absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${showLeftArrow
+              ? "pointer-events-auto opacity-100 hover:-translate-x-1 hover:scale-105"
+              : "pointer-events-none opacity-0"
+              }`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 6l-6 6 6 6" />
@@ -1410,11 +1348,10 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
             onClick={() => scrollProducts(1)}
             disabled={!showRightArrow}
             aria-label="Scroll products right"
-            className={`absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${
-              showRightArrow
-                ? "pointer-events-auto opacity-100 hover:translate-x-1 hover:scale-105"
-                : "pointer-events-none opacity-0"
-            }`}
+            className={`absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${showRightArrow
+              ? "pointer-events-auto opacity-100 hover:translate-x-1 hover:scale-105"
+              : "pointer-events-none opacity-0"
+              }`}
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 6l6 6-6 6" />
@@ -1455,8 +1392,8 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
       </div>
 
       <div className="mt-4 flex flex-col gap-3 px-2 sm:px-3 lg:px-5 xl:px-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-2 self-start rounded-full border border-gray-200 bg-white/85 px-4 py-2 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm sm:text-sm">
-          <span className={`h-2 w-2 rounded-full ${showRightArrow ? "bg-emerald-500 animate-pulse" : "bg-gray-300"}`} />
+        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 bg-white/85 px-4 py-2 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm sm:text-sm">
+          <span className={`h-2 w-2 rounded-full ${showRightArrow ? "bg-emerald-500" : "bg-gray-300"}`} />
           {showLeftArrow || showRightArrow ? scrollHint : "All cards visible"}
         </div>
 
@@ -1467,11 +1404,10 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
               onClick={() => scrollProducts(-1)}
               disabled={!showLeftArrow}
               aria-label="Scroll products left"
-              className={`flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${
-                showLeftArrow
-                  ? "opacity-100 hover:-translate-x-0.5 hover:shadow-md"
-                  : "opacity-40"
-              }`}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${showLeftArrow
+                ? "opacity-100 hover:-translate-x-0.5 hover:shadow-md"
+                : "opacity-40"
+                }`}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 6l-6 6 6 6" />
@@ -1482,11 +1418,10 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
               onClick={() => scrollProducts(1)}
               disabled={!showRightArrow}
               aria-label="Scroll products right"
-              className={`flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${
-                showRightArrow
-                  ? "opacity-100 hover:translate-x-0.5 hover:shadow-md"
-                  : "opacity-40"
-              }`}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${showRightArrow
+                ? "opacity-100 hover:translate-x-0.5 hover:shadow-md"
+                : "opacity-40"
+                }`}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 6l6 6-6 6" />
@@ -1513,7 +1448,6 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
    PRODUCT CARD - MODERN DESIGN
 ------------------------------------------------------------- */
 const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart = false }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const inventory = getProductInventory(product);
@@ -1521,7 +1455,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
   const image =
     !imageError && product.images?.length > 0
       ? product.images[0]
-      : "https://via.placeholder.com/400x400?text=No+Image";
+      : "";
 
   const discount =
     product.mrp > product.sellingPrice
@@ -1533,26 +1467,23 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
   return (
     <div
       data-product-card="true"
-      className="group flex w-[calc((100%-1.5rem)/3)] min-w-[96px] max-w-[148px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-xl sm:w-[240px] sm:min-w-[240px] sm:max-w-[240px] sm:rounded-3xl lg:w-[280px] lg:min-w-[280px] lg:max-w-[280px]"
+      className="group flex w-[44vw] min-w-[150px] max-w-[190px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gray-300 hover:shadow-xl sm:w-[240px] sm:min-w-[240px] sm:max-w-[240px] lg:w-[280px] lg:min-w-[280px] lg:max-w-[280px]"
     >
       {/* Image Container */}
       <Link to={`/products/${product._id}`} className="relative block h-28 overflow-hidden bg-gray-100 sm:h-56">
-        {/* Loading Skeleton */}
-        {!imageLoaded && !imageError && (
-          <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%]" />
+        {image ? (
+          <img
+            src={image}
+            alt={product.name}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 text-gray-400">
+            {renderHomeIcon("shipping-box", "h-9 w-9 sm:h-14 sm:w-14")}
+          </div>
         )}
-
-        {/* Product Image */}
-        <img
-          src={image}
-          alt={product.name}
-          className={`w-full h-full object-cover transition-all duration-700 ${
-            imageLoaded ? "opacity-100" : "opacity-0"
-          } group-hover:scale-110`}
-          loading="lazy"
-          onLoad={() => setImageLoaded(true)}
-          onError={() => { setImageError(true); setImageLoaded(true); }}
-        />
 
         {/* Badges */}
         <div className="absolute left-2 top-2 flex flex-col gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
@@ -1571,11 +1502,10 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         {/* Wishlist Button */}
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted(!isWishlisted); }}
-          className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg border shadow-md transition-all duration-300 hover:scale-110 sm:right-3 sm:top-3 sm:h-10 sm:w-10 sm:rounded-xl sm:shadow-lg ${
-            isWishlisted 
-              ? 'border-red-200 bg-red-50 text-red-500' 
-              : 'border-white bg-white/95 text-gray-500 hover:text-red-500'
-          }`}
+          className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg border shadow-md transition-all duration-300 hover:scale-110 sm:right-3 sm:top-3 sm:h-10 sm:w-10 sm:shadow-lg ${isWishlisted
+            ? 'border-red-200 bg-red-50 text-red-500'
+            : 'border-white bg-white/95 text-gray-500 hover:text-red-500'
+            }`}
         >
           <svg className={`h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? 'fill-current' : ''}`} fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -1583,11 +1513,11 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         </button>
 
         {/* Quick View Button */}
-        <button 
+        <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
           aria-label={`Quick view ${product.name}`}
-          className="absolute bottom-3 right-3 hidden h-10 w-10 items-center justify-center rounded-xl border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
+          className="absolute bottom-3 right-3 hidden h-10 w-10 items-center justify-center rounded-lg border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
         >
           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1623,9 +1553,9 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
 
         {/* Price */}
         <div className="mt-2 flex flex-wrap items-center gap-1 sm:mt-3 sm:gap-2">
-          <span className="text-xl font-bold text-gray-900">₹{price?.toLocaleString()}</span>
+          <span className="text-xl font-bold text-gray-900">Rs {price?.toLocaleString()}</span>
           {product.mrp > product.sellingPrice && (
-            <span className="text-sm text-gray-400 line-through">₹{product.mrp?.toLocaleString()}</span>
+            <span className="text-sm text-gray-400 line-through">Rs {product.mrp?.toLocaleString()}</span>
           )}
         </div>
 
@@ -1633,26 +1563,24 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         <div className="mt-2 sm:mt-3">
           <span
             title={inventory.stockLabel}
-            className={`inline-flex max-w-full items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold sm:gap-1.5 sm:px-3 sm:text-xs ${
-              inventory.isComingSoon
-                ? "bg-sky-50 text-sky-700"
-                : inventory.isOutOfStock
+            className={`inline-flex max-w-full items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold sm:gap-1.5 sm:px-3 sm:text-xs ${inventory.isComingSoon
+              ? "bg-sky-50 text-sky-700"
+              : inventory.isOutOfStock
                 ? "bg-red-50 text-red-700"
                 : inventory.isLowStock
-                ? "bg-amber-50 text-amber-700"
-                : "bg-emerald-50 text-emerald-700"
-            }`}
+                  ? "bg-amber-50 text-amber-700"
+                  : "bg-emerald-50 text-emerald-700"
+              }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2 ${
-                inventory.isComingSoon
-                  ? "bg-sky-500"
-                  : inventory.isOutOfStock
+              className={`h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2 ${inventory.isComingSoon
+                ? "bg-sky-500"
+                : inventory.isOutOfStock
                   ? "bg-red-500"
                   : inventory.isLowStock
-                  ? "bg-amber-500"
-                  : "bg-emerald-500"
-              }`}
+                    ? "bg-amber-500"
+                    : "bg-emerald-500"
+                }`}
             />
             <span className="truncate">{inventory.stockLabel}</span>
           </span>
@@ -1664,7 +1592,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
-          className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg font-semibold text-[11px] border border-gray-200 bg-gray-50 text-gray-700 transition-all duration-300 hover:bg-gray-100 sm:mt-3 sm:gap-2 sm:py-2.5 sm:rounded-xl sm:text-sm"
+          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-2 text-[11px] font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-100 sm:mt-3 sm:gap-2 sm:py-2.5 sm:text-sm"
         >
           <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1675,11 +1603,11 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         </button>
 
         {/* Add to Cart Button */}
-        <button 
+        <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart?.(product); }}
           type="button"
           disabled={isAddingToCart || !inventory.canAddToCart}
-          className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-semibold text-[11px] transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-white sm:mt-4 sm:gap-2 sm:py-3 sm:rounded-xl sm:text-sm"
+          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-lg py-2.5 text-[11px] font-semibold text-white transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 sm:mt-4 sm:gap-2 sm:py-3 sm:text-sm"
           style={{ background: inventory.canAddToCart ? theme.accentGradient : '#9ca3af' }}
         >
           {isAddingToCart ? (
@@ -1706,51 +1634,60 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
 ------------------------------------------------------------- */
 const PromoBanner = ({ theme }) => (
   <section className="py-12 sm:py-16">
-    <div className="grid sm:grid-cols-2 gap-6">
+    <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
       {/* Banner 1 */}
-      <div 
-        className="relative overflow-hidden rounded-3xl p-8 sm:p-10 min-h-[280px] flex flex-col justify-between group"
-        style={{ background: theme.accentGradient }}
+      <div
+        className="group relative flex min-h-[260px] flex-col justify-between overflow-hidden rounded-lg border border-gray-800 bg-gray-950 p-7 text-white shadow-xl shadow-gray-300/20 transition-transform duration-500 hover:-translate-y-1 sm:p-9"
       >
-        {/* Decorative circles */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
+        <div className="absolute inset-x-0 top-0 h-1" style={{ background: theme.accentGradient }} />
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: "linear-gradient(135deg, #ffffff 1px, transparent 1px)",
+            backgroundSize: "26px 26px",
+          }}
+        />
+
         <div className="relative z-10">
-          <Badge variant="glass" className="mb-4">🔥 Limited Time</Badge>
-          <h3 className="text-3xl sm:text-4xl font-bold text-white">Summer Sale</h3>
-          <p className="text-white/80 mt-3 text-lg max-w-xs">Up to 50% off on selected items</p>
+          <Badge variant="glass" className="mb-4">Limited Time</Badge>
+          <h3 className="max-w-xl text-3xl font-bold leading-tight text-white sm:text-4xl">Fresh Deals For Your Cart</h3>
+          <p className="mt-3 max-w-md text-lg leading-relaxed text-white/70">Save more on selected favorites before they sell out.</p>
         </div>
-        
+
         <Link
           to="/products?sale=summer"
-          className="relative z-10 inline-flex items-center gap-2 bg-white px-6 py-3 rounded-xl font-semibold text-gray-900 hover:bg-gray-100 transition-all w-fit shadow-lg group/btn"
+          className="relative z-10 inline-flex w-fit items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-950 shadow-lg transition-all hover:-translate-y-0.5 hover:bg-gray-100 group-hover:shadow-xl"
         >
           Shop Sale
-          <svg className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </Link>
       </div>
 
       {/* Banner 2 */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-700 p-8 sm:p-10 min-h-[280px] flex flex-col justify-between group">
-        {/* Decorative circles */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-        
+      <div className="group relative flex min-h-[260px] flex-col justify-between overflow-hidden rounded-lg border border-gray-800 bg-gray-950 p-7 text-white shadow-xl shadow-gray-300/20 transition-transform duration-500 hover:-translate-y-1 sm:p-9">
+        <div className="absolute inset-x-0 top-0 h-1" style={{ background: theme.accentGradient }} />
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: "linear-gradient(135deg, #ffffff 1px, transparent 1px)",
+            backgroundSize: "34px 34px",
+          }}
+        />
+
         <div className="relative z-10">
-          <Badge variant="glass" className="mb-4">✨ Just Arrived</Badge>
-          <h3 className="text-3xl sm:text-4xl font-bold text-white">New Collection</h3>
-          <p className="text-white/80 mt-3 text-lg max-w-xs">Discover the latest trends</p>
+          <Badge variant="glass" className="mb-4">Just Arrived</Badge>
+          <h3 className="max-w-xl text-3xl font-bold leading-tight text-white sm:text-4xl">New Season Edit</h3>
+          <p className="mt-3 max-w-md text-lg leading-relaxed text-white/70">Browse the latest products picked for everyday style.</p>
         </div>
-        
+
         <Link
           to="/products?new=true"
-          className="relative z-10 inline-flex items-center gap-2 bg-white px-6 py-3 rounded-xl font-semibold text-gray-900 hover:bg-gray-100 transition-all w-fit shadow-lg group/btn"
+          className="relative z-10 inline-flex w-fit items-center gap-2 rounded-lg bg-white px-6 py-3 font-semibold text-gray-950 shadow-lg transition-all hover:-translate-y-0.5 hover:bg-gray-100 group-hover:shadow-xl"
         >
           Explore Now
-          <svg className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </Link>
@@ -1762,41 +1699,15 @@ const PromoBanner = ({ theme }) => (
 /* -------------------------------------------------------------
    LOADING STATE
 ------------------------------------------------------------- */
-const LoadingState = () => (
-  <div className="py-16 space-y-16">
-    {/* Categories Skeleton */}
-    <div>
-      <div className="flex justify-between items-end mb-8">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-8 w-48" />
-        </div>
-        <Skeleton className="h-10 w-28 rounded-full" />
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <Skeleton key={i} className="h-48 rounded-3xl" />
-        ))}
-      </div>
-    </div>
-
-    {/* Products Skeleton */}
-    <div>
-      <div className="flex justify-between items-end mb-8">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-8 w-56" />
-        </div>
-        <div className="flex gap-3">
-          <Skeleton className="h-10 w-24 rounded-full" />
-          <Skeleton className="h-10 w-28 rounded-full" />
-        </div>
-      </div>
-      <div className="flex gap-6 overflow-hidden">
-        {[...Array(5)].map((_, i) => (
-          <ProductCardSkeleton key={i} />
-        ))}
-      </div>
+const LoadingState = ({ theme }) => (
+  <div className="flex min-h-[260px] items-center justify-center py-16">
+    <div className="rounded-lg border border-gray-200 bg-white/90 px-6 py-5 text-center shadow-lg shadow-gray-200/50 backdrop-blur">
+      <div
+        className="mx-auto h-11 w-11 animate-spin rounded-full border-4 border-gray-200 border-t-transparent"
+        style={{ borderTopColor: theme.primary }}
+      />
+      <p className="mt-4 text-sm font-semibold text-gray-900">Loading fresh picks</p>
+      <p className="mt-1 text-xs text-gray-500">Curating the storefront for you.</p>
     </div>
   </div>
 );
@@ -1806,8 +1717,8 @@ const LoadingState = () => (
 ------------------------------------------------------------- */
 const EmptyState = ({ theme }) => (
   <div className="py-24 text-center">
-    <div 
-      className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+    <div
+      className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-lg shadow-lg"
       style={{ background: theme.soft }}
     >
       <svg className="w-12 h-12" style={{ color: theme.primary }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1818,7 +1729,7 @@ const EmptyState = ({ theme }) => (
     <p className="text-gray-500 mb-6 max-w-md mx-auto">Check back later for new arrivals!</p>
     <Link
       to="/categories"
-      className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-lg"
+      className="inline-flex items-center gap-2 rounded-lg px-6 py-3 font-semibold text-white transition-all hover:shadow-lg"
       style={{ background: theme.accentGradient }}
     >
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1863,19 +1774,18 @@ const Newsletter = ({ settings, theme }) => {
 
   return (
     <section className="py-16 sm:py-20">
-      <div className="relative bg-gray-900 rounded-3xl p-8 sm:p-12 lg:p-16 text-center overflow-hidden">
-        {/* Decorative elements */}
-        <div 
-          className="absolute top-0 right-0 w-80 h-80 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 opacity-30"
-          style={{ background: theme.accentGradient }}
-        />
-        <div 
-          className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 opacity-20"
-          style={{ background: theme.accentGradient }}
+      <div className="relative overflow-hidden rounded-lg bg-gray-950 p-8 text-center shadow-2xl shadow-gray-300/20 sm:p-12 lg:p-16">
+        <div className="absolute inset-x-0 top-0 h-1" style={{ background: theme.accentGradient }} />
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage: "linear-gradient(135deg, #ffffff 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
         />
 
         <div className="relative z-10 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: theme.secondary }} />
               <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: theme.secondary }} />
@@ -1896,14 +1806,14 @@ const Newsletter = ({ settings, theme }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={inputPlaceholder}
-                className="w-full pl-12 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/30 bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50"
+                className="w-full rounded-lg border border-white/20 bg-white/10 py-4 pl-12 pr-4 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/30"
                 required
               />
             </div>
             <button
               type={buttonLink ? "button" : "submit"}
               onClick={buttonLink ? handleButtonClick : undefined}
-              className="px-8 py-4 text-white font-bold rounded-xl transition-all hover:opacity-90 hover:shadow-lg"
+              className="rounded-lg px-8 py-4 font-bold text-white transition-all hover:opacity-90 hover:shadow-lg"
               style={{ background: theme.accentGradient }}
             >
               {buttonLabel}
@@ -1931,10 +1841,10 @@ const FeaturesSection = ({ settings, theme }) => {
   const features = getContentItems(settings?.homeFeatureItems, DEFAULT_HOME_FEATURE_ITEMS);
 
   return (
-    <section className="py-16 sm:py-20 bg-white border-t border-gray-100">
+    <section className="border-t border-gray-200 bg-white py-16 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
-          <span 
+          <span
             className="inline-flex items-center gap-2 text-sm font-semibold tracking-wider uppercase mb-3"
             style={{ color: theme.primary }}
           >
@@ -1952,12 +1862,12 @@ const FeaturesSection = ({ settings, theme }) => {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {features.slice(0, 4).map((feature, index) => (
-            <div 
+            <div
               key={`${feature.title}-${index}`}
-              className="group text-center p-8 bg-gray-50 rounded-2xl hover:bg-white hover:shadow-xl transition-all duration-500"
+              className="group rounded-lg border border-gray-200 bg-gray-50 p-8 text-center transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-xl"
             >
-              <div 
-                className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-lg text-white mb-6 group-hover:scale-110 transition-transform"
+              <div
+                className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-lg text-white shadow-lg transition-transform group-hover:scale-105"
                 style={{ background: theme.accentGradient }}
               >
                 {typeof feature.icon === "string" ? renderHomeIcon(feature.icon, "w-8 h-8") : feature.icon}
@@ -2022,8 +1932,7 @@ const styles = `
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
   .animate-slide-in-right,
-  .animate-ping,
-  .animate-pulse {
+  .animate-ping {
     animation: none !important;
   }
   

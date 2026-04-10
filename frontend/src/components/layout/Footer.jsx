@@ -90,7 +90,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="mt-auto bg-white border-t border-gray-200">
+    <footer className="mt-auto bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
@@ -111,12 +111,12 @@ const Footer = () => {
                   </span>
                 )}
               </div>
-              <span className="text-xl font-bold text-gray-800">
+              <span className="text-xl font-bold text-gray-800 dark:text-gray-100">
                 {settings.siteName}
               </span>
             </Link>
             
-            <p className="text-sm text-gray-500 leading-relaxed mb-5">
+            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-5">
               {settings.footerText || 'Your trusted multi-vendor marketplace. Quality products from verified sellers.'}
             </p>
 
@@ -126,7 +126,7 @@ const Footer = () => {
                 href={normalizeSocialUrl(settings.socialLinks?.facebook) || '#'}
                 target={settings.socialLinks?.facebook ? '_blank' : undefined}
                 rel={settings.socialLinks?.facebook ? 'noopener noreferrer' : undefined}
-                className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-600 flex items-center justify-center text-gray-500 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-blue-600 dark:hover:bg-blue-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-white transition-all duration-200"
                 aria-label="Facebook"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -137,7 +137,7 @@ const Footer = () => {
                 href={normalizeSocialUrl(settings.socialLinks?.twitter) || '#'}
                 target={settings.socialLinks?.twitter ? '_blank' : undefined}
                 rel={settings.socialLinks?.twitter ? 'noopener noreferrer' : undefined}
-                className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-400 flex items-center justify-center text-gray-500 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-blue-400 dark:hover:bg-blue-400 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-white transition-all duration-200"
                 aria-label="Twitter"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -148,7 +148,7 @@ const Footer = () => {
                 href={normalizeSocialUrl(settings.socialLinks?.instagram) || '#'}
                 target={settings.socialLinks?.instagram ? '_blank' : undefined}
                 rel={settings.socialLinks?.instagram ? 'noopener noreferrer' : undefined}
-                className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-pink-600 flex items-center justify-center text-gray-500 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-pink-600 dark:hover:bg-pink-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-white transition-all duration-200"
                 aria-label="Instagram"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@ const Footer = () => {
                 href={normalizeSocialUrl(settings.socialLinks?.youtube) || '#'}
                 target={settings.socialLinks?.youtube ? '_blank' : undefined}
                 rel={settings.socialLinks?.youtube ? 'noopener noreferrer' : undefined}
-                className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-red-600 flex items-center justify-center text-gray-500 hover:text-white transition-all duration-200"
+                className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-white transition-all duration-200"
                 aria-label="YouTube"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -171,7 +171,7 @@ const Footer = () => {
 
           {/* Column 2: Quick Links */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">
               Quick Links
             </h3>
             <ul className="space-y-3">
@@ -196,7 +196,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-sm text-gray-500 hover:text-blue-600 transition-colors duration-200">
+                <Link to="/contact" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
                   Contact Us
                 </Link>
               </li>
@@ -205,7 +205,7 @@ const Footer = () => {
 
           {/* Column 3: Support */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">
               Support
             </h3>
             <ul className="space-y-3">
@@ -230,7 +230,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-sm text-gray-500 hover:text-blue-600 transition-colors duration-200">
+                <Link to="/privacy" className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
                   Privacy Policy
                 </Link>
               </li>
@@ -239,21 +239,21 @@ const Footer = () => {
 
           {/* Column 4: Contact Information */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 uppercase tracking-wider mb-4">
               Contact Us
             </h3>
             
             <div className="space-y-4">
               {settings.contactEmail && (
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
                   <a
                     href={`mailto:${settings.contactEmail}`}
-                    className="text-sm text-gray-500 hover:text-blue-600 transition-colors duration-200 break-all"
+                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 break-all"
                   >
                     {settings.contactEmail}
                   </a>
@@ -262,14 +262,14 @@ const Footer = () => {
 
               {settings.contactPhone && (
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
                     <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   </div>
                   <a
                     href={`tel:${settings.contactPhone}`}
-                    className="text-sm text-gray-500 hover:text-blue-600 transition-colors duration-200"
+                    className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                   >
                     {settings.contactPhone}
                   </a>
@@ -278,13 +278,13 @@ const Footer = () => {
 
               {settings.address && (
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   </div>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                     {settings.address}
                   </p>
                 </div>
@@ -301,13 +301,13 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-200 bg-gray-50">
+      <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
-            <p className="text-sm text-gray-500 text-center md:text-left">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center md:text-left">
               © {currentYear}{' '}
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-700 dark:text-gray-300">
                 {settings.siteName}
               </span>
               . All rights reserved.
@@ -315,7 +315,7 @@ const Footer = () => {
 
             {/* Payment Methods */}
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400 mr-1">We accept:</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500 mr-1">We accept:</span>
               {/* Visa */}
               <div className="w-10 h-6 bg-white border border-gray-200 rounded flex items-center justify-center">
                 <svg className="h-3" viewBox="0 0 48 16" fill="none">
@@ -335,13 +335,13 @@ const Footer = () => {
                 UPI
               </div>
               {/* COD */}
-              <div className="w-10 h-6 bg-white border border-gray-200 rounded flex items-center justify-center text-[10px] font-bold text-blue-600">
+              <div className="w-10 h-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded flex items-center justify-center text-[10px] font-bold text-blue-600">
                 COD
               </div>
             </div>
 
             {/* Policy Links */}
-            <div className="flex items-center gap-4 text-xs text-gray-500">
+            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <Link to="/terms" className="hover:text-blue-600 transition-colors duration-200">
                 Terms
               </Link>

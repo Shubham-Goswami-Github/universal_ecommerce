@@ -175,7 +175,7 @@ function AppShell({ appearance, loadingAppearance }) {
   return (
     <div
       style={style}
-      className={`relative isolate min-h-screen text-slate-900 ${isRestBackgroundRoute ? 'rest-background-mode' : ''}`}
+      className={`relative isolate min-h-screen text-slate-900 dark:text-gray-100 ${isRestBackgroundRoute ? 'rest-background-mode' : ''}`}
     >
       {isRestBackgroundRoute && (
         <div
@@ -200,8 +200,11 @@ function AppShell({ appearance, loadingAppearance }) {
         `}</style>
       )}
       {loadingAppearance ? (
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <div className="text-slate-400">Loading...</div>
+        <div className="relative z-10 min-h-screen flex items-center justify-center bg-slate-50 dark:bg-gray-950">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-slate-200 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin" />
+            <span className="text-sm text-slate-400 dark:text-gray-500 font-medium">Loading...</span>
+          </div>
         </div>
       ) : (
         <div className="relative z-10">
@@ -212,9 +215,31 @@ function AppShell({ appearance, loadingAppearance }) {
   );
 }
 
+/* ─── Dark Mode Initializer ─── */
+function initDarkMode() {
+  const stored = localStorage.getItem('theme');
+  if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
 export default function ThemedApp() {
   const [appearance, setAppearance] = useState(null);
   const [loadingAppearance, setLoadingAppearance] = useState(true);
+
+  // Initialize dark mode on mount
+  useEffect(() => {
+    initDarkMode();
+    // Listen for system preference changes
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => {
+      if (!localStorage.getItem('theme')) initDarkMode();
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const fetchAppearance = () => {
     axiosClient
@@ -255,13 +280,10 @@ export default function ThemedApp() {
     favicon.type = faviconHref.toLowerCase().includes('.svg') ? 'image/svg+xml' : 'image/x-icon';
     favicon.href = faviconHref;
   }, [appearance]);
+
   return (
     <BrowserRouter>
       <AppShell appearance={appearance} loadingAppearance={loadingAppearance} />
     </BrowserRouter>
   );
-
 }
-
-
-console.log("API URL:", import.meta.env.VITE_API_URL);
