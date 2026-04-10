@@ -1364,7 +1364,13 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
       <div
         ref={scrollRef}
         className={`flex gap-3 sm:gap-5 lg:gap-6 overflow-x-auto pb-4 pt-2 px-2 sm:px-3 lg:px-5 xl:px-6 scroll-smooth scrollbar-hide snap-x snap-mandatory ${isDragging ? "cursor-grabbing select-none" : "lg:cursor-grab"}`}
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none", touchAction: "pan-y" }}
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          touchAction: "auto",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehaviorX: "contain",
+        }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
