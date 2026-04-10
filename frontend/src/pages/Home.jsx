@@ -210,14 +210,14 @@ const SectionHeader = ({
           {subtitle}
         </span>
       )}
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight dark:text-white">
         {title}
       </h2>
     </div>
     {(viewAllLink || count !== null) && !centered && (
       <div className="flex items-center gap-3">
         {count !== null && (
-          <span className="hidden rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 sm:inline-flex">
+          <span className="hidden rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300 sm:inline-flex">
             {count} Items
           </span>
         )}
@@ -243,7 +243,7 @@ const SectionHeader = ({
 ------------------------------------------------------------- */
 const Badge = ({ children, variant = "default", className = "" }) => {
   const variants = {
-    default: "bg-white/90 text-gray-700 border border-gray-200/50 shadow-sm",
+    default: "bg-white/90 text-gray-700 border border-gray-200/50 shadow-sm dark:bg-gray-900/90 dark:text-gray-200 dark:border-gray-700",
     success: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     danger: "bg-red-50 text-red-600 border border-red-200",
     warning: "bg-amber-50 text-amber-700 border border-amber-200",
@@ -268,7 +268,7 @@ const HeroStatsGrid = ({ items, theme, variant = "solid", className = "" }) => {
           key={`${stat.label}-${index}`}
           className={`rounded-lg border p-4 ${isGlass
             ? "border-white/15 bg-white/10 backdrop-blur-xl shadow-lg shadow-black/20"
-            : "border-gray-100 bg-white shadow-lg shadow-gray-200/40"
+            : "border-gray-100 bg-white shadow-lg shadow-gray-200/40 dark:border-gray-800 dark:bg-gray-900 dark:shadow-black/20"
             }`}
         >
           <p
@@ -278,7 +278,35 @@ const HeroStatsGrid = ({ items, theme, variant = "solid", className = "" }) => {
           >
             {stat.value}
           </p>
-          <p className={`mt-1 text-xs leading-relaxed ${isGlass ? "text-white/70" : "text-gray-500"}`}>
+          <p className={`mt-1 text-xs leading-relaxed ${isGlass ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
+            {stat.label}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const HeroStatsRail = ({ items, theme, variant = "solid", className = "" }) => {
+  const isGlass = variant === "glass";
+
+  return (
+    <div className={`grid grid-cols-3 gap-2 ${className}`}>
+      {items.slice(0, 3).map((stat, index) => (
+        <div
+          key={`${stat.label}-${index}`}
+          className={`min-w-0 rounded-lg border px-2.5 py-3 text-center ${isGlass
+            ? "border-white/15 bg-white/12 shadow-lg shadow-black/20 backdrop-blur-xl"
+            : "border-gray-200 bg-white/90 shadow-lg shadow-gray-200/40 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-black/20"
+            }`}
+        >
+          <p
+            className={`truncate text-lg font-extrabold leading-none ${isGlass ? "text-white" : "bg-clip-text text-transparent"}`}
+            style={isGlass ? undefined : { backgroundImage: theme.accentGradient }}
+          >
+            {stat.value}
+          </p>
+          <p className={`mt-1 truncate text-[10px] font-medium ${isGlass ? "text-white/75" : "text-gray-500 dark:text-gray-400"}`}>
             {stat.label}
           </p>
         </div>
@@ -297,7 +325,7 @@ const HeroHighlightsGrid = ({ items, theme, variant = "solid", className = "" })
           key={`${item.title}-${index}`}
           className={`rounded-lg border p-4 ${isGlass
             ? "border-white/15 bg-white/10 backdrop-blur-xl shadow-lg shadow-black/20"
-            : "border-gray-100 bg-white shadow-lg shadow-gray-200/40"
+            : "border-gray-100 bg-white shadow-lg shadow-gray-200/40 dark:border-gray-800 dark:bg-gray-900 dark:shadow-black/20"
             }`}
         >
           <div className="flex items-start gap-3">
@@ -309,10 +337,10 @@ const HeroHighlightsGrid = ({ items, theme, variant = "solid", className = "" })
               {renderHomeIcon(item.icon, "w-5 h-5")}
             </div>
             <div className="min-w-0">
-              <p className={`font-semibold ${isGlass ? "text-white" : "text-gray-900"}`}>
+              <p className={`font-semibold ${isGlass ? "text-white" : "text-gray-900 dark:text-white"}`}>
                 {item.title}
               </p>
-              <p className={`mt-1 text-sm leading-relaxed ${isGlass ? "text-white/70" : "text-gray-500"}`}>
+              <p className={`mt-1 text-sm leading-relaxed ${isGlass ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}>
                 {item.description}
               </p>
             </div>
@@ -480,7 +508,7 @@ const Home = () => {
 
   return (
     <div
-      className="home-page relative min-h-screen bg-white"
+      className="home-page relative min-h-screen bg-white dark:bg-gray-950"
       style={{
         "--home-accent-primary": homeTheme.primary,
         "--home-accent-secondary": homeTheme.secondary,
@@ -491,6 +519,10 @@ const Home = () => {
         aria-hidden="true"
         className="fixed inset-0 -z-10 pointer-events-none"
         style={homeBackgroundStyle}
+      />
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 -z-10 hidden bg-gray-950/90 pointer-events-none dark:block"
       />
 
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
@@ -595,7 +627,7 @@ const Home = () => {
           {/* Category Product Sections */}
           {!loading &&
             Object.keys(grouped).map((superCat) => (
-              <section key={superCat} className="py-12 sm:py-16 lg:py-20 border-t border-gray-200/70">
+          <section key={superCat} className="py-12 sm:py-16 lg:py-20 border-t border-gray-200/70 dark:border-gray-800">
                 <SectionHeader
                   title={superCat}
                   subtitle="Explore"
@@ -756,7 +788,7 @@ const HeroBanner = ({ settings, theme }) => {
   /* Fallback Hero (No Images) */
   if (!hasImages) {
     return (
-      <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center overflow-hidden">
+      <section className="relative flex min-h-[520px] items-center overflow-hidden sm:min-h-[600px] lg:min-h-[700px]">
         {/* Background Pattern */}
         <div className="absolute inset-0" style={heroBackgroundStyle} />
         <div
@@ -782,18 +814,18 @@ const HeroBanner = ({ settings, theme }) => {
         <div className="relative max-w-[1560px] mx-auto px-3 sm:px-4 lg:px-5 xl:px-6 py-20">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
-            <div className="text-center lg:text-left space-y-6">
+            <div className="space-y-4 text-center sm:space-y-6 lg:text-left">
               {/* Tagline Badge */}
-              <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm">
+              <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: theme.primary }} />
                   <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: theme.primary }} />
                 </span>
-                <span className="text-sm font-medium text-gray-700">{heroTagline}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{heroTagline}</span>
               </div>
 
               {/* Main Heading */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-[1.1] tracking-tight">
+              <h1 className="text-3xl font-bold leading-[1.1] tracking-tight text-gray-900 dark:text-white sm:text-5xl lg:text-6xl xl:text-7xl">
                 {heroTitle.split(' ').slice(0, 2).join(' ')}
                 <span className="block mt-1 bg-clip-text text-transparent" style={{ backgroundImage: theme.accentGradient }}>
                   {heroTitle.split(' ').slice(2).join(' ')}
@@ -801,7 +833,7 @@ const HeroBanner = ({ settings, theme }) => {
               </h1>
 
               {/* Subtitle */}
-              <p className="text-lg sm:text-xl text-gray-600 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              <p className="mx-auto max-w-lg text-base leading-relaxed text-gray-600 dark:text-gray-300 sm:text-xl lg:mx-0">
                 {heroSubtitle}
               </p>
 
@@ -813,7 +845,7 @@ const HeroBanner = ({ settings, theme }) => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search for products..."
-                    className="w-full rounded-lg border border-gray-200 bg-white py-4 pl-14 pr-32 text-gray-900 shadow-lg shadow-gray-200/50 transition-all placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-offset-2"
+                    className="w-full rounded-lg border border-gray-200 bg-white py-4 pl-12 pr-28 text-gray-900 shadow-lg shadow-gray-200/50 transition-all placeholder-gray-400 focus:border-transparent focus:ring-2 focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:shadow-black/20 dark:placeholder-gray-500 sm:pl-14 sm:pr-32"
                     style={{ '--tw-ring-color': theme.primary }}
                   />
                   <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -821,7 +853,7 @@ const HeroBanner = ({ settings, theme }) => {
                   </svg>
                   <button
                     type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-lg sm:px-6"
                     style={{ background: theme.accentGradient }}
                   >
                     Search
@@ -831,12 +863,12 @@ const HeroBanner = ({ settings, theme }) => {
 
               {/* Quick Links */}
               <div className="flex flex-wrap gap-2 justify-center lg:justify-start pt-2">
-                <span className="text-sm text-gray-500">Popular:</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Popular:</span>
                 {["Electronics", "Fashion", "Home", "Beauty"].map((tag) => (
                   <Link
                     key={tag}
                     to={`/products?category=${encodeURIComponent(tag)}`}
-                    className="rounded-lg bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+                    className="rounded-lg bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                   >
                     {tag}
                   </Link>
@@ -846,26 +878,32 @@ const HeroBanner = ({ settings, theme }) => {
               <HeroStatsGrid
                 items={heroStats}
                 theme={theme}
-                className="pt-4 lg:hidden"
+                className="hidden pt-4 sm:grid lg:hidden"
+              />
+
+              <HeroStatsRail
+                items={heroStats}
+                theme={theme}
+                className="pt-5 sm:hidden"
               />
 
               <HeroHighlightsGrid
                 items={heroHighlights}
                 theme={theme}
-                className="pt-1 lg:hidden"
+                className="hidden lg:hidden"
               />
             </div>
 
             {/* Right - Stats & Visual */}
             <div className="hidden lg:block">
               <div className="mx-auto max-w-[430px] space-y-4">
-                <div className="rounded-lg border border-gray-200 bg-white/90 p-6 shadow-2xl shadow-gray-300/30 backdrop-blur-sm">
+                <div className="rounded-lg border border-gray-200 bg-white/90 p-6 shadow-2xl shadow-gray-300/30 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-black/30">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
                         Hero Statistics
                       </p>
-                      <h3 className="mt-2 text-2xl font-bold text-gray-900">
+                      <h3 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                         Numbers that impress
                       </h3>
                     </div>
@@ -896,7 +934,7 @@ const HeroBanner = ({ settings, theme }) => {
   /* Slideshow Hero */
   return (
     <section
-      className="relative h-[500px] sm:h-[600px] lg:h-[700px] overflow-hidden"
+      className="relative h-[430px] overflow-hidden xs:h-[460px] sm:h-[560px] lg:h-[700px]"
       style={heroBackgroundStyle}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -934,21 +972,21 @@ const HeroBanner = ({ settings, theme }) => {
           <div className="absolute inset-0 flex items-center">
             <div className="max-w-[1560px] mx-auto px-3 sm:px-4 lg:px-5 xl:px-6 w-full">
               <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
-                <div className="max-w-2xl space-y-6">
+                <div className="max-w-2xl space-y-3 sm:space-y-5 lg:space-y-6">
                   <Badge variant="glass">{heroTagline}</Badge>
 
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">
+                  <h1 className="text-2xl font-bold leading-tight text-white xs:text-3xl sm:text-4xl lg:text-5xl xl:text-6xl">
                     {heroTitle}
                   </h1>
 
-                  <p className="text-lg text-white/80 leading-relaxed max-w-xl">
+                  <p className="max-w-xl text-sm leading-relaxed text-white/80 xs:text-base sm:text-lg">
                     {heroSubtitle}
                   </p>
 
-                  <div className="flex flex-wrap gap-4 pt-2">
+                  <div className="flex flex-wrap gap-3 pt-1 sm:gap-4 sm:pt-2">
                     <Link
                       to="/products"
-                    className="inline-flex items-center gap-2 rounded-lg bg-white px-8 py-4 font-semibold text-gray-900 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 hover:shadow-xl"
+                      className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-gray-900 shadow-lg transition-all hover:scale-105 hover:bg-gray-100 hover:shadow-xl sm:px-8 sm:py-4 sm:text-base"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Shop Now
@@ -958,7 +996,7 @@ const HeroBanner = ({ settings, theme }) => {
                     </Link>
                     <Link
                       to="/categories"
-                      className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-8 py-4 font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20"
+                      className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/20 sm:px-8 sm:py-4 sm:text-base"
                       onClick={(e) => e.stopPropagation()}
                     >
                       Browse Categories
@@ -969,14 +1007,21 @@ const HeroBanner = ({ settings, theme }) => {
                     items={heroStats}
                     theme={theme}
                     variant="glass"
-                    className="pt-4 lg:hidden"
+                    className="hidden pt-2 sm:grid lg:hidden"
+                  />
+
+                  <HeroStatsRail
+                    items={heroStats}
+                    theme={theme}
+                    variant="glass"
+                    className="pt-5 sm:hidden"
                   />
 
                   <HeroHighlightsGrid
                     items={heroHighlights}
                     theme={theme}
                     variant="glass"
-                    className="pt-1 lg:hidden"
+                    className="hidden lg:hidden"
                   />
                 </div>
 
@@ -1019,7 +1064,7 @@ const HeroBanner = ({ settings, theme }) => {
 
       {/* Slide Controls */}
       {hasMultipleImages && (
-        <div className="absolute bottom-5 right-3 sm:right-4 lg:right-6 z-20">
+        <div className="absolute bottom-4 right-3 z-20 sm:bottom-5 sm:right-4 lg:right-6">
           <div className="flex items-center gap-2 rounded-lg border border-white/20 bg-black/20 px-2.5 py-2 text-white shadow-xl backdrop-blur-xl">
             <button
               onClick={(e) => { e.stopPropagation(); prevSlide(); }}
@@ -1044,7 +1089,7 @@ const HeroBanner = ({ settings, theme }) => {
 
       {/* Dots */}
       {hasMultipleImages && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2 sm:bottom-6">
           {bannerImages.map((_, index) => (
             <button
               key={index}
@@ -1069,8 +1114,8 @@ const TrustBadges = ({ settings, theme }) => {
   const badges = getContentItems(settings?.homeTrustBadges, DEFAULT_HOME_TRUST_BADGES);
 
   return (
-    <div className="py-6 -mt-8 sm:-mt-12 relative z-20">
-      <div className="rounded-lg border border-gray-200 bg-white/95 p-5 shadow-xl shadow-gray-200/50 backdrop-blur sm:p-7">
+    <div className="relative z-20 py-5 sm:-mt-10 sm:py-6">
+      <div className="rounded-lg border border-gray-200 bg-white/95 p-5 shadow-xl shadow-gray-200/50 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95 dark:shadow-black/30 sm:p-7">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {badges.slice(0, 4).map((badge, index) => (
             <div
@@ -1084,8 +1129,8 @@ const TrustBadges = ({ settings, theme }) => {
                 {typeof badge.icon === "string" ? renderHomeIcon(badge.icon, "w-6 h-6") : badge.icon}
               </div>
               <div className="min-w-0">
-                <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{badge.title}</h4>
-                <p className="text-gray-500 text-xs sm:text-sm truncate">{badge.description}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">{badge.title}</h4>
+                <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm truncate">{badge.description}</p>
               </div>
             </div>
           ))}
@@ -1124,7 +1169,7 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
               to={`/category/${category._id}`}
               className="group relative"
             >
-              <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gray-300 hover:shadow-xl">
+              <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gray-300 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700">
                 {/* Image/Icon Container */}
                 <div className="relative h-32 sm:h-40 overflow-hidden">
                   {category.image ? (
@@ -1146,7 +1191,7 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
 
                   {/* Sub-category Badge */}
                   {subCount > 0 && (
-                    <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-xs font-bold text-gray-900 shadow-lg">
+                    <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-lg bg-white text-xs font-bold text-gray-900 shadow-lg dark:bg-gray-900 dark:text-white">
                       {subCount}
                     </span>
                   )}
@@ -1154,14 +1199,14 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
 
                 {/* Content */}
                 <div className="p-4 text-center">
-                  <h3 className="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-gray-700 sm:text-base">
+                  <h3 className="truncate text-sm font-semibold text-gray-900 transition-colors group-hover:text-gray-700 dark:text-white dark:group-hover:text-gray-200 sm:text-base">
                     {category.name}
                   </h3>
                 </div>
 
                 {/* Hover Arrow */}
-                <div className="absolute bottom-4 right-4 flex h-8 w-8 translate-y-2 items-center justify-center rounded-lg bg-white text-gray-700 opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute bottom-4 right-4 flex h-8 w-8 translate-y-2 items-center justify-center rounded-lg bg-white text-gray-700 opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 dark:bg-gray-900 dark:text-gray-200">
+                  <svg className="w-4 h-4 text-gray-600 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -1333,7 +1378,7 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
             onClick={() => scrollProducts(-1)}
             disabled={!showLeftArrow}
             aria-label="Scroll products left"
-            className={`absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${showLeftArrow
+            className={`absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 lg:flex ${showLeftArrow
               ? "pointer-events-auto opacity-100 hover:-translate-x-1 hover:scale-105"
               : "pointer-events-none opacity-0"
               }`}
@@ -1348,7 +1393,7 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
             onClick={() => scrollProducts(1)}
             disabled={!showRightArrow}
             aria-label="Scroll products right"
-            className={`absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 lg:flex ${showRightArrow
+            className={`absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-lg border border-white/80 bg-white text-gray-700 shadow-[0_18px_45px_rgba(15,23,42,0.14)] transition-all duration-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 lg:flex ${showRightArrow
               ? "pointer-events-auto opacity-100 hover:translate-x-1 hover:scale-105"
               : "pointer-events-none opacity-0"
               }`}
@@ -1398,7 +1443,7 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
       </div>
 
       <div className="mt-4 flex flex-col gap-3 px-2 sm:px-3 lg:px-5 xl:px-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 bg-white/85 px-4 py-2 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm sm:text-sm">
+        <div className="inline-flex items-center gap-2 self-start rounded-lg border border-gray-200 bg-white/85 px-4 py-2 text-xs font-semibold text-gray-600 shadow-sm backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/85 dark:text-gray-300 sm:text-sm">
           <span className={`h-2 w-2 rounded-full ${showRightArrow ? "bg-emerald-500" : "bg-gray-300"}`} />
           {showLeftArrow || showRightArrow ? scrollHint : "All cards visible"}
         </div>
@@ -1410,7 +1455,7 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
               onClick={() => scrollProducts(-1)}
               disabled={!showLeftArrow}
               aria-label="Scroll products left"
-              className={`flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${showLeftArrow
+              className={`flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 ${showLeftArrow
                 ? "opacity-100 hover:-translate-x-0.5 hover:shadow-md"
                 : "opacity-40"
                 }`}
@@ -1424,7 +1469,7 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
               onClick={() => scrollProducts(1)}
               disabled={!showRightArrow}
               aria-label="Scroll products right"
-              className={`flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all ${showRightArrow
+              className={`flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition-all dark:border-gray-800 dark:bg-gray-900 dark:text-gray-200 ${showRightArrow
                 ? "opacity-100 hover:translate-x-0.5 hover:shadow-md"
                 : "opacity-40"
                 }`}
@@ -1435,7 +1480,7 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
             </button>
           </div>
 
-          <div className="h-2 w-full min-w-[140px] sm:w-40 rounded-full bg-gray-200/80 overflow-hidden">
+          <div className="h-2 w-full min-w-[140px] sm:w-40 rounded-full bg-gray-200/80 dark:bg-gray-800 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
               style={{ width: `${Math.max(scrollProgress, 10)}%`, background: theme.accentGradient }}
@@ -1473,10 +1518,10 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
   return (
     <div
       data-product-card="true"
-      className="group flex w-[44vw] min-w-[150px] max-w-[190px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gray-300 hover:shadow-xl sm:w-[240px] sm:min-w-[240px] sm:max-w-[240px] lg:w-[280px] lg:min-w-[280px] lg:max-w-[280px]"
+      className="group flex w-[44vw] min-w-[150px] max-w-[190px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gray-300 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 sm:w-[240px] sm:min-w-[240px] sm:max-w-[240px] lg:w-[280px] lg:min-w-[280px] lg:max-w-[280px]"
     >
       {/* Image Container */}
-      <Link to={`/products/${product._id}`} className="relative block h-28 overflow-hidden bg-gray-100 sm:h-56">
+      <Link to={`/products/${product._id}`} className="relative block h-28 overflow-hidden bg-gray-100 dark:bg-gray-800 sm:h-56">
         {image ? (
           <img
             src={image}
@@ -1486,7 +1531,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 text-gray-400">
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 text-gray-400 dark:from-gray-800 dark:to-gray-700 dark:text-gray-500">
             {renderHomeIcon("shipping-box", "h-9 w-9 sm:h-14 sm:w-14")}
           </div>
         )}
@@ -1510,7 +1555,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted(!isWishlisted); }}
           className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg border shadow-md transition-all duration-300 hover:scale-110 sm:right-3 sm:top-3 sm:h-10 sm:w-10 sm:shadow-lg ${isWishlisted
             ? 'border-red-200 bg-red-50 text-red-500'
-            : 'border-white bg-white/95 text-gray-500 hover:text-red-500'
+            : 'border-white bg-white/95 text-gray-500 hover:text-red-500 dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-300'
             }`}
         >
           <svg className={`h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? 'fill-current' : ''}`} fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -1523,9 +1568,9 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
           aria-label={`Quick view ${product.name}`}
-          className="absolute bottom-3 right-3 hidden h-10 w-10 items-center justify-center rounded-lg border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
+          className="absolute bottom-3 right-3 hidden h-10 w-10 items-center justify-center rounded-lg border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 dark:border-gray-700 dark:bg-gray-900/95 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
         >
-          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
           </svg>
@@ -1535,13 +1580,13 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
       {/* Card Content */}
       <div className="flex flex-1 flex-col p-2.5 sm:p-5">
         {/* Category */}
-        <span className="truncate text-[9px] font-medium uppercase tracking-[0.18em] text-gray-500 sm:text-xs sm:tracking-wider">
+        <span className="truncate text-[9px] font-medium uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400 sm:text-xs sm:tracking-wider">
           {product.category?.name || "General"}
         </span>
 
         {/* Product Name */}
         <Link to={`/products/${product._id}`}>
-          <h3 className="mt-1.5 min-h-[2rem] font-semibold text-gray-900 text-[12px] leading-snug line-clamp-2 hover:text-gray-600 transition-colors sm:mt-2 sm:min-h-[2.75rem] sm:text-base">
+          <h3 className="mt-1.5 min-h-[2rem] font-semibold text-gray-900 text-[12px] leading-snug line-clamp-2 transition-colors hover:text-gray-600 dark:text-white dark:hover:text-gray-200 sm:mt-2 sm:min-h-[2.75rem] sm:text-base">
             {product.name}
           </h3>
         </Link>
@@ -1552,14 +1597,14 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
             <svg className="h-3.5 w-3.5 text-amber-400 fill-current sm:h-4 sm:w-4" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            <span className="text-[11px] font-medium text-gray-700 sm:text-sm">{product.rating || "4.5"}</span>
+            <span className="text-[11px] font-medium text-gray-700 dark:text-gray-300 sm:text-sm">{product.rating || "4.5"}</span>
           </div>
-          <span className="hidden text-xs text-gray-400 sm:inline">({product.ratingCount || 0} reviews)</span>
+          <span className="hidden text-xs text-gray-400 dark:text-gray-500 sm:inline">({product.ratingCount || 0} reviews)</span>
         </div>
 
         {/* Price */}
         <div className="mt-2 flex flex-wrap items-center gap-1 sm:mt-3 sm:gap-2">
-          <span className="text-xl font-bold text-gray-900">Rs {price?.toLocaleString()}</span>
+          <span className="text-xl font-bold text-gray-900 dark:text-white">Rs {price?.toLocaleString()}</span>
           {product.mrp > product.sellingPrice && (
             <span className="text-sm text-gray-400 line-through">Rs {product.mrp?.toLocaleString()}</span>
           )}
@@ -1598,7 +1643,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
-          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-2 text-[11px] font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-100 sm:mt-3 sm:gap-2 sm:py-2.5 sm:text-sm"
+          className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 py-2 text-[11px] font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 sm:mt-3 sm:gap-2 sm:py-2.5 sm:text-sm"
         >
           <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1707,13 +1752,13 @@ const PromoBanner = ({ theme }) => (
 ------------------------------------------------------------- */
 const LoadingState = ({ theme }) => (
   <div className="flex min-h-[260px] items-center justify-center py-16">
-    <div className="rounded-lg border border-gray-200 bg-white/90 px-6 py-5 text-center shadow-lg shadow-gray-200/50 backdrop-blur">
+    <div className="rounded-lg border border-gray-200 bg-white/90 px-6 py-5 text-center shadow-lg shadow-gray-200/50 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-black/30">
       <div
         className="mx-auto h-11 w-11 animate-spin rounded-full border-4 border-gray-200 border-t-transparent"
         style={{ borderTopColor: theme.primary }}
       />
-      <p className="mt-4 text-sm font-semibold text-gray-900">Loading fresh picks</p>
-      <p className="mt-1 text-xs text-gray-500">Curating the storefront for you.</p>
+      <p className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">Loading fresh picks</p>
+      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Curating the storefront for you.</p>
     </div>
   </div>
 );
@@ -1731,8 +1776,8 @@ const EmptyState = ({ theme }) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
       </svg>
     </div>
-    <h3 className="text-2xl font-bold text-gray-900 mb-3">No Products Available</h3>
-    <p className="text-gray-500 mb-6 max-w-md mx-auto">Check back later for new arrivals!</p>
+    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">No Products Available</h3>
+    <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">Check back later for new arrivals!</p>
     <Link
       to="/categories"
       className="inline-flex items-center gap-2 rounded-lg px-6 py-3 font-semibold text-white transition-all hover:shadow-lg"
@@ -1847,7 +1892,7 @@ const FeaturesSection = ({ settings, theme }) => {
   const features = getContentItems(settings?.homeFeatureItems, DEFAULT_HOME_FEATURE_ITEMS);
 
   return (
-    <section className="border-t border-gray-200 bg-white py-16 sm:py-20">
+    <section className="border-t border-gray-200 bg-white py-16 dark:border-gray-800 dark:bg-gray-950 sm:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
           <span
@@ -1858,10 +1903,10 @@ const FeaturesSection = ({ settings, theme }) => {
             Why Choose Us
             <span className="w-8 h-0.5 rounded-full" style={{ backgroundColor: theme.primary }} />
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Shop With Confidence
           </h2>
-          <p className="mt-4 text-gray-500 text-lg max-w-lg mx-auto">
+          <p className="mt-4 text-gray-500 dark:text-gray-400 text-lg max-w-lg mx-auto">
             We provide the best shopping experience with premium quality products and exceptional service.
           </p>
         </div>
@@ -1870,7 +1915,7 @@ const FeaturesSection = ({ settings, theme }) => {
           {features.slice(0, 4).map((feature, index) => (
             <div
               key={`${feature.title}-${index}`}
-              className="group rounded-lg border border-gray-200 bg-gray-50 p-8 text-center transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-xl"
+              className="group rounded-lg border border-gray-200 bg-gray-50 p-8 text-center transition-all duration-500 hover:-translate-y-1 hover:bg-white hover:shadow-xl dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-900/80"
             >
               <div
                 className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-lg text-white shadow-lg transition-transform group-hover:scale-105"
@@ -1878,8 +1923,8 @@ const FeaturesSection = ({ settings, theme }) => {
               >
                 {typeof feature.icon === "string" ? renderHomeIcon(feature.icon, "w-8 h-8") : feature.icon}
               </div>
-              <h4 className="font-bold text-gray-900 text-lg mb-2">{feature.title}</h4>
-              <p className="text-gray-500 text-sm leading-relaxed">{feature.description}</p>
+              <h4 className="font-bold text-gray-900 dark:text-white text-lg mb-2">{feature.title}</h4>
+              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
