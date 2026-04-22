@@ -3,6 +3,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 import ProductQuickView from "../components/product/ProductQuickView";
 
 const DEFAULT_HOME_HERO_TAGLINE = "New Collection 2024";
@@ -899,14 +900,7 @@ const HeroBanner = ({ settings, theme }) => {
               <div className="mx-auto max-w-[430px] space-y-4">
                 <div className="rounded-lg border border-gray-200 bg-white/90 p-6 shadow-2xl shadow-gray-300/30 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/90 dark:shadow-black/30">
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-gray-400">
-                        Hero Statistics
-                      </p>
-                      <h3 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
-                        Numbers that impress
-                      </h3>
-                    </div>
+                   
                     <div
                       className="flex h-14 w-14 items-center justify-center rounded-lg"
                       style={{ background: theme.soft, color: theme.primary }}
@@ -1031,20 +1025,7 @@ const HeroBanner = ({ settings, theme }) => {
                 >
                   <div className="space-y-4">
                     <div className="rounded-lg border border-white/20 bg-white/12 p-6 shadow-2xl shadow-black/25 backdrop-blur-xl">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/50">
-                            Hero Statistics
-                          </p>
-                          <h3 className="mt-2 text-2xl font-bold text-white">
-                            Visitor-first confidence
-                          </h3>
-                        </div>
-                        <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-white/12 text-white">
-                          {renderHomeIcon("sparkles", "w-7 h-7")}
-                        </div>
-                      </div>
-
+                   
                       <HeroStatsGrid items={heroStats} theme={theme} variant="glass" className="mt-6" />
                     </div>
 
@@ -1499,9 +1480,13 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
    PRODUCT CARD - MODERN DESIGN
 ------------------------------------------------------------- */
 const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart = false }) => {
+  const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const inventory = getProductInventory(product);
+  const canShowWishlist = !auth?.user || auth.user.role === "user";
+  const wishlistActive = isWishlisted(product._id);
 
   const image =
     !imageError && product.images?.length > 0
@@ -1551,17 +1536,27 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
         </div>
 
         {/* Wishlist Button */}
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsWishlisted(!isWishlisted); }}
-          className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg border shadow-md transition-all duration-300 hover:scale-110 sm:right-3 sm:top-3 sm:h-10 sm:w-10 sm:shadow-lg ${isWishlisted
-            ? 'border-red-200 bg-red-50 text-red-500'
-            : 'border-white bg-white/95 text-gray-500 hover:text-red-500 dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-300'
-            }`}
-        >
-          <svg className={`h-4 w-4 sm:h-5 sm:w-5 ${isWishlisted ? 'fill-current' : ''}`} fill={isWishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </button>
+        {canShowWishlist && (
+          <button
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!auth?.user) {
+                navigate("/login", { state: { from: window.location.pathname } });
+                return;
+              }
+              await toggleWishlist(product._id);
+            }}
+            className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg border shadow-md transition-all duration-300 hover:scale-110 sm:right-3 sm:top-3 sm:h-10 sm:w-10 sm:shadow-lg ${wishlistActive
+              ? 'border-red-200 bg-red-50 text-red-500'
+              : 'border-white bg-white/95 text-gray-500 hover:text-red-500 dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-300'
+              }`}
+          >
+            <svg className={`h-4 w-4 sm:h-5 sm:w-5 ${wishlistActive ? 'fill-current' : ''}`} fill={wishlistActive ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        )}
 
         {/* Quick View Button */}
         <button

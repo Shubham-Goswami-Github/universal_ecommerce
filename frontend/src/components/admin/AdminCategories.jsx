@@ -6,22 +6,22 @@ export default function AdminCategories({ token }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  
+
   // Form states for Super Category
   const [superCategoryName, setSuperCategoryName] = useState('');
   const [superCategoryDescription, setSuperCategoryDescription] = useState('');
   const [superCategoryImage, setSuperCategoryImage] = useState('');
   const [uploadingSuperImage, setUploadingSuperImage] = useState(false);
-  
+
   // Form states for Sub Categories (bulk add)
   const [selectedParent, setSelectedParent] = useState('');
   const [subCategoryInputs, setSubCategoryInputs] = useState([{ name: '', description: '', image: '' }]);
   const [uploadingSubImage, setUploadingSubImage] = useState({});
-  
+
   // Multi-edit states - Track all pending changes
   const [editedCategories, setEditedCategories] = useState({});
   const [uploadingImages, setUploadingImages] = useState({});
-  
+
   // UI states
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [deleteModal, setDeleteModal] = useState({ show: false, category: null });
@@ -57,7 +57,7 @@ export default function AdminCategories({ token }) {
 
     try {
       const res = await axiosClient.post('/api/upload/image', formData, {
-        headers: { 
+        headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
         },
@@ -160,7 +160,7 @@ export default function AdminCategories({ token }) {
   // Save all edited categories
   const saveAllChanges = async () => {
     const categoryIds = Object.keys(editedCategories);
-    
+
     if (categoryIds.length === 0) {
       showNotification('error', 'No changes to save');
       return;
@@ -173,7 +173,7 @@ export default function AdminCategories({ token }) {
 
       for (const categoryId of categoryIds) {
         const data = editedCategories[categoryId];
-        
+
         if (!data.name.trim()) {
           errorCount++;
           continue;
@@ -198,7 +198,7 @@ export default function AdminCategories({ token }) {
 
       setEditedCategories({});
       fetchCategories();
-      
+
       if (errorCount === 0) {
         showNotification('success', `Successfully updated ${successCount} ${successCount === 1 ? 'category' : 'categories'}!`);
       } else {
@@ -221,7 +221,7 @@ export default function AdminCategories({ token }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCategories(res.data.categories || []);
-      
+
       const expanded = {};
       (res.data.categories || []).forEach(c => {
         if (c.type === 'super') {
@@ -244,7 +244,7 @@ export default function AdminCategories({ token }) {
   // Create Super Category
   const handleCreateSuperCategory = async (e) => {
     e.preventDefault();
-    
+
     if (!superCategoryName.trim()) {
       showNotification('error', 'Category name is required');
       return;
@@ -281,14 +281,14 @@ export default function AdminCategories({ token }) {
   // Create Multiple Sub Categories
   const handleCreateSubCategories = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedParent) {
       showNotification('error', 'Please select a parent category');
       return;
     }
 
     const validSubCategories = subCategoryInputs.filter(sub => sub.name.trim());
-    
+
     if (validSubCategories.length === 0) {
       showNotification('error', 'Please add at least one sub-category');
       return;
@@ -296,7 +296,7 @@ export default function AdminCategories({ token }) {
 
     try {
       setSubmitting(true);
-      
+
       const res = await axiosClient.post(
         '/api/categories/bulk',
         {
@@ -353,12 +353,12 @@ export default function AdminCategories({ token }) {
       );
 
       setDeleteModal({ show: false, category: null });
-      
+
       // Remove from edited categories if it was being edited
       const updated = { ...editedCategories };
       delete updated[deleteModal.category._id];
       setEditedCategories(updated);
-      
+
       fetchCategories();
       showNotification('success', 'Category deleted successfully!');
     } catch (err) {
@@ -416,83 +416,47 @@ export default function AdminCategories({ token }) {
 
   // Enhanced Image Upload Component
   const ImageUploader = ({ image, onUpload, uploading, onRemove, label = "Image" }) => (
-    <div className="space-y-3">
-      <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-        <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+    <div className="space-y-1.5">
+      <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
         {label}
-        <span className="text-slate-400 font-normal text-xs ml-1">(Optional, Max 5MB)</span>
+        <span className="text-gray-400 font-normal text-xs">(Optional, Max 5MB)</span>
       </label>
-      
+
       <div className="relative">
         {image ? (
           <div className="relative group">
-            <div 
-              className="w-full h-48 rounded-2xl overflow-hidden cursor-pointer border-2 border-indigo-200 hover:border-indigo-400 transition-all shadow-md hover:shadow-xl"
+            <div
+              className="w-full h-40 rounded-xl overflow-hidden cursor-pointer border border-gray-200 hover:border-indigo-400 transition-colors"
               onClick={() => setImagePreviewModal({ show: true, image, title: label })}
             >
               <img src={image} alt="Preview" className="w-full h-full object-cover" />
             </div>
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-2xl transition-all flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-xl transition-all flex items-center justify-center">
               <div className="opacity-0 group-hover:opacity-100 transition-all flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setImagePreviewModal({ show: true, image, title: label })}
-                  className="p-3 bg-white/90 hover:bg-white rounded-xl shadow-lg transition-all"
-                >
-                  <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+                <button type="button" onClick={() => setImagePreviewModal({ show: true, image, title: label })} className="p-2.5 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
+                  <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                 </button>
-                <button
-                  type="button"
-                  onClick={onRemove}
-                  className="p-3 bg-white/90 hover:bg-red-50 rounded-xl shadow-lg transition-all"
-                >
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                <button type="button" onClick={onRemove} className="p-2.5 bg-white rounded-lg shadow-sm hover:bg-red-50 transition-colors">
+                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
               </div>
             </div>
           </div>
         ) : (
-          <label className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 ${
-            uploading 
-              ? 'border-indigo-400 bg-indigo-50' 
-              : 'border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/50 bg-slate-50'
-          }`}>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onUpload}
-              className="hidden"
-              disabled={uploading}
-            />
+          <label className={`relative flex flex-col items-center justify-center w-full h-40 border border-dashed rounded-xl cursor-pointer transition-all ${uploading ? 'border-indigo-400 bg-indigo-50/30' : 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50/30'}`}>
+            <input type="file" accept="image/*" onChange={onUpload} className="hidden" disabled={uploading} />
             {uploading ? (
               <div className="flex flex-col items-center">
-                <div className="relative">
-                  <svg className="w-16 h-16 text-indigo-200" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  </svg>
-                  <svg className="w-16 h-16 text-indigo-600 absolute inset-0 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-75" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeDasharray="60" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <span className="text-sm font-semibold text-indigo-600 mt-4">Uploading image...</span>
-                <span className="text-xs text-indigo-400 mt-1">Please wait</span>
+                <svg className="w-8 h-8 text-indigo-600 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                <span className="text-sm font-medium text-indigo-600 mt-3">Uploading...</span>
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
+                <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
                 </div>
-                <span className="text-base font-semibold text-slate-700 mb-1">Click to upload image</span>
-                <span className="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</span>
+                <span className="text-sm font-medium text-gray-700">Click to upload image</span>
+                <span className="text-xs text-gray-500 mt-0.5">PNG, JPG, GIF up to 5MB</span>
               </div>
             )}
           </label>
@@ -504,13 +468,7 @@ export default function AdminCategories({ token }) {
   // Compact Image Uploader
   const CompactImageUploader = ({ image, onUpload, uploading, onRemove, index }) => (
     <div className="flex items-center gap-2">
-      <label className={`relative flex items-center justify-center w-20 h-20 border-2 border-dashed rounded-xl cursor-pointer transition-all shadow-sm ${
-        uploading 
-          ? 'border-purple-400 bg-purple-50' 
-          : image 
-            ? 'border-green-400 bg-green-50 hover:border-green-500' 
-            : 'border-slate-300 hover:border-purple-400 hover:bg-purple-50/50 bg-slate-50'
-      }`}>
+      <label className={`relative flex items-center justify-center w-16 h-16 border border-dashed rounded-lg cursor-pointer transition-all ${uploading ? 'border-indigo-400 bg-indigo-50' : image ? 'border-gray-300 bg-white' : 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50/30'}`}>
         <input
           type="file"
           accept="image/*"
@@ -548,14 +506,13 @@ export default function AdminCategories({ token }) {
   const pendingChangesCount = Object.keys(editedCategories).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 -m-8 p-4 sm:p-8">
+    <div className="min-h-screen bg-white -m-8 p-4 sm:p-8">
       {/* Notification Toast */}
       {notification.show && (
-        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl transform transition-all duration-500 animate-slide-in max-w-md ${
-          notification.type === 'success' 
-            ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white' 
+        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl transform transition-all duration-500 animate-slide-in max-w-md ${notification.type === 'success'
+            ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
             : 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
-        }`}>
+          }`}>
           <div className="flex-shrink-0">
             {notification.type === 'success' ? (
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -572,8 +529,8 @@ export default function AdminCategories({ token }) {
             )}
           </div>
           <span className="font-semibold flex-1">{notification.message}</span>
-          <button 
-            onClick={() => setNotification({ show: false, type: '', message: '' })} 
+          <button
+            onClick={() => setNotification({ show: false, type: '', message: '' })}
             className="flex-shrink-0 ml-2 hover:bg-white/20 rounded-lg p-1 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -636,13 +593,13 @@ export default function AdminCategories({ token }) {
 
       {/* Image Preview Modal */}
       {imagePreviewModal.show && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in"
           onClick={() => setImagePreviewModal({ show: false, image: '', title: '' })}
         >
           <div className="relative max-w-7xl max-h-[90vh] animate-scale-in" onClick={e => e.stopPropagation()}>
-            <img 
-              src={imagePreviewModal.image} 
+            <img
+              src={imagePreviewModal.image}
               alt={imagePreviewModal.title}
               className="max-w-full max-h-[85vh] rounded-3xl shadow-2xl"
             />
@@ -677,13 +634,13 @@ export default function AdminCategories({ token }) {
                   </svg>
                 </div>
               )}
-              
+
               <h3 className="text-2xl font-black text-slate-900 mb-3">Delete Category?</h3>
               <p className="text-slate-600 mb-2">
                 Are you sure you want to delete
               </p>
               <p className="text-lg font-bold text-slate-900 mb-4">"{deleteModal.category?.name}"</p>
-              
+
               {deleteModal.category?.type === 'super' && getSubCategoryCount(deleteModal.category?._id) > 0 && (
                 <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-6">
                   <div className="flex items-start gap-3">
@@ -699,7 +656,7 @@ export default function AdminCategories({ token }) {
                   </div>
                 </div>
               )}
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteModal({ show: false, category: null })}
@@ -745,7 +702,7 @@ export default function AdminCategories({ token }) {
                 Edit multiple categories, then save all at once
               </p>
             </div>
-            
+
             {/* Stats Cards */}
             <div className="flex flex-wrap gap-3">
               <div className="flex-1 min-w-[140px] bg-white rounded-2xl px-6 py-4 shadow-lg border-2 border-indigo-100 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-all">
@@ -781,11 +738,10 @@ export default function AdminCategories({ token }) {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveTab('list')}
-              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${
-                activeTab === 'list'
+              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === 'list'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
                   : 'text-slate-600 hover:bg-slate-100 hover:scale-105'
-              }`}
+                }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -799,11 +755,10 @@ export default function AdminCategories({ token }) {
             </button>
             <button
               onClick={() => { setActiveTab('create'); setCreateMode('super'); }}
-              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${
-                activeTab === 'create' && createMode === 'super'
+              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === 'create' && createMode === 'super'
                   ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
                   : 'text-slate-600 hover:bg-slate-100 hover:scale-105'
-              }`}
+                }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -813,11 +768,10 @@ export default function AdminCategories({ token }) {
             </button>
             <button
               onClick={() => { setActiveTab('create'); setCreateMode('sub'); }}
-              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${
-                activeTab === 'create' && createMode === 'sub'
+              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === 'create' && createMode === 'sub'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 scale-105'
                   : 'text-slate-600 hover:bg-slate-100 hover:scale-105'
-              }`}
+                }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
@@ -844,7 +798,7 @@ export default function AdminCategories({ token }) {
                 </div>
               </div>
             </div>
-            
+
             <form onSubmit={handleCreateSuperCategory} className="p-8 space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
@@ -943,7 +897,7 @@ export default function AdminCategories({ token }) {
                 </div>
               </div>
             </div>
-            
+
             <form onSubmit={handleCreateSubCategories} className="p-8 space-y-8">
               <div className="space-y-3">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -991,14 +945,14 @@ export default function AdminCategories({ token }) {
 
                 <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                   {subCategoryInputs.map((input, index) => (
-                    <div 
-                      key={index} 
+                    <div
+                      key={index}
                       className="flex flex-col sm:flex-row gap-4 p-5 bg-gradient-to-r from-slate-50 to-purple-50/30 rounded-2xl border-2 border-slate-200 group hover:border-purple-300 hover:shadow-lg transition-all"
                     >
                       <div className="flex items-center justify-center sm:items-start sm:justify-center w-full sm:w-10 h-10 bg-purple-100 text-purple-600 rounded-xl font-black text-base flex-shrink-0">
                         {index + 1}
                       </div>
-                      
+
                       <div className="flex justify-center sm:justify-start">
                         <CompactImageUploader
                           image={input.image}
@@ -1008,7 +962,7 @@ export default function AdminCategories({ token }) {
                           index={index}
                         />
                       </div>
-                      
+
                       <div className="flex-1 space-y-3">
                         <input
                           value={input.name}
@@ -1023,7 +977,7 @@ export default function AdminCategories({ token }) {
                           className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-purple-400 transition-all duration-200"
                         />
                       </div>
-                      
+
                       {subCategoryInputs.length > 1 && (
                         <button
                           type="button"
@@ -1122,9 +1076,8 @@ export default function AdminCategories({ token }) {
               <div className="bg-white rounded-2xl shadow-lg border-2 border-slate-100 p-2 flex gap-1">
                 <button
                   onClick={() => setViewMode('tree')}
-                  className={`px-5 py-3 rounded-xl font-bold transition-all ${
-                    viewMode === 'tree' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-100'
-                  }`}
+                  className={`px-5 py-3 rounded-xl font-bold transition-all ${viewMode === 'tree' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-100'
+                    }`}
                   title="Tree View"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1133,9 +1086,8 @@ export default function AdminCategories({ token }) {
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`px-5 py-3 rounded-xl font-bold transition-all ${
-                    viewMode === 'grid' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-100'
-                  }`}
+                  className={`px-5 py-3 rounded-xl font-bold transition-all ${viewMode === 'grid' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-100'
+                    }`}
                   title="Grid View"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1188,20 +1140,19 @@ export default function AdminCategories({ token }) {
                 {filteredSuperCategories.map((superCat) => {
                   const subCategories = getSubCategories(superCat._id);
                   const editing = isEditing(superCat._id);
-                  
+
                   return (
-                    <div 
-                      key={superCat._id} 
-                      className={`bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 group ${
-                        editing ? 'border-amber-500 ring-4 ring-amber-200' : 'border-slate-100'
-                      }`}
+                    <div
+                      key={superCat._id}
+                      className={`bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 group ${editing ? 'border-amber-500 ring-4 ring-amber-200' : 'border-slate-100'
+                        }`}
                     >
                       {/* Category Image Header */}
                       <div className="relative h-48 overflow-hidden">
                         {getEditValue(superCat, 'image') ? (
-                          <img 
-                            src={getEditValue(superCat, 'image')} 
-                            alt={getEditValue(superCat, 'name')} 
+                          <img
+                            src={getEditValue(superCat, 'image')}
+                            alt={getEditValue(superCat, 'name')}
                             className="w-full h-full object-cover cursor-pointer group-hover:scale-110 transition-transform duration-500"
                             onClick={() => setImagePreviewModal({ show: true, image: getEditValue(superCat, 'image'), title: getEditValue(superCat, 'name') })}
                           />
@@ -1209,7 +1160,7 @@ export default function AdminCategories({ token }) {
                           <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                        
+
                         {editing && (
                           <div className="absolute top-4 left-4 px-3 py-1.5 bg-amber-500 text-white rounded-full text-xs font-black flex items-center gap-1">
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1218,7 +1169,7 @@ export default function AdminCategories({ token }) {
                             Editing
                           </div>
                         )}
-                        
+
                         <div className="absolute bottom-0 left-0 right-0 p-5">
                           {editing ? (
                             <input
@@ -1236,7 +1187,7 @@ export default function AdminCategories({ token }) {
                             </>
                           )}
                         </div>
-                        
+
                         {/* Action Buttons */}
                         <div className="absolute top-4 right-4 flex gap-2">
                           {editing ? (
@@ -1291,7 +1242,7 @@ export default function AdminCategories({ token }) {
                           )}
                         </div>
                       </div>
-                      
+
                       <div className="p-5">
                         {editing && (
                           <textarea
@@ -1302,7 +1253,7 @@ export default function AdminCategories({ token }) {
                             placeholder="Description (optional)"
                           />
                         )}
-                        
+
                         <div className="flex items-center justify-between mb-4">
                           <span className="flex items-center gap-2 text-sm font-bold text-slate-600">
                             <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1320,7 +1271,7 @@ export default function AdminCategories({ token }) {
                             Add
                           </button>
                         </div>
-                        
+
                         {subCategories.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {subCategories.slice(0, 6).map((sub) => {
@@ -1329,11 +1280,10 @@ export default function AdminCategories({ token }) {
                                 <div
                                   key={sub._id}
                                   onClick={() => !subEditing && startEditCategory(sub)}
-                                  className={`flex items-center gap-2 px-3 py-2 rounded-xl group/sub transition-all cursor-pointer ${
-                                    subEditing 
-                                      ? 'bg-amber-100 border-2 border-amber-500' 
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-xl group/sub transition-all cursor-pointer ${subEditing
+                                      ? 'bg-amber-100 border-2 border-amber-500'
                                       : 'bg-gradient-to-r from-slate-50 to-purple-50 border border-slate-200 hover:border-purple-300 hover:shadow-md'
-                                  }`}
+                                    }`}
                                 >
                                   {sub.image && !subEditing && (
                                     <img src={sub.image} alt="" className="w-6 h-6 rounded-lg object-cover" />
@@ -1370,11 +1320,10 @@ export default function AdminCategories({ token }) {
                   const editing = isEditing(superCat._id);
 
                   return (
-                    <div 
-                      key={superCat._id} 
-                      className={`bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 ${
-                        editing ? 'border-amber-500 ring-4 ring-amber-200' : 'border-slate-100'
-                      }`}
+                    <div
+                      key={superCat._id}
+                      className={`bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 ${editing ? 'border-amber-500 ring-4 ring-amber-200' : 'border-slate-100'
+                        }`}
                     >
                       {/* Category Header */}
                       <div className="p-6 bg-gradient-to-r from-slate-50 via-white to-indigo-50/30 border-b-2 border-slate-100">
@@ -1387,9 +1336,9 @@ export default function AdminCategories({ token }) {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                             </svg>
                           </button>
-                          
+
                           {getEditValue(superCat, 'image') ? (
-                            <div 
+                            <div
                               className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden cursor-pointer border-2 border-indigo-200 hover:border-indigo-400 hover:scale-110 transition-all shadow-lg flex-shrink-0 relative group"
                               onClick={() => setImagePreviewModal({ show: true, image: getEditValue(superCat, 'image'), title: getEditValue(superCat, 'name') })}
                             >
@@ -1423,7 +1372,7 @@ export default function AdminCategories({ token }) {
                               </svg>
                             </div>
                           )}
-                          
+
                           <div className="flex-1 min-w-0 space-y-2">
                             {editing ? (
                               <>
@@ -1468,7 +1417,7 @@ export default function AdminCategories({ token }) {
                               )}
                             </div>
                           </div>
-                          
+
                           {/* Actions */}
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
                             {editing ? (
@@ -1525,11 +1474,10 @@ export default function AdminCategories({ token }) {
                                 return (
                                   <div
                                     key={subCat._id}
-                                    className={`relative p-5 rounded-2xl border-2 transition-all duration-300 group ${
-                                      subEditing 
-                                        ? 'border-amber-400 bg-amber-50 shadow-lg' 
+                                    className={`relative p-5 rounded-2xl border-2 transition-all duration-300 group ${subEditing
+                                        ? 'border-amber-400 bg-amber-50 shadow-lg'
                                         : 'border-slate-200 bg-white hover:border-purple-300 hover:shadow-xl'
-                                    }`}
+                                      }`}
                                   >
                                     {subEditing ? (
                                       /* Edit Mode */
@@ -1556,7 +1504,7 @@ export default function AdminCategories({ token }) {
                                               </svg>
                                             )}
                                           </label>
-                                          
+
                                           <input
                                             value={getEditValue(subCat, 'name')}
                                             onChange={(e) => updateEditedCategory(subCat._id, 'name', e.target.value)}
@@ -1570,7 +1518,7 @@ export default function AdminCategories({ token }) {
                                           className="w-full rounded-xl border border-amber-300 px-3 py-2 text-xs text-slate-700"
                                           placeholder="Description"
                                         />
-                                        
+
                                         <div className="flex gap-2 pt-2">
                                           <button
                                             onClick={() => cancelCategoryEdit(subCat._id)}
@@ -1585,7 +1533,7 @@ export default function AdminCategories({ token }) {
                                       <>
                                         <div className="flex items-start gap-4">
                                           {subCat.image ? (
-                                            <div 
+                                            <div
                                               className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer border-2 border-purple-200 hover:border-purple-400 transition-all shadow-md flex-shrink-0"
                                               onClick={() => setImagePreviewModal({ show: true, image: subCat.image, title: subCat.name })}
                                             >
@@ -1605,7 +1553,7 @@ export default function AdminCategories({ token }) {
                                             )}
                                           </div>
                                         </div>
-                                        
+
                                         {/* Action buttons */}
                                         <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                           <button

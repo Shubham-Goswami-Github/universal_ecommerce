@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 
 /* ─────────────────────────────────────────────────────────────
    STAR RATING COMPONENT (Matching Home.jsx)
@@ -46,6 +47,7 @@ const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -58,7 +60,6 @@ const ProductDetails = () => {
   const [addingToCart, setAddingToCart] = useState(false);
   const [addingToWishlist, setAddingToWishlist] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
   
   // Zoom Modal State
@@ -72,6 +73,7 @@ const ProductDetails = () => {
       const res = await axiosClient.get(`/api/products/${id}`);
       setProduct(res.data.product || res.data);
       setActiveImage(0);
+      showMessage(result?.message || 'Wishlist updated', 'success');
     } catch (err) {
       console.error(err);
     } finally {
@@ -145,14 +147,18 @@ const ProductDetails = () => {
 
   const addToWishlist = async () => {
     if (!auth.user) {
-      showMessage('Please login to add to wishlist', 'error');
+      navigate('/login', { state: { from: `/products/${id}` } });
+      return;
+    }
+    if (auth.user.role !== 'user') {
+      showMessage('Wishlist is available for customers only', 'error');
       return;
     }
     
     setAddingToWishlist(true);
     try {
-      await axiosClient.post('/api/wishlist/add', { productId: id });
-      setIsWishlisted(true);
+      const result = await toggleWishlist(id);
+      showMessage(result?.message || 'Wishlist updated', 'success');
       showMessage('Added to wishlist! ❤️', 'success');
     } catch (err) {
       showMessage(err.response?.data?.message || 'Failed to add to wishlist', 'error');
@@ -300,6 +306,8 @@ const ProductDetails = () => {
 
   const discountDisplay = calculateDiscount();
   const finalPrice = product.finalPrice || product.sellingPrice || product.price;
+  const wishlistActive = isWishlisted(id);
+  const canUseWishlist = !auth.user || auth.user.role === 'user';
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24 lg:pb-8">
@@ -480,23 +488,25 @@ const ProductDetails = () => {
                 )}
 
                 {/* Wishlist Button */}
-                <button
-                  onClick={addToWishlist}
-                  disabled={addingToWishlist}
-                  className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 ${
-                    isWishlisted 
-                      ? 'bg-red-500 text-white' 
-                      : 'bg-white text-gray-500 hover:text-red-500'
-                  }`}
-                >
-                  {addingToWishlist ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent"></div>
-                  ) : (
-                    <svg className="w-5 h-5" fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  )}
-                </button>
+                {canUseWishlist && (
+                  <button
+                    onClick={addToWishlist}
+                    disabled={addingToWishlist}
+                    className={`absolute top-3 right-3 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-110 ${
+                      wishlistActive
+                        ? 'bg-red-500 text-white'
+                        : 'bg-white text-gray-500 hover:text-red-500'
+                    }`}
+                  >
+                    {addingToWishlist ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent"></div>
+                    ) : (
+                      <svg className="w-5 h-5" fill={wishlistActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    )}
+                  </button>
+                )}
 
                 {/* Zoom Button */}
                 <button
@@ -536,7 +546,7 @@ const ProductDetails = () => {
               )}
 
               {/* Mobile Action Buttons */}
-              <div className="lg:hidden grid grid-cols-2 gap-3 mt-5">
+              <div className={`lg:hidden grid gap-3 mt-5 ${canUseWishlist ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <button
                   onClick={addToCart}
                   disabled={addingToCart || product.totalStock === 0 || product.availabilityStatus === 'out_of_stock'}
@@ -553,6 +563,22 @@ const ProductDetails = () => {
                     </>
                   )}
                 </button>
+                {canUseWishlist && (
+                  <button
+                    onClick={addToWishlist}
+                    disabled={addingToWishlist}
+                    className={`flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-colors border ${
+                      wishlistActive
+                        ? 'bg-red-50 border-red-200 text-red-600'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-red-200 hover:text-red-500'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill={wishlistActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    {wishlistActive ? 'Saved' : 'Wishlist'}
+                  </button>
+                )}
                 <button
                   onClick={buyNow}
                   disabled={product.totalStock === 0 || product.availabilityStatus === 'out_of_stock'}
@@ -697,7 +723,7 @@ const ProductDetails = () => {
               )}
 
               {/* Desktop Action Buttons */}
-              <div className="hidden lg:grid grid-cols-2 gap-4 mt-6">
+              <div className={`hidden lg:grid gap-4 mt-6 ${canUseWishlist ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <button
                   onClick={addToCart}
                   disabled={addingToCart || (product.totalStock === 0 && !product.allowBackorders) || product.availabilityStatus === 'coming_soon'}
@@ -714,6 +740,28 @@ const ProductDetails = () => {
                     </>
                   )}
                 </button>
+                {canUseWishlist && (
+                  <button
+                    onClick={addToWishlist}
+                    disabled={addingToWishlist}
+                    className={`flex items-center justify-center gap-2 py-4 rounded-xl font-bold transition-all border ${
+                      wishlistActive
+                        ? 'bg-red-50 border-red-200 text-red-600'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-red-200 hover:text-red-500'
+                    }`}
+                  >
+                    {addingToWishlist ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent"></div>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill={wishlistActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        {wishlistActive ? 'Remove Wishlist' : 'Add Wishlist'}
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={buyNow}
                   disabled={(product.totalStock === 0 && !product.allowBackorders) || product.availabilityStatus === 'coming_soon'}

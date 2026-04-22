@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import { useAuth } from '../../context/AuthContext';
+import { useWishlist } from '../../context/WishlistContext';
 
 const ProductQuickView = ({
   product,
@@ -13,6 +14,7 @@ const ProductQuickView = ({
   onRefresh,
 }) => {
   const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const user = auth.user;
   const role = user?.role; // 'user' | 'vendor' | 'admin' | undefined
   const navigate = useNavigate();
@@ -23,7 +25,6 @@ const ProductQuickView = ({
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
-  const [isWishlisted, setIsWishlisted] = useState(false);
 
   // Reset states when product changes
   useEffect(() => {
@@ -76,6 +77,7 @@ const ProductQuickView = ({
   const isOutOfStock = product.availabilityStatus === 'out_of_stock' || (!stockAvailable && !product.allowBackorders);
   const isComingSoon = product.availabilityStatus === 'coming_soon';
   const isLowStock = product.totalStock > 0 && product.totalStock <= (product.lowStockAlertQty || 5);
+  const wishlistActive = isWishlisted(product._id);
 
   // ============ HANDLERS ============
   const showMessage = (msg, isError = false) => {
@@ -106,6 +108,7 @@ const ProductQuickView = ({
       });
       window.dispatchEvent(new Event('cart:updated'));
       showMessage('✓ Added to cart successfully!');
+      showMessage(result?.message || 'Wishlist updated');
     } catch (err) {
       showMessage(err.response?.data?.message || 'Failed to add to cart', true);
     } finally {
@@ -119,10 +122,14 @@ const ProductQuickView = ({
       onClose?.();
       return;
     }
+    if (role !== 'user') {
+      showMessage('Wishlist is available for customers only', true);
+      return;
+    }
     try {
       setActionLoading(true);
-      await axiosClient.post('/api/wishlist/add', { productId: product._id });
-      setIsWishlisted(true);
+      const result = await toggleWishlist(product._id);
+      showMessage(result?.message || 'Wishlist updated');
       showMessage('♥ Added to wishlist!');
     } catch (err) {
       showMessage(err.response?.data?.message || 'Failed to add to wishlist', true);
@@ -632,12 +639,12 @@ const ProductQuickView = ({
                   onClick={handleAddToWishlist}
                   disabled={actionLoading}
                   className={`absolute top-3 right-12 sm:right-3 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition ${
-                    isWishlisted 
+                    wishlistActive 
                       ? 'bg-red-500 text-white' 
                       : 'bg-white text-gray-600 hover:text-red-500 hover:bg-red-50'
                   }`}
                 >
-                  <svg className="w-5 h-5" fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5" fill={wishlistActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </button>
@@ -892,6 +899,20 @@ const ProductQuickView = ({
               {/* User Actions */}
               {showUserActions && (
                 <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={handleAddToWishlist}
+                    disabled={actionLoading}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 border font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                      wishlistActive
+                        ? 'border-red-200 bg-red-50 text-red-600'
+                        : 'border-pink-200 bg-white text-gray-700 hover:border-pink-300 hover:text-pink-600'
+                    }`}
+                  >
+                    <svg className="w-5 h-5" fill={wishlistActive ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    {wishlistActive ? 'Remove Wishlist' : 'Add Wishlist'}
+                  </button>
                   <button
                     onClick={handleAddToCart}
                     disabled={actionLoading || isOutOfStock || isComingSoon}

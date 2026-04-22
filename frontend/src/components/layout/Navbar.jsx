@@ -128,6 +128,9 @@ const Navbar = () => {
     if (user && role === 'user') {
       fetchCartCount();
       fetchWishlistCount();
+    } else {
+      setCartCount(0);
+      setWishlistCount(0);
     }
     
     const onSettingsUpdated = () => fetchSettings();
@@ -136,11 +139,20 @@ const Navbar = () => {
         fetchCartCount();
       }
     };
+    const onWishlistUpdated = () => {
+      if (user && role === 'user') {
+        fetchWishlistCount();
+      } else {
+        setWishlistCount(0);
+      }
+    };
     window.addEventListener('settings:updated', onSettingsUpdated);
     window.addEventListener('cart:updated', onCartUpdated);
+    window.addEventListener('wishlist:updated', onWishlistUpdated);
     return () => {
       window.removeEventListener('settings:updated', onSettingsUpdated);
       window.removeEventListener('cart:updated', onCartUpdated);
+      window.removeEventListener('wishlist:updated', onWishlistUpdated);
     };
   }, [user, role]);
 
@@ -503,8 +515,8 @@ const Navbar = () => {
                 className={({ isActive }) =>
                     `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-gray-50'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-gray-50 dark:bg-gray-800/80'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/70'
                   }`
                 }
                 style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
@@ -516,8 +528,8 @@ const Navbar = () => {
                 className={({ isActive }) =>
                     `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-gray-50'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-gray-50 dark:bg-gray-800/80'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/70'
                   }`
                 }
                 style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
@@ -529,8 +541,8 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
                     isActive
-                      ? 'text-rose-600 bg-rose-50'
-                      : 'text-gray-600 hover:text-rose-600 hover:bg-rose-50'
+                      ? 'text-rose-600 bg-rose-50 dark:bg-rose-500/10'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10'
                   }`
                 }
               >
@@ -550,7 +562,7 @@ const Navbar = () => {
               {/* Dark Mode Toggle */}
               <button
                 onClick={toggleDarkMode}
-                className="p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                className="flex items-center justify-center p-2.5 rounded-xl border border-transparent text-gray-500 dark:text-amber-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800/80 dark:border-gray-700 transition-all duration-200"
                 title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {darkMode ? (
@@ -582,8 +594,8 @@ const Navbar = () => {
                   className={({ isActive }) =>
                     `relative p-2.5 rounded-xl transition-all duration-200 hidden sm:flex ${
                       isActive
-                        ? 'text-rose-500 bg-rose-50'
-                        : 'text-gray-500 hover:text-rose-500 hover:bg-rose-50'
+                        ? 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'
+                        : 'text-gray-500 dark:text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10'
                     }`
                   }
                 >
@@ -606,7 +618,7 @@ const Navbar = () => {
                     `relative p-2.5 rounded-xl transition-all duration-200 group ${
                       isActive
                         ? ''
-                        : 'text-gray-500'
+                        : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/70'
                     }`
                   }
                   style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
@@ -630,7 +642,7 @@ const Navbar = () => {
                     `relative p-2.5 rounded-xl transition-all duration-200 hidden md:flex ${
                       isActive
                         ? ''
-                        : 'text-gray-500'
+                        : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/70'
                     }`
                   }
                   style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
@@ -649,7 +661,7 @@ const Navbar = () => {
                 <div className="flex items-center gap-2">
                   <NavLink
                     to="/login"
-                    className="hidden sm:flex px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 transition-all"
+                    className="hidden sm:flex px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 transition-all"
                     style={{ color: location.pathname === '/login' ? accentPrimary : undefined, backgroundColor: location.pathname === '/login' ? accentSoft : undefined }}
                   >
                     Login
@@ -663,14 +675,14 @@ const Navbar = () => {
                   </NavLink>
                 </div>
               ) : (
-                <div className="relative" ref={dropdownRef}>
+                <div className="relative z-[90] flex-shrink-0" ref={dropdownRef}>
                   {/* Profile Button */}
                   <button
                     onClick={() => setShowUserDropdown(!showUserDropdown)}
                     className={`flex items-center gap-2 p-1.5 pr-3 rounded-xl border transition-all duration-200 ${
                       showUserDropdown
                         ? ''
-                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                     style={showUserDropdown ? { backgroundColor: accentSoft, borderColor: accentSoftBorder } : undefined}
                   >
@@ -687,7 +699,7 @@ const Navbar = () => {
                     </div>
                     <div className="hidden lg:flex flex-col items-start leading-tight">
                       <span className="text-xs text-gray-400">Hello,</span>
-                      <span className="text-sm font-semibold text-gray-800 max-w-[80px] truncate">
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 max-w-[80px] truncate">
                         {user.name?.split(' ')[0]}
                       </span>
                     </div>
@@ -720,7 +732,7 @@ const Navbar = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden p-2.5 rounded-xl text-gray-600 transition-all"
+                className="lg:hidden p-2.5 rounded-xl text-gray-600 dark:text-gray-300 transition-all"
                 style={{ color: isOpen ? accentPrimary : undefined, backgroundColor: isOpen ? accentSoft : undefined }}
               >
                 {isOpen ? (
@@ -749,7 +761,7 @@ const Navbar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products..."
-                className="w-full h-11 pl-4 pr-12 bg-gray-50 border border-gray-200 rounded-xl text-sm placeholder:text-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                className="w-full h-11 pl-4 pr-12 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                 autoFocus
               />
               <button
@@ -777,6 +789,8 @@ const Navbar = () => {
         getInitials={getInitials}
         openProfilePanel={openProfilePanel}
         handleLogout={handleLogout}
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
         setIsOpen={setIsOpen}
       />
 
@@ -855,7 +869,7 @@ const UserDropdown = ({
   setShowUserDropdown,
   handleLogout,
 }) => (
-  <div className="navbar-theme absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-black/30 border border-gray-100 dark:border-gray-700 overflow-hidden animate-dropdown-in z-50">
+  <div className="navbar-theme absolute right-0 top-full mt-3 w-72 origin-top-right bg-white dark:bg-gray-800 rounded-2xl shadow-2xl shadow-gray-200/50 dark:shadow-black/30 border border-gray-100 dark:border-gray-700 overflow-hidden animate-dropdown-in z-[95]">
     {/* User Header */}
     <div className="p-4 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-800 border-b border-gray-100 dark:border-gray-700">
       <div className="flex items-center gap-3">
@@ -867,8 +881,8 @@ const UserDropdown = ({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 truncate">{user.name}</p>
-          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+          <p className="font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">
@@ -880,7 +894,7 @@ const UserDropdown = ({
           {role}
         </span>
         <span className="text-xs text-gray-400">•</span>
-        <span className="text-xs text-gray-500">Verified Account</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">Verified Account</span>
       </div>
     </div>
 
@@ -888,10 +902,10 @@ const UserDropdown = ({
     <div className="p-2">
       <button
         onClick={openProfilePanel}
-        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-colors"
       >
-        <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+          <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
         </span>
@@ -906,10 +920,10 @@ const UserDropdown = ({
           <Link
             to="/orders"
             onClick={() => setShowUserDropdown(false)}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-colors"
           >
-            <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </span>
@@ -919,10 +933,10 @@ const UserDropdown = ({
           <Link
             to="/wishlist"
             onClick={() => setShowUserDropdown(false)}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-rose-50 transition-colors group"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors group"
           >
-            <span className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
-              <svg className="w-4 h-4 text-gray-500 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 group-hover:bg-rose-100 dark:group-hover:bg-rose-500/15 flex items-center justify-center transition-colors">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </span>
@@ -932,10 +946,10 @@ const UserDropdown = ({
           <Link
             to="/addresses"
             onClick={() => setShowUserDropdown(false)}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-colors"
           >
-            <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -949,10 +963,10 @@ const UserDropdown = ({
         <Link
           to="/vendor"
           onClick={() => setShowUserDropdown(false)}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-blue-50 transition-colors group"
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors group"
         >
-          <span className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-            <svg className="w-4 h-4 text-gray-500 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/15 flex items-center justify-center transition-colors">
+            <svg className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </span>
@@ -964,10 +978,10 @@ const UserDropdown = ({
         <Link
           to="/admin"
           onClick={() => setShowUserDropdown(false)}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-purple-50 transition-colors group"
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors group"
         >
-          <span className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-purple-100 flex items-center justify-center transition-colors">
-            <svg className="w-4 h-4 text-gray-500 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/15 flex items-center justify-center transition-colors">
+            <svg className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -977,12 +991,12 @@ const UserDropdown = ({
       )}
 
       <Link
-        to="/profile/settings"
+        to="/profile?tab=profile"
         onClick={() => setShowUserDropdown(false)}
-        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-colors"
       >
-        <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+          <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -1017,6 +1031,8 @@ const MobileMenu = ({
   getInitials,
   openProfilePanel,
   handleLogout,
+  darkMode,
+  toggleDarkMode,
   setIsOpen,
 }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
@@ -1070,13 +1086,13 @@ const MobileMenu = ({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
           {/* Main Navigation */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800">
             <NavLink
               to="/"
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                  isActive ? 'bg-emerald-50 text-emerald-600' : 'text-gray-700 hover:bg-gray-50'
+                  isActive ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`
               }
             >
@@ -1091,7 +1107,7 @@ const MobileMenu = ({
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                  isActive ? 'bg-emerald-50 text-emerald-600' : 'text-gray-700 hover:bg-gray-50'
+                  isActive ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`
               }
             >
@@ -1106,7 +1122,7 @@ const MobileMenu = ({
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                  isActive ? 'bg-rose-50 text-rose-600' : 'text-gray-700 hover:bg-rose-50'
+                  isActive ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600' : 'text-gray-700 dark:text-gray-200 hover:bg-rose-50 dark:hover:bg-rose-500/10'
                 }`
               }
             >
@@ -1119,20 +1135,20 @@ const MobileMenu = ({
           </div>
 
           {/* Categories */}
-          <div className="p-4 border-b border-gray-100">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-4">Categories</p>
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-4">Categories</p>
             {categories.slice(0, 6).map((cat) => (
               <Link
                 key={cat._id}
                 to={`/category/${cat._id}`}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
                   {cat.image ? (
                     <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                   ) : (
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                   )}
@@ -1156,18 +1172,18 @@ const MobileMenu = ({
 
           {/* User Links */}
           {user && (
-            <div className="p-4 border-b border-gray-100">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-4">My Account</p>
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800">
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-4">My Account</p>
               
               <button
                 onClick={() => {
                   setIsOpen(false);
                   openProfilePanel();
                 }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
-                <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
@@ -1179,10 +1195,10 @@ const MobileMenu = ({
                   <Link
                     to="/orders"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                     </div>
@@ -1192,10 +1208,10 @@ const MobileMenu = ({
                   <Link
                     to="/cart"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
@@ -1205,10 +1221,10 @@ const MobileMenu = ({
                   <Link
                     to="/wishlist"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-rose-50 transition-colors group"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors group"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
-                      <svg className="w-4 h-4 text-gray-500 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-rose-100 dark:group-hover:bg-rose-500/15 flex items-center justify-center transition-colors">
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                     </div>
@@ -1218,10 +1234,10 @@ const MobileMenu = ({
                   <Link
                     to="/addresses"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -1235,10 +1251,10 @@ const MobileMenu = ({
                 <Link
                   to="/vendor"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-blue-50 transition-colors group"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                    <svg className="w-4 h-4 text-gray-500 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/15 flex items-center justify-center transition-colors">
+                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
@@ -1250,10 +1266,10 @@ const MobileMenu = ({
                 <Link
                   to="/admin"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-purple-50 transition-colors group"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-purple-100 flex items-center justify-center transition-colors">
-                    <svg className="w-4 h-4 text-gray-500 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 group-hover:bg-purple-100 dark:group-hover:bg-purple-500/15 flex items-center justify-center transition-colors">
+                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-300 group-hover:text-purple-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -1266,14 +1282,31 @@ const MobileMenu = ({
 
           {/* Help Links */}
           <div className="p-4">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-4">Help & Support</p>
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 px-4">Help & Support</p>
+            <button
+              onClick={toggleDarkMode}
+              className="mb-2 flex w-full items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                {darkMode ? (
+                  <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </div>
+              <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
             <Link
               to="/help"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -1282,10 +1315,10 @@ const MobileMenu = ({
             <Link
               to="/track-order"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
               </div>
@@ -1302,7 +1335,7 @@ const MobileMenu = ({
                 setIsOpen(false);
                 handleLogout();
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-rose-600 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -1314,7 +1347,7 @@ const MobileMenu = ({
               <Link
                 to="/login"
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-3 rounded-xl text-sm font-semibold text-center border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-3 rounded-xl text-sm font-semibold text-center border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 Login
               </Link>
@@ -1346,7 +1379,7 @@ const ProfilePanel = ({
   handleLogout,
   navigate,
 }) => (
-  <div className="navbar-theme fixed inset-0 z-50 flex">
+  <div className="navbar-theme fixed inset-0 z-[120] flex">
     {/* Backdrop */}
     <div
       className="flex-1 bg-black/50 backdrop-blur-sm animate-fade-in"
@@ -1399,24 +1432,24 @@ const ProfilePanel = ({
       {/* Stats Card */}
       <div className="px-6 -mt-8 relative z-10">
         {role === 'user' && (
-          <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-5 grid grid-cols-3 gap-4 border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/30 p-5 grid grid-cols-3 gap-4 border border-gray-100 dark:border-gray-700">
             <div className="text-center">
               <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-emerald-50 flex items-center justify-center">
                 <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <p className="text-xl font-bold text-gray-900">{userStats.totalOrders ?? 0}</p>
-              <p className="text-[10px] text-gray-500 font-medium mt-0.5">Orders</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{userStats.totalOrders ?? 0}</p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Orders</p>
             </div>
-            <div className="text-center border-x border-gray-100">
+            <div className="text-center border-x border-gray-100 dark:border-gray-700">
               <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-green-50 flex items-center justify-center">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-lg font-bold text-gray-900">₹{(userStats.totalSpent ?? 0).toLocaleString()}</p>
-              <p className="text-[10px] text-gray-500 font-medium mt-0.5">Spent</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">₹{(userStats.totalSpent ?? 0).toLocaleString()}</p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Spent</p>
             </div>
             <div className="text-center">
               <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-purple-50 flex items-center justify-center">
@@ -1424,46 +1457,46 @@ const ProfilePanel = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <p className="text-xs font-bold text-gray-900">{formatDate(userStats.lastOrderDate)}</p>
-              <p className="text-[10px] text-gray-500 font-medium mt-0.5">Last Order</p>
+              <p className="text-xs font-bold text-gray-900 dark:text-white">{formatDate(userStats.lastOrderDate)}</p>
+              <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium mt-0.5">Last Order</p>
             </div>
           </div>
         )}
 
         {role === 'vendor' && (
-          <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-5 grid grid-cols-2 gap-4 border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/30 p-5 grid grid-cols-2 gap-4 border border-gray-100 dark:border-gray-700">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{userStats.totalOrders ?? 0}</p>
-              <p className="text-xs text-gray-500">Total Orders</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats.totalOrders ?? 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Total Orders</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-emerald-600">₹{(userStats.totalRevenue ?? 0).toLocaleString()}</p>
-              <p className="text-xs text-gray-500">Revenue</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{userStats.totalProductsSold ?? 0}</p>
-              <p className="text-xs text-gray-500">Products Sold</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats.totalProductsSold ?? 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Products Sold</p>
             </div>
             <div className="text-center">
-              <p className="text-sm font-bold text-gray-900">{formatDate(userStats.lastOrderDate)}</p>
-              <p className="text-xs text-gray-500">Last Sale</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{formatDate(userStats.lastOrderDate)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Last Sale</p>
             </div>
           </div>
         )}
 
         {role === 'admin' && (
-          <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-5 grid grid-cols-3 gap-4 border border-gray-100">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/30 p-5 grid grid-cols-3 gap-4 border border-gray-100 dark:border-gray-700">
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{userStats.totalUsers ?? 0}</p>
-              <p className="text-xs text-gray-500">Users</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats.totalUsers ?? 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Users</p>
             </div>
-            <div className="text-center border-x border-gray-100">
+            <div className="text-center border-x border-gray-100 dark:border-gray-700">
               <p className="text-2xl font-bold text-emerald-600">{userStats.totalVendors ?? 0}</p>
-              <p className="text-xs text-gray-500">Vendors</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Vendors</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{userStats.totalProducts ?? 0}</p>
-              <p className="text-xs text-gray-500">Products</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{userStats.totalProducts ?? 0}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Products</p>
             </div>
           </div>
         )}
@@ -1473,14 +1506,14 @@ const ProfilePanel = ({
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
         {/* Personal Info */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             Personal Information
           </h3>
-          <div className="bg-gray-50 rounded-xl p-1">
-            <div className="bg-white rounded-lg divide-y divide-gray-50">
+          <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-1">
+            <div className="bg-white dark:bg-gray-900/70 rounded-lg divide-y divide-gray-50 dark:divide-gray-800">
               {[
                 { icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', label: 'Name', value: user.name },
                 { icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z', label: 'Email', value: user.email },
@@ -1489,14 +1522,14 @@ const ProfilePanel = ({
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                       </svg>
                     </span>
-                    <span className="text-sm text-gray-500">{item.label}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{item.label}</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 max-w-[140px] truncate">{item.value}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white max-w-[140px] truncate">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -1505,7 +1538,7 @@ const ProfilePanel = ({
 
         {/* Quick Actions */}
         <div>
-          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -1516,19 +1549,19 @@ const ProfilePanel = ({
               { icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', label: 'Orders', path: '/orders', color: 'emerald' },
               { icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', label: 'Wishlist', path: '/wishlist', color: 'rose' },
               { icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z', label: 'Addresses', path: '/addresses', color: 'blue' },
-              { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z', label: 'Settings', path: '/profile/settings', color: 'purple' },
+              { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z', label: 'Settings', path: '/profile?tab=profile', color: 'purple' },
             ].map((item, i) => (
               <button
                 key={i}
                 onClick={() => { closeProfilePanel(); navigate(item.path); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-${item.color}-50 transition-colors group`}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-${item.color}-50 dark:hover:bg-gray-800 transition-colors group`}
               >
-                <span className={`w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-${item.color}-500 flex items-center justify-center transition-colors`}>
-                  <svg className={`w-5 h-5 text-gray-500 group-hover:text-white transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className={`w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 group-hover:bg-${item.color}-500 flex items-center justify-center transition-colors`}>
+                  <svg className={`w-5 h-5 text-gray-500 dark:text-gray-300 group-hover:text-white transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                   </svg>
                 </span>
-                <span className={`text-xs font-semibold text-gray-600 group-hover:text-${item.color}-600`}>{item.label}</span>
+                <span className={`text-xs font-semibold text-gray-600 dark:text-gray-300 group-hover:text-${item.color}-600`}>{item.label}</span>
               </button>
             ))}
           </div>
@@ -1538,7 +1571,7 @@ const ProfilePanel = ({
       {/* Footer */}
       <div className="border-t border-gray-100 dark:border-gray-800 p-6 bg-gray-50 dark:bg-gray-900 space-y-3">
         <button
-          onClick={() => { closeProfilePanel(); navigate('/profile'); }}
+          onClick={() => { closeProfilePanel(); navigate('/profile?tab=profile'); }}
           className="w-full py-3 rounded-xl bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1548,7 +1581,7 @@ const ProfilePanel = ({
         </button>
         <button
           onClick={handleLogout}
-          className="w-full py-3 rounded-xl border-2 border-rose-200 text-rose-600 text-sm font-bold hover:bg-rose-50 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl border-2 border-rose-200 dark:border-rose-500/30 text-rose-600 text-sm font-bold hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

@@ -2,6 +2,8 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
+import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 
 /* ─────────────────────────────────────────────────────────────
    HELPER FUNCTIONS
@@ -1501,10 +1503,14 @@ const SubCategoryListCard = ({ category, index }) => {
    PRODUCT CARD (Grid)
 ───────────────────────────────────────────────────────────── */
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
+  const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const canShowWishlist = !auth?.user || auth.user.role === "user";
+  const wishlistActive = isWishlisted(product._id);
 
   const image = !imageError && product.images?.length > 0 ? product.images[0] : null;
   const discount =
@@ -1569,25 +1575,32 @@ const ProductCard = ({ product }) => {
             isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"
           }`}
         >
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              setIsWishlisted(!isWishlisted);
-            }}
-            className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
-              isWishlisted ? "bg-red-50 text-red-500" : "bg-white text-gray-400 hover:text-red-500"
-            }`}
-          >
-            <svg
-              className={`w-5 h-5 ${isWishlisted ? "fill-current" : ""}`}
-              fill={isWishlisted ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
+          {canShowWishlist && (
+            <button
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!auth?.user) {
+                  navigate('/login', { state: { from: window.location.pathname } });
+                  return;
+                }
+                await toggleWishlist(product._id);
+              }}
+              className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
+                wishlistActive ? "bg-red-50 text-red-500" : "bg-white text-gray-400 hover:text-red-500"
+              }`}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </button>
+              <svg
+                className={`w-5 h-5 ${wishlistActive ? "fill-current" : ""}`}
+                fill={wishlistActive ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+          )}
           <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-gray-400 hover:text-emerald-500 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1656,8 +1669,13 @@ const ProductCard = ({ product }) => {
    PRODUCT CARD (List)
 ───────────────────────────────────────────────────────────── */
 const ProductListCard = ({ product }) => {
+  const navigate = useNavigate();
+  const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const canShowWishlist = !auth?.user || auth.user.role === "user";
+  const wishlistActive = isWishlisted(product._id);
 
   const image = !imageError && product.images?.length > 0 ? product.images[0] : null;
   const discount =
@@ -1705,6 +1723,26 @@ const ProductListCard = ({ product }) => {
                   -{discount}%
                 </span>
               </div>
+            )}
+
+            {canShowWishlist && (
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!auth?.user) {
+                    navigate('/login', { state: { from: window.location.pathname } });
+                    return;
+                  }
+                  await toggleWishlist(product._id);
+                }}
+                className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-md transition hover:scale-105"
+              >
+                <svg className={`h-4 w-4 ${wishlistActive ? 'fill-current text-red-500' : 'text-gray-400'}`} fill={wishlistActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </button>
             )}
           </div>
 

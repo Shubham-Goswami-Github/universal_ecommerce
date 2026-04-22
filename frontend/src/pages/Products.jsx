@@ -1,7 +1,9 @@
 // src/pages/Products.jsx
 import { useEffect, useState, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 
 /* ─────────────────────────────────────────────────────────────
    STAR RATING
@@ -709,10 +711,14 @@ const CategoryRow = ({ title, products, categoryId, colorIndex, superCategory })
    PRODUCT CARD
 ═══════════════════════════════════════════════════════════════ */
 const ProductCard = ({ product, index = 0 }) => {
+  const navigate = useNavigate();
+  const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [wishlist, setWishlist] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const canShowWishlist = !auth?.user || auth.user.role === 'user';
+  const wishlistActive = isWishlisted(product._id);
 
   const image =
     !imageError && product.images?.length > 0
@@ -753,14 +759,24 @@ const ProductCard = ({ product, index = 0 }) => {
         <div className={`absolute inset-0 bg-black/5 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
 
         {/* Wishlist */}
-        <button
-          onClick={(e) => { e.preventDefault(); setWishlist((w) => !w); }}
-          className="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all"
-        >
-          <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${wishlist ? "text-red-500 fill-red-500" : "text-gray-400"}`} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" fill={wishlist ? "currentColor" : "none"}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </button>
+        {canShowWishlist && (
+          <button
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!auth?.user) {
+                navigate('/login', { state: { from: window.location.pathname } });
+                return;
+              }
+              await toggleWishlist(product._id);
+            }}
+            className="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-all"
+          >
+            <svg className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${wishlistActive ? "text-red-500 fill-red-500" : "text-gray-400"}`} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" fill={wishlistActive ? "currentColor" : "none"}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        )}
 
         {/* Badges */}
         <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -831,8 +847,13 @@ const ProductCard = ({ product, index = 0 }) => {
    PRODUCT LIST CARD
 ═══════════════════════════════════════════════════════════════ */
 const ProductListCard = ({ product, index = 0 }) => {
+  const navigate = useNavigate();
+  const { auth } = useAuth();
+  const { isWishlisted, toggleWishlist } = useWishlist();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const canShowWishlist = !auth?.user || auth.user.role === 'user';
+  const wishlistActive = isWishlisted(product._id);
   
   const image = !imageError && product.images?.length > 0 ? product.images[0] : null;
   const discount = product.mrp > product.sellingPrice 
@@ -876,6 +897,26 @@ const ProductListCard = ({ product, index = 0 }) => {
                   -{discount}%
                 </span>
               </div>
+            )}
+
+            {canShowWishlist && (
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!auth?.user) {
+                    navigate('/login', { state: { from: window.location.pathname } });
+                    return;
+                  }
+                  await toggleWishlist(product._id);
+                }}
+                className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 shadow-md transition hover:scale-105"
+              >
+                <svg className={`h-3.5 w-3.5 ${wishlistActive ? 'fill-current text-red-500' : 'text-gray-400'}`} fill={wishlistActive ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </button>
             )}
           </div>
 

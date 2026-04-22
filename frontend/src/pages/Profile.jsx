@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosClient from '../api/axiosClient';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const ALLOWED_ALL_KEYWORD = 'AllowedAll';
 
@@ -41,6 +41,7 @@ const USER_TABS = [
 const Profile = () => {
   const { auth, updateUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const user = auth.user;
   const fileInputRef = useRef(null);
 
@@ -106,6 +107,23 @@ const Profile = () => {
   const [vendorErr, setVendorErr] = useState('');
   const [categoryRequestMsg, setCategoryRequestMsg] = useState('');
   const [categoryRequestErr, setCategoryRequestErr] = useState('');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const requestedTab = searchParams.get('tab');
+    if (!requestedTab || !user?.role) return;
+
+    const availableTabs = user.role === 'vendor'
+      ? VENDOR_TABS
+      : user.role === 'user'
+      ? USER_TABS
+      : TABS;
+    const isValidTab = availableTabs.some((tab) => tab.id === requestedTab);
+
+    if (isValidTab) {
+      setActiveTab(requestedTab);
+    }
+  }, [location.search, user?.role]);
 
   // Initialize form data
   useEffect(() => {
@@ -562,7 +580,7 @@ const Profile = () => {
   // Not logged in state
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="profile-page min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -586,11 +604,11 @@ const Profile = () => {
   const tabs = getTabs();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="profile-page min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* ═══════════════════════════════════════════════════════════════
           PROFILE HEADER
       ═══════════════════════════════════════════════════════════════ */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Section */}
           <div className="py-8">
@@ -1599,7 +1617,7 @@ const Profile = () => {
                         onChange={(e) => setCategoryRequestForm((f) => ({ ...f, reason: e.target.value }))}
                         placeholder="Explain why you want to sell in these categories..."
                         rows={4}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                        className="profile-form-textarea w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
                       />
                     </div>
 
@@ -1794,6 +1812,79 @@ const Profile = () => {
 
       {/* Scrollbar hide styles */}
       <style>{`
+        .profile-page {
+          color: #111827;
+        }
+
+        .profile-form-input,
+        .profile-form-select,
+        .profile-form-textarea {
+          color: #111827 !important;
+        }
+
+        .profile-form-input::placeholder,
+        .profile-form-textarea::placeholder {
+          color: #9ca3af;
+        }
+
+        .profile-form-select option {
+          color: #111827;
+          background-color: #ffffff;
+        }
+
+        html.dark .profile-page {
+          color: #f3f4f6;
+        }
+
+        html.dark .profile-page .bg-white {
+          background-color: #111827 !important;
+        }
+
+        html.dark .profile-page .border-gray-100,
+        html.dark .profile-page .border-gray-200 {
+          border-color: #374151 !important;
+        }
+
+        html.dark .profile-page .bg-gray-50 {
+          background-color: #0f172a !important;
+        }
+
+        html.dark .profile-page .bg-gray-100 {
+          background-color: #1f2937 !important;
+        }
+
+        html.dark .profile-page .text-gray-900 {
+          color: #f9fafb !important;
+        }
+
+        html.dark .profile-page .text-gray-700 {
+          color: #e5e7eb !important;
+        }
+
+        html.dark .profile-page .text-gray-600,
+        html.dark .profile-page .text-gray-500,
+        html.dark .profile-page .text-gray-400 {
+          color: #9ca3af !important;
+        }
+
+        html.dark .profile-form-input,
+        html.dark .profile-form-select,
+        html.dark .profile-form-textarea {
+          background-color: #111827 !important;
+          border-color: #374151 !important;
+          color: #f9fafb !important;
+        }
+
+        html.dark .profile-form-input::placeholder,
+        html.dark .profile-form-textarea::placeholder {
+          color: #6b7280;
+        }
+
+        html.dark .profile-form-select option {
+          color: #f9fafb;
+          background-color: #111827;
+        }
+
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
@@ -1854,7 +1945,7 @@ const QuickActionCard = ({ icon, label, to, onClick, color }) => {
 
 const FormInput = ({ label, name, type = 'text', value, onChange, placeholder, disabled, required, hint }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
       {label}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
@@ -1866,19 +1957,19 @@ const FormInput = ({ label, name, type = 'text', value, onChange, placeholder, d
       placeholder={placeholder}
       disabled={disabled}
       required={required}
-      className={`w-full px-4 py-3 border rounded-xl text-sm transition-all ${
+      className={`profile-form-input w-full px-4 py-3 border rounded-xl text-sm transition-all ${
         disabled
-          ? 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed'
-          : 'border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent'
+          ? 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'
+          : 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500'
       }`}
     />
-    {hint && <p className="text-xs text-gray-500 mt-1">{hint}</p>}
+    {hint && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{hint}</p>}
   </div>
 );
 
 const FormSelect = ({ label, name, value, onChange, options, required }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
       {label}
       {required && <span className="text-red-500 ml-1">*</span>}
     </label>
@@ -1887,7 +1978,7 @@ const FormSelect = ({ label, name, value, onChange, options, required }) => (
       value={value}
       onChange={onChange}
       required={required}
-      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none cursor-pointer"
+      className="profile-form-select w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none cursor-pointer dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
       style={{
         backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
         backgroundPosition: 'right 0.75rem center',

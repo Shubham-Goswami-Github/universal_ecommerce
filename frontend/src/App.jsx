@@ -18,12 +18,11 @@ import VendorDashboard from './pages/VendorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import Vendors from './pages/Vendors';
 import VendorStorePage from './pages/VendorStorePage';
-// App.jsx ya jaha routes define hain
 import Profile from './pages/Profile';
-// In your router configuration (e.g., App.jsx)
 import CategoryPage from './pages/CategoryPage';
 import CategoriesPage from './pages/CategoriesPage';
 import MaintenancePage from './pages/MaintenancePage';
+import Wishlist from './pages/Wishlist';
 
 const buildBackgroundStyle = ({ color, image, repeat, size, fitScreen, accentPrimary, accentSecondary }) => {
   const overlay = accentPrimary || accentSecondary
@@ -94,15 +93,11 @@ function AppInner({ maintenanceMode }) {
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetails />} />
-
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            // Add these routes
-<Route path="/category/:categoryId" element={<CategoryPage />} />
-<Route path="/categories" element={<CategoriesPage />} />
-// ...
-
-<Route path="/profile" element={<Profile />} />
+            <Route path="/category/:categoryId" element={<CategoryPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/profile" element={<Profile />} />
             <Route
               path="/cart"
               element={
@@ -116,6 +111,14 @@ function AppInner({ maintenanceMode }) {
               element={
                 <ProtectedRoute allowedRoles={['user']}>
                   <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/wishlist"
+              element={
+                <ProtectedRoute allowedRoles={['user']}>
+                  <Wishlist />
                 </ProtectedRoute>
               }
             />

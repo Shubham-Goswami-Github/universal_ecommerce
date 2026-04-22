@@ -186,13 +186,7 @@ const COLORS = {
   teal: '#14b8a6',
 };
 
-const GRADIENT_COLORS = {
-  blue: 'from-blue-500 to-cyan-500',
-  purple: 'from-purple-500 to-pink-500',
-  green: 'from-emerald-500 to-teal-500',
-  orange: 'from-orange-500 to-red-500',
-  indigo: 'from-indigo-500 to-purple-500',
-};
+
 
 const PIE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
 const SIDEBAR_STORAGE_KEY = 'admin-dashboard-sidebar-collapsed';
@@ -263,56 +257,31 @@ const getDefaultStats = () => ({
 /* -------------------------------------------------------------------------- */
 /* ENHANCED STAT CARD WITH ANIMATIONS                                         */
 /* -------------------------------------------------------------------------- */
-function StatCard({ title, value, change, changeType, icon: Icon, gradient, subtitle, compact = false }) {
+function StatCard({ title, value, change, changeType, icon: Icon, iconBg, iconColor, subtitle, compact = false }) {
   return (
-    <div className="group relative bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-slate-300 transition-all duration-300 overflow-hidden">
-      {/* Animated Background Gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-      
-      <div className="relative flex items-start justify-between">
+    <div className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200">
+      <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <p className="text-sm font-semibold text-slate-600 uppercase tracking-wide">{title}</p>
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1 tabular-nums">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">{title}</p>
+          <p className="text-2xl font-semibold text-slate-900 tabular-nums">
             {compact && typeof value === 'number' ? formatCompactNumber(value) : value}
           </p>
-          {subtitle && (
-            <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
           {change !== undefined && (
-            <div className="flex items-center gap-1.5 mt-3">
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-                changeType === 'increase' 
-                  ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20' 
-                  : 'bg-red-50 text-red-700 ring-1 ring-red-600/20'
-              }`}>
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${changeType === 'increase' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                }`}>
                 {changeType === 'increase' ? <Icons.TrendUp /> : <Icons.TrendDown />}
                 {Math.abs(change)}%
               </span>
-              <span className="text-xs text-slate-500 font-medium">vs last month</span>
+              <span className="text-xs text-slate-400">vs last period</span>
             </div>
           )}
         </div>
-        
-        <div className={`relative p-4 rounded-2xl bg-gradient-to-br ${gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-          <div className="text-white">
-            {Icon && <Icon />}
-          </div>
-          {/* Glow Effect */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${gradient} blur-xl opacity-50 group-hover:opacity-75 transition-opacity`}></div>
+        <div className={`p-3 rounded-xl ${iconBg || 'bg-slate-100'}`}>
+          <div className={iconColor || 'text-slate-600'}>{Icon && <Icon />}</div>
         </div>
       </div>
-      
-      {/* Progress Bar */}
-      {change !== undefined && (
-        <div className="mt-4 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div 
-            className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all duration-1000 ease-out`}
-            style={{ width: `${Math.min(Math.abs(change), 100)}%` }}
-          ></div>
-        </div>
-      )}
     </div>
   );
 }
@@ -320,20 +289,18 @@ function StatCard({ title, value, change, changeType, icon: Icon, gradient, subt
 /* -------------------------------------------------------------------------- */
 /* MINI STAT CARD WITH ENHANCED DESIGN                                        */
 /* -------------------------------------------------------------------------- */
-function MiniStatCard({ label, value, icon: Icon, color, gradient }) {
+function MiniStatCard({ label, value, icon: Icon, color, iconBg, iconColor }) {
   return (
-    <div className="group relative bg-gradient-to-br from-white to-slate-50 rounded-xl p-4 border border-slate-200/60 hover:shadow-lg hover:scale-105 transition-all duration-300">
+    <div className="bg-white rounded-xl p-4 border border-slate-200 hover:shadow-sm transition-all duration-200">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{label}</p>
+        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
         {Icon && (
-          <div className={`p-1.5 rounded-lg bg-gradient-to-br ${gradient || 'from-slate-200 to-slate-300'}`}>
-            <div className="text-white">
-              <Icon />
-            </div>
+          <div className={`p-1.5 rounded-lg ${iconBg || 'bg-slate-100'}`}>
+            <div className={iconColor || 'text-slate-500'}><Icon /></div>
           </div>
         )}
       </div>
-      <p className={`text-2xl font-bold ${color || 'text-slate-900'} tabular-nums`}>{value}</p>
+      <p className={`text-xl font-semibold ${color || 'text-slate-900'} tabular-nums`}>{value}</p>
     </div>
   );
 }
@@ -371,28 +338,28 @@ function ActivityItem({ type, title, description, time, avatar }) {
 /* -------------------------------------------------------------------------- */
 function TopItemRow({ rank, name, value, subtext, image }) {
   const rankColors = {
-    1: 'from-yellow-400 to-yellow-600 text-white',
-    2: 'from-slate-300 to-slate-500 text-white',
-    3: 'from-orange-400 to-orange-600 text-white',
+    1: 'bg-amber-100 text-amber-700',
+    2: 'bg-slate-100 text-slate-600',
+    3: 'bg-orange-100 text-orange-700',
   };
 
   return (
-    <div className="group flex items-center gap-3 py-3 px-2 rounded-lg hover:bg-gradient-to-r hover:from-slate-50 hover:to-transparent transition-all border-b border-slate-100 last:border-0">
-      <div className={`flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br ${rankColors[rank] || 'from-slate-100 to-slate-200 text-slate-700'} flex items-center justify-center text-xs font-black shadow-md group-hover:scale-110 transition-transform`}>
+    <div className="group flex items-center gap-3 py-3 px-2 rounded-lg hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+      <div className={`flex-shrink-0 w-7 h-7 rounded-full ${rankColors[rank] || 'bg-slate-50 text-slate-600'} flex items-center justify-center text-xs font-semibold`}>
         {rank}
       </div>
       {image && (
-        <img 
-          src={image} 
-          alt={name} 
-          className="flex-shrink-0 w-10 h-10 rounded-xl object-cover ring-2 ring-slate-200 group-hover:ring-blue-400 transition-all shadow-sm" 
+        <img
+          src={image}
+          alt={name}
+          className="flex-shrink-0 w-10 h-10 rounded-xl object-cover ring-2 ring-slate-200 group-hover:ring-blue-400 transition-all shadow-sm"
         />
       )}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{name}</p>
-        {subtext && <p className="text-xs text-slate-500 font-medium">{subtext}</p>}
+        <p className="text-sm font-medium text-slate-900 truncate">{name}</p>
+        {subtext && <p className="text-xs text-slate-500">{subtext}</p>}
       </div>
-      <span className="flex-shrink-0 text-sm font-bold text-slate-900 bg-slate-100 px-3 py-1 rounded-lg group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">{value}</span>
+      <span className="flex-shrink-0 text-sm font-medium text-slate-700 bg-slate-50 px-3 py-1 rounded-lg">{value}</span>
     </div>
   );
 }
@@ -400,38 +367,38 @@ function TopItemRow({ rank, name, value, subtext, image }) {
 /* -------------------------------------------------------------------------- */
 /* ALERT BANNER COMPONENT                                                     */
 /* -------------------------------------------------------------------------- */
-function AlertBanner({ type = 'info', icon: Icon, title, description, count, action }) {
+function AlertBanner({ type = 'info', icon: Icon, title, description, count, action, onClick }) {
   const typeConfig = {
-    info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', subtext: 'text-blue-600', iconBg: 'bg-blue-100' },
-    warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', subtext: 'text-amber-600', iconBg: 'bg-amber-100' },
-    success: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', subtext: 'text-emerald-600', iconBg: 'bg-emerald-100' },
-    danger: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', subtext: 'text-red-600', iconBg: 'bg-red-100' },
-    purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', subtext: 'text-purple-600', iconBg: 'bg-purple-100' },
+    info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', subtext: 'text-blue-600', iconBg: 'bg-blue-100' },
+    warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', subtext: 'text-amber-600', iconBg: 'bg-amber-100' },
+    success: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', subtext: 'text-emerald-600', iconBg: 'bg-emerald-100' },
+    danger: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', subtext: 'text-red-600', iconBg: 'bg-red-100' },
+    purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', subtext: 'text-purple-600', iconBg: 'bg-purple-100' },
   };
 
   const config = typeConfig[type] || typeConfig.info;
 
   return (
-    <div className={`relative ${config.bg} border ${config.border} rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden group`}>
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-      
-      <div className={`relative flex-shrink-0 p-3 ${config.iconBg} rounded-xl shadow-sm`}>
-        {Icon && <Icon />}
+    <div className={`${config.bg} border ${config.border} rounded-xl p-4 flex items-center gap-4`}>
+      <div className={`flex-shrink-0 p-2.5 ${config.iconBg} rounded-lg`}>
+        <div className={config.text}>{Icon && <Icon />}</div>
       </div>
-      <div className="relative flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <p className={`text-sm font-bold ${config.text}`}>{title}</p>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <p className={`text-sm font-semibold ${config.text}`}>{title}</p>
           {count > 0 && (
-            <span className={`px-2 py-0.5 rounded-full text-xs font-black ${config.iconBg} ${config.text}`}>
+            <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${config.iconBg} ${config.text}`}>
               {count}
             </span>
           )}
         </div>
-        <p className={`text-xs font-medium ${config.subtext}`}>{description}</p>
+        <p className={`text-xs ${config.subtext}`}>{description}</p>
       </div>
       {action && (
-        <button className={`relative flex-shrink-0 px-4 py-2 rounded-lg ${config.iconBg} ${config.text} text-xs font-bold hover:scale-105 transition-transform`}>
+        <button
+          onClick={onClick}
+          className={`flex-shrink-0 px-4 py-2 rounded-lg ${config.iconBg} ${config.text} text-xs font-semibold hover:opacity-80 transition-opacity cursor-pointer`}
+        >
           {action}
         </button>
       )}
@@ -442,7 +409,7 @@ function AlertBanner({ type = 'info', icon: Icon, title, description, count, act
 /* -------------------------------------------------------------------------- */
 /* ENHANCED DASHBOARD OVERVIEW                                                */
 /* -------------------------------------------------------------------------- */
-function DashboardOverview({ token }) {
+function DashboardOverview({ token, onNavigate }) {
   const [stats, setStats] = useState(getDefaultStats());
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('30days');
@@ -493,27 +460,27 @@ function DashboardOverview({ token }) {
       {/* Enhanced Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 mb-1 bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-1">
             Dashboard Overview
           </h2>
-          <p className="text-sm text-slate-600 font-medium">
-            📊 Real-time analytics and insights • {getRangeLabel(dateRange)}
+          <p className="text-sm text-slate-500">
+            Real-time analytics and insights · {getRangeLabel(dateRange)}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-5 py-2.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-700 bg-white hover:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all shadow-sm"
+            className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 bg-white hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all"
           >
-            <option value="7days">📅 Last 7 Days</option>
-            <option value="30days">📅 Last 30 Days</option>
-            <option value="90days">📅 Last 90 Days</option>
-            <option value="365days">📅 Last Year</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+            <option value="90days">Last 90 Days</option>
+            <option value="365days">Last Year</option>
           </select>
-          
-          <button className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all shadow-lg hover:shadow-xl hover:scale-105">
+
+          <button className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all">
             <div className="flex items-center gap-2">
               <Icons.Download />
               Export
@@ -523,7 +490,7 @@ function DashboardOverview({ token }) {
       </div>
 
       {error && (
-        <div className="rounded-2xl border-2 border-red-200 bg-gradient-to-r from-red-50 to-red-100 px-6 py-4 text-sm text-red-700 font-semibold shadow-lg">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700 font-medium">
           ⚠️ {error}
         </div>
       )}
@@ -536,7 +503,8 @@ function DashboardOverview({ token }) {
           change={stats.changes.revenue}
           changeType={getChangeType(stats.changes.revenue)}
           icon={Icons.Revenue}
-          gradient={GRADIENT_COLORS.blue}
+          iconBg="bg-blue-50"
+          iconColor="text-blue-600"
           subtitle={`Lifetime: ${formatCurrency(stats.overview.totalRevenue)}`}
           compact={true}
         />
@@ -546,7 +514,8 @@ function DashboardOverview({ token }) {
           change={stats.changes.orders}
           changeType={getChangeType(stats.changes.orders)}
           icon={Icons.Orders}
-          gradient={GRADIENT_COLORS.green}
+          iconBg="bg-emerald-50"
+          iconColor="text-emerald-600"
           subtitle={`${formatNumber(stats.overview.pendingOrders)} pending orders`}
         />
         <StatCard
@@ -555,7 +524,8 @@ function DashboardOverview({ token }) {
           change={stats.changes.users}
           changeType={getChangeType(stats.changes.users)}
           icon={Icons.Users}
-          gradient={GRADIENT_COLORS.purple}
+          iconBg="bg-purple-50"
+          iconColor="text-purple-600"
           subtitle={`Total: ${formatNumber(stats.overview.totalUsers)} users`}
         />
         <StatCard
@@ -564,7 +534,8 @@ function DashboardOverview({ token }) {
           change={stats.changes.vendors}
           changeType={getChangeType(stats.changes.vendors)}
           icon={Icons.Vendor}
-          gradient={GRADIENT_COLORS.orange}
+          iconBg="bg-amber-50"
+          iconColor="text-amber-600"
           subtitle={`${formatNumber(stats.overview.pendingVendorRequests)} pending requests`}
         />
       </div>
@@ -580,6 +551,7 @@ function DashboardOverview({ token }) {
               description="Review and approve new product listings"
               count={stats.overview.pendingApprovals}
               action="Review Now"
+              onClick={() => onNavigate && onNavigate('approvals')}
             />
           )}
           {stats.overview.pendingVendorRequests > 0 && (
@@ -590,6 +562,7 @@ function DashboardOverview({ token }) {
               description="New vendors waiting for approval"
               count={stats.overview.pendingVendorRequests}
               action="Review Now"
+              onClick={() => onNavigate && onNavigate('vendorApprovals')}
             />
           )}
         </div>
@@ -598,13 +571,13 @@ function DashboardOverview({ token }) {
       {/* Charts Section - Sales & Revenue */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Main Sales Chart */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
+        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-black text-slate-900 mb-1">Sales Performance</h3>
-              <p className="text-xs text-slate-500 font-medium">Revenue and orders trend analysis</p>
+              <h3 className="text-base font-semibold text-slate-900 mb-0.5">Sales Performance</h3>
+              <p className="text-xs text-slate-400">Revenue and orders trend analysis</p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-semibold">
+            <div className="flex items-center gap-3 text-xs font-medium">
               <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700">
                 <span className="w-3 h-3 rounded-full bg-blue-500"></span>
                 Sales (₹)
@@ -628,24 +601,24 @@ function DashboardOverview({ token }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 11, fontWeight: 600 }} 
-                stroke="#94a3b8" 
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis 
-                yAxisId="left" 
-                tick={{ fontSize: 11, fontWeight: 600 }} 
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fontWeight: 600 }}
                 stroke="#94a3b8"
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis 
-                yAxisId="right" 
-                orientation="right" 
-                tick={{ fontSize: 11, fontWeight: 600 }} 
+              <YAxis
+                yAxisId="left"
+                tick={{ fontSize: 11, fontWeight: 600 }}
+                stroke="#94a3b8"
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tick={{ fontSize: 11, fontWeight: 600 }}
                 stroke="#94a3b8"
                 axisLine={false}
                 tickLine={false}
@@ -689,21 +662,21 @@ function DashboardOverview({ token }) {
         </div>
 
         {/* Weekly Revenue Bar Chart */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-black text-slate-900 mb-1">Weekly Revenue</h3>
-          <p className="text-xs text-slate-500 font-medium mb-6">Daily breakdown</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-base font-semibold text-slate-900 mb-0.5">Weekly Revenue</h3>
+          <p className="text-xs text-slate-400 mb-6">Daily breakdown</p>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={stats.revenueByDay}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-              <XAxis 
-                dataKey="day" 
-                tick={{ fontSize: 10, fontWeight: 600 }} 
+              <XAxis
+                dataKey="day"
+                tick={{ fontSize: 10, fontWeight: 600 }}
                 stroke="#94a3b8"
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis 
-                tick={{ fontSize: 10, fontWeight: 600 }} 
+              <YAxis
+                tick={{ fontSize: 10, fontWeight: 600 }}
                 stroke="#94a3b8"
                 axisLine={false}
                 tickLine={false}
@@ -720,9 +693,9 @@ function DashboardOverview({ token }) {
                 formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
                 cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
               />
-              <Bar 
-                dataKey="revenue" 
-                fill="url(#barGradient)" 
+              <Bar
+                dataKey="revenue"
+                fill="url(#barGradient)"
                 radius={[8, 8, 0, 0]}
               />
               <defs>
@@ -739,13 +712,13 @@ function DashboardOverview({ token }) {
       {/* Registration & Order Status */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* User & Vendor Registrations */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
+        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-xl font-black text-slate-900 mb-1">Registration Trends</h3>
-              <p className="text-xs text-slate-500 font-medium">New users and vendors over time</p>
+              <h3 className="text-base font-semibold text-slate-900 mb-0.5">Registration Trends</h3>
+              <p className="text-xs text-slate-400">New users and vendors over time</p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-semibold">
+            <div className="flex items-center gap-3 text-xs font-medium">
               <span className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-700">
                 <span className="w-3 h-3 rounded-full bg-purple-500"></span>
                 Users
@@ -759,15 +732,15 @@ function DashboardOverview({ token }) {
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={stats.registrationChart}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 11, fontWeight: 600 }} 
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 11, fontWeight: 600 }}
                 stroke="#94a3b8"
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis 
-                tick={{ fontSize: 11, fontWeight: 600 }} 
+              <YAxis
+                tick={{ fontSize: 11, fontWeight: 600 }}
                 stroke="#94a3b8"
                 axisLine={false}
                 tickLine={false}
@@ -790,9 +763,9 @@ function DashboardOverview({ token }) {
         </div>
 
         {/* Order Status Distribution */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-black text-slate-900 mb-1">Order Status</h3>
-          <p className="text-xs text-slate-500 font-medium mb-6">Distribution overview</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-base font-semibold text-slate-900 mb-0.5">Order Status</h3>
+          <p className="text-xs text-slate-400 mb-6">Distribution overview</p>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
@@ -805,8 +778,8 @@ function DashboardOverview({ token }) {
                 dataKey="value"
               >
                 {stats.orderStatusChart.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={PIE_COLORS[index % PIE_COLORS.length]}
                     stroke="#fff"
                     strokeWidth={2}
@@ -843,15 +816,15 @@ function DashboardOverview({ token }) {
       {/* Top Products, Vendors & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Products */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500">
+              <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
                 <Icons.Star />
               </div>
-              <h3 className="text-lg font-black text-slate-900">Top Products</h3>
+              <h3 className="text-base font-semibold text-slate-900">Top Products</h3>
             </div>
-            <button className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:gap-2 transition-all">
+            <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors">
               View All <Icons.ChevronRight />
             </button>
           </div>
@@ -874,15 +847,15 @@ function DashboardOverview({ token }) {
         </div>
 
         {/* Top Vendors */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
+              <div className="p-2 rounded-lg bg-purple-50 text-purple-600">
                 <Icons.Vendor />
               </div>
-              <h3 className="text-lg font-black text-slate-900">Top Vendors</h3>
+              <h3 className="text-base font-semibold text-slate-900">Top Vendors</h3>
             </div>
-            <button className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:gap-2 transition-all">
+            <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors">
               View All <Icons.ChevronRight />
             </button>
           </div>
@@ -904,15 +877,15 @@ function DashboardOverview({ token }) {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
                 <Icons.Bell />
               </div>
-              <h3 className="text-lg font-black text-slate-900">Recent Activity</h3>
+              <h3 className="text-base font-semibold text-slate-900">Recent Activity</h3>
             </div>
-            <button className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:gap-2 transition-all">
+            <button className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors">
               View All <Icons.ChevronRight />
             </button>
           </div>
@@ -937,9 +910,9 @@ function DashboardOverview({ token }) {
       {/* Category Distribution & Quick Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Chart */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-black text-slate-900 mb-1">Sales by Category</h3>
-          <p className="text-xs text-slate-500 font-medium mb-6">Product distribution</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-base font-semibold text-slate-900 mb-0.5">Sales by Category</h3>
+          <p className="text-xs text-slate-400 mb-6">Product distribution</p>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
@@ -952,8 +925,8 @@ function DashboardOverview({ token }) {
                 labelLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
               >
                 {stats.categoryChart.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={PIE_COLORS[index % PIE_COLORS.length]}
                     stroke="#fff"
                     strokeWidth={3}
@@ -975,49 +948,55 @@ function DashboardOverview({ token }) {
         </div>
 
         {/* Quick Stats Grid */}
-        <div className="bg-white rounded-2xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-black text-slate-900 mb-6">Quick Statistics</h3>
+        <div className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition-shadow">
+          <h3 className="text-base font-semibold text-slate-900 mb-6">Quick Statistics</h3>
           <div className="grid grid-cols-2 gap-4">
-            <MiniStatCard 
-              label="Products" 
+            <MiniStatCard
+              label="Products"
               value={formatNumber(stats.overview.totalProducts)}
               icon={Icons.Products}
-              gradient={GRADIENT_COLORS.blue}
+              iconBg="bg-blue-50"
+              iconColor="text-blue-600"
               color="text-blue-600"
             />
-            <MiniStatCard 
-              label="Active Users" 
+            <MiniStatCard
+              label="Active Users"
               value={formatNumber(stats.quickStats.activeUsers)}
               icon={Icons.Users}
-              gradient={GRADIENT_COLORS.green}
+              iconBg="bg-emerald-50"
+              iconColor="text-emerald-600"
               color="text-emerald-600"
             />
-            <MiniStatCard 
-              label="Active Vendors" 
+            <MiniStatCard
+              label="Active Vendors"
               value={formatNumber(stats.quickStats.activeVendors)}
               icon={Icons.Vendor}
-              gradient={GRADIENT_COLORS.purple}
+              iconBg="bg-purple-50"
+              iconColor="text-purple-600"
               color="text-purple-600"
             />
-            <MiniStatCard 
-              label="Pending Orders" 
+            <MiniStatCard
+              label="Pending Orders"
               value={formatNumber(stats.overview.pendingOrders)}
               icon={Icons.Orders}
-              gradient={GRADIENT_COLORS.orange}
+              iconBg="bg-amber-50"
+              iconColor="text-amber-600"
               color="text-amber-600"
             />
-            <MiniStatCard 
-              label="Range Revenue" 
+            <MiniStatCard
+              label="Range Revenue"
               value={formatCompactNumber(stats.quickStats.rangeRevenue)}
               icon={Icons.Revenue}
-              gradient={GRADIENT_COLORS.green}
+              iconBg="bg-emerald-50"
+              iconColor="text-emerald-600"
               color="text-emerald-600"
             />
-            <MiniStatCard 
-              label="Avg Order" 
+            <MiniStatCard
+              label="Avg Order"
               value={formatCurrency(stats.quickStats.avgOrderValue)}
               icon={Icons.Orders}
-              gradient={GRADIENT_COLORS.indigo}
+              iconBg="bg-indigo-50"
+              iconColor="text-indigo-600"
               color="text-indigo-600"
             />
           </div>
@@ -1100,99 +1079,95 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+    <div className="min-h-screen bg-white">
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
         <button
-          className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileSidebarOpen(false)}
           aria-label="Close sidebar"
         />
       )}
 
       <div className="flex">
-        {/* ================= ENHANCED SIDEBAR ================= */}
+        {/* ================= SIDEBAR ================= */}
         <aside
-          className={`fixed left-0 top-0 h-screen bg-white border-r border-slate-200/60 shadow-xl z-40 transition-all duration-300 ${
-            mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } ${
-            sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'
-          } w-72 lg:translate-x-0`}
+          className={`fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-40 transition-all duration-300 ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            } ${sidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-64'
+            } w-64 lg:translate-x-0`}
         >
           {/* Logo Section */}
-          <div className="h-20 flex items-center justify-between px-5 border-b border-slate-200/60 bg-gradient-to-r from-blue-600 to-blue-700">
+          <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
             {!sidebarCollapsed && (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white shadow-lg flex items-center justify-center">
-                  <span className="text-blue-600 font-black text-xl">A</span>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">A</span>
                 </div>
                 <div>
-                  <span className="font-black text-white text-lg">Admin Panel</span>
-                  <p className="text-xs text-blue-100 font-medium">E-Commerce Dashboard</p>
+                  <span className="font-semibold text-gray-900 text-sm">Admin Panel</span>
+                  <p className="text-xs text-gray-500">E-Commerce</p>
                 </div>
               </div>
             )}
             {sidebarCollapsed && (
-              <div className="w-10 h-10 rounded-xl bg-white shadow-lg flex items-center justify-center mx-auto">
-                <span className="text-blue-600 font-black text-xl">A</span>
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center mx-auto">
+                <span className="text-white font-bold text-sm">A</span>
               </div>
             )}
           </div>
 
           {/* Admin Profile Card */}
           {!sidebarCollapsed && (
-            <div className="p-4 border-b border-slate-200/60 bg-gradient-to-br from-slate-50 to-white">
-              <div className="flex items-center gap-3">
+            <div className="px-4 py-3 border-b border-gray-200">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg ring-4 ring-blue-100">
-                    <span className="text-white font-black text-lg">
+                  <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <span className="text-indigo-600 font-semibold text-sm">
                       {auth.user?.name?.charAt(0).toUpperCase() || 'A'}
                     </span>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-slate-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 truncate">
                     {auth.user?.name || 'Admin User'}
                   </p>
-                  <p className="text-xs text-slate-600 truncate font-medium">{auth.user?.email}</p>
+                  <p className="text-xs text-gray-500 truncate">{auth.user?.email}</p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Navigation */}
-          <nav className="p-3 space-y-1 flex-1 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(100vh - 240px)' }}>
+          <nav className="p-2 space-y-0.5 flex-1 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(100vh - 200px)' }}>
             {TABS.map((t) => {
               const Icon = t.icon;
               const badge = t.badge ? badgeCounts[t.badge] : 0;
               const isLinkItem = Boolean(t.to);
               const isActive = !isLinkItem && activeTab === t.key;
-              const itemClassName = `group relative w-full flex items-center px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                isActive
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-200'
-                  : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600'
-              } ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`;
-              
+              const itemClassName = `group relative w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                ? 'bg-indigo-50 text-indigo-700'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                } ${sidebarCollapsed ? 'justify-center' : 'gap-2.5'}`;
+
               const itemContent = (
                 <>
-                  <div className={isActive ? 'scale-110' : 'group-hover:scale-110 transition-transform'}>
+                  <div className={`flex-shrink-0 ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
                     <Icon />
                   </div>
                   {!sidebarCollapsed && (
                     <>
                       <span className="flex-1 text-left">{t.label}</span>
                       {badge > 0 && (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
-                          isActive ? 'bg-white text-blue-600' : 'bg-red-500 text-white'
-                        }`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${isActive ? 'bg-indigo-100 text-indigo-700' : 'bg-red-100 text-red-600'
+                          }`}>
                           {badge}
                         </span>
                       )}
                     </>
                   )}
                   {sidebarCollapsed && badge > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-black flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] font-semibold flex items-center justify-center">
                       {badge}
                     </span>
                   )}
@@ -1227,12 +1202,11 @@ export default function AdminDashboard() {
           </nav>
 
           {/* Logout Button */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-200/60 bg-white">
+          <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-gray-200 bg-white">
             <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-all ${
-                sidebarCollapsed ? 'justify-center' : ''
-              }`}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors ${sidebarCollapsed ? 'justify-center' : ''
+                }`}
               title={sidebarCollapsed ? 'Logout' : undefined}
             >
               <Icons.Logout />
@@ -1243,66 +1217,47 @@ export default function AdminDashboard() {
 
         {/* ================= MAIN CONTENT AREA ================= */}
         <main
-          className={`flex-1 min-h-screen transition-all duration-300 ${
-            sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-72'
-          }`}
+          className={`flex-1 min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-64'
+            }`}
         >
-          {/* Enhanced Top Header */}
-          <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 flex items-center justify-between px-6 sticky top-0 z-20 shadow-sm">
-            <div className="flex items-center gap-4">
+          {/* Top Header — Clean, minimal */}
+          <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => setMobileSidebarOpen(true)}
-                className="inline-flex lg:hidden p-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors"
+                className="inline-flex lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
               >
                 <Icons.Menu />
               </button>
-              
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
-                  <div className="text-white">
-                    {TABS.find((t) => t.key === activeTab)?.icon && 
-                      (() => {
-                        const Icon = TABS.find((t) => t.key === activeTab).icon;
-                        return <Icon />;
-                      })()
-                    }
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-xl font-black text-slate-900">
-                    {TABS.find((t) => t.key === activeTab)?.label || 'Dashboard'}
-                  </h1>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Manage and monitor your e-commerce platform
-                  </p>
-                </div>
-              </div>
+
+              <h1 className="text-sm font-semibold text-gray-900">
+                {TABS.find((t) => t.key === activeTab)?.label || 'Dashboard'}
+              </h1>
             </div>
-            
-            <div className="flex items-center gap-3">
+
+            <div className="flex items-center gap-2">
               {/* Search */}
-              <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors">
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 hover:border-gray-400 transition-colors">
                 <Icons.Search />
-                <input 
-                  type="text" 
-                  placeholder="Search..." 
-                  className="bg-transparent border-none outline-none text-sm font-medium text-slate-700 w-40"
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="bg-transparent border-none outline-none text-sm text-gray-700 w-36 placeholder-gray-400"
                 />
               </div>
-              
+
               {/* Notifications */}
-              <button className="relative p-2.5 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+              <button className="relative p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors">
                 <Icons.Bell />
                 {(badgeCounts.pending + badgeCounts.vendorPending) > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-black flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] font-semibold flex items-center justify-center">
                     {badgeCounts.pending + badgeCounts.vendorPending}
                   </span>
                 )}
               </button>
-              
+
               {/* Date Display */}
-              <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-xs font-bold text-slate-700">
-                <span>📅</span>
+              <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-xs font-medium text-gray-600">
                 <span>
                   {new Date().toLocaleDateString('en-IN', {
                     month: 'short',
@@ -1314,121 +1269,44 @@ export default function AdminDashboard() {
             </div>
           </header>
 
-          {/* Content Area with Enhanced Padding */}
-          <div className="p-6 lg:p-8">
+          {/* Content Area — no extra wrapping for settings */}
+          <div className={activeTab === 'settings' ? '' : 'p-4 sm:p-6'}>
             {/* DASHBOARD */}
-            {activeTab === 'dashboard' && <DashboardOverview token={token} />}
+            {activeTab === 'dashboard' && <DashboardOverview token={token} onNavigate={handleTabChange} />}
 
-            {/* SETTINGS */}
+            {/* SETTINGS — render directly, no wrapper card */}
             {activeTab === 'settings' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-slate-600 to-slate-700">
-                    <Icons.Settings />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Site Settings</h2>
-                    <p className="text-sm text-slate-500 font-medium">Configure your platform settings</p>
-                  </div>
-                </div>
-                <SettingsForm token={token} settings={settings} onSaved={handleSettingsSaved} />
-              </div>
+              <SettingsForm token={token} settings={settings} onSaved={handleSettingsSaved} />
             )}
 
             {/* CATEGORIES */}
             {activeTab === 'categories' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-red-500">
-                    <Icons.Categories />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Product Categories</h2>
-                    <p className="text-sm text-slate-500 font-medium">Manage product categories</p>
-                  </div>
-                </div>
-                <AdminCategories token={token} />
-              </div>
+              <AdminCategories token={token} />
             )}
 
             {/* PRODUCT APPROVALS */}
             {activeTab === 'approvals' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500">
-                    <Icons.Approval />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Product Approvals</h2>
-                    <p className="text-sm text-slate-500 font-medium">Review and approve pending products</p>
-                  </div>
-                </div>
-                <AdminApprovals token={token} />
-              </div>
+              <AdminApprovals token={token} />
             )}
 
             {/* VENDOR APPROVALS */}
             {activeTab === 'vendorApprovals' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
-                    <Icons.Vendor />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Vendor Requests</h2>
-                    <p className="text-sm text-slate-500 font-medium">Approve or reject vendor applications</p>
-                  </div>
-                </div>
-                <VendorApprovals token={token} />
-              </div>
+              <VendorApprovals token={token} />
             )}
 
             {/* VENDORS */}
             {activeTab === 'vendors' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600">
-                    <Icons.Vendor />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">Vendor Logins</h2>
-                    <p className="text-sm text-slate-500 font-medium">Manage vendor accounts</p>
-                  </div>
-                </div>
-                <VendorLogins token={token} />
-              </div>
+              <VendorLogins token={token} />
             )}
 
             {/* USERS */}
             {activeTab === 'users' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500">
-                    <Icons.Users />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">User Logins</h2>
-                    <p className="text-sm text-slate-500 font-medium">Manage customer accounts</p>
-                  </div>
-                </div>
-                <UserLogins token={token} />
-              </div>
+              <UserLogins token={token} />
             )}
 
             {/* ALL PRODUCTS */}
             {activeTab === 'allproducts' && (
-              <div className="bg-white border border-slate-200/60 p-8 rounded-2xl shadow-sm hover:shadow-xl transition-shadow">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
-                    <Icons.Products />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900">All Products</h2>
-                    <p className="text-sm text-slate-500 font-medium">Browse and manage all products</p>
-                  </div>
-                </div>
-                <AdminProducts token={token} />
-              </div>
+              <AdminProducts token={token} />
             )}
           </div>
         </main>
@@ -1437,18 +1315,17 @@ export default function AdminDashboard() {
       {/* Custom Scrollbar Styles */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          width: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f5f9;
-          border-radius: 10px;
+          background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #cbd5e1;
+          background: #d1d5db;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8;
+          background: #9ca3af;
         }
         @keyframes fade-in {
           from {
