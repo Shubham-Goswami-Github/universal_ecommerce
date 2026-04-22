@@ -63,11 +63,11 @@ const RATING_OPTIONS = [
    SKELETON COMPONENTS
 ───────────────────────────────────────────────────────────── */
 const Skeleton = ({ className }) => (
-  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] rounded ${className}`} />
+  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 bg-[length:200%_100%] rounded ${className}`} />
 );
 
 const ProductCardSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+  <div className="bg-white rounded-2xl border border-gray-100 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
     <Skeleton className="aspect-square w-full rounded-none" />
     <div className="p-4 space-y-3">
       <Skeleton className="h-3 w-16 rounded" />
@@ -83,7 +83,7 @@ const ProductCardSkeleton = () => (
 );
 
 const SubCategoryCardSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+  <div className="bg-white rounded-2xl border border-gray-100 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
     <Skeleton className="aspect-[4/3] w-full rounded-none" />
     <div className="p-4 space-y-2">
       <Skeleton className="h-4 w-3/4 rounded" />
@@ -327,7 +327,7 @@ const CategoryPage = () => {
   /* ─── Loading State ─── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
         {/* Header Skeleton */}
         <div className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -390,7 +390,7 @@ const CategoryPage = () => {
   /* ─── Not Found State ─── */
   if (!category) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 text-center max-w-md mx-auto">
           {/* Icon */}
           <div className="relative w-32 h-32 mx-auto mb-6">
@@ -453,7 +453,7 @@ const CategoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="category-page min-h-screen bg-gray-50 dark:bg-slate-950">
       {/* ═══════════════════════════════════════════════════════════════
           HERO HEADER
       ═══════════════════════════════════════════════════════════════ */}
@@ -1133,6 +1133,41 @@ const CategoryPage = () => {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+        html.dark .category-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .category-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .category-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .category-page [class*="border-gray-100"],
+        html.dark .category-page [class*="border-gray-200"],
+        html.dark .category-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .category-page [class*="text-gray-900"],
+        html.dark .category-page [class*="text-gray-800"],
+        html.dark .category-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .category-page [class*="text-gray-600"],
+        html.dark .category-page [class*="text-gray-500"],
+        html.dark .category-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .category-page input,
+        html.dark .category-page select,
+        html.dark .category-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .category-page input::placeholder,
+        html.dark .category-page textarea::placeholder {
+          color: #64748b !important;
+        }
       `}</style>
     </div>
   );
@@ -1334,6 +1369,41 @@ const MobileFilterDrawer = ({
         }
         .animate-slideInLeft {
           animation: slideInLeft 0.3s ease-out;
+        }
+        html.dark .category-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .category-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .category-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .category-page [class*="border-gray-100"],
+        html.dark .category-page [class*="border-gray-200"],
+        html.dark .category-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .category-page [class*="text-gray-900"],
+        html.dark .category-page [class*="text-gray-800"],
+        html.dark .category-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .category-page [class*="text-gray-600"],
+        html.dark .category-page [class*="text-gray-500"],
+        html.dark .category-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .category-page input,
+        html.dark .category-page select,
+        html.dark .category-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .category-page input::placeholder,
+        html.dark .category-page textarea::placeholder {
+          color: #64748b !important;
         }
       `}</style>
     </div>

@@ -123,9 +123,47 @@ const Login = () => {
         .animate-slideDown { animation: slideDown 0.3s ease-out; }
         .animate-pulse-once { animation: pulse 0.3s ease-out; }
         .animate-shake { animation: shake 0.3s ease-out; }
+        html.dark .login-page {
+          background: linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%);
+        }
+        html.dark .login-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .login-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .login-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .login-page [class*="border-gray-100"],
+        html.dark .login-page [class*="border-gray-200"],
+        html.dark .login-page [class*="border-gray-300"],
+        html.dark .login-page [class*="border-blue-100"] {
+          border-color: #334155 !important;
+        }
+        html.dark .login-page [class*="text-gray-800"],
+        html.dark .login-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .login-page [class*="text-gray-600"],
+        html.dark .login-page [class*="text-gray-500"],
+        html.dark .login-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .login-page input,
+        html.dark .login-page select,
+        html.dark .login-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .login-page input::placeholder,
+        html.dark .login-page textarea::placeholder {
+          color: #64748b !important;
+        }
       `}</style>
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center py-12 px-4">
+      <div className="login-page min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center py-12 px-4">
         {/* Background Decorations */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl"></div>

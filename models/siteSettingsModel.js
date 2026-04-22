@@ -69,6 +69,27 @@ const siteSettingsSchema = new mongoose.Schema(
     homeNewsletterInputPlaceholder: { type: String, default: 'Enter your email' },
     homeNewsletterButtonLabel: { type: String, default: 'Subscribe' },
     homeNewsletterButtonLink: { type: String, default: '' },
+    homePromoBannerEnabled: { type: Boolean, default: true },
+    homePromoBannerBadgeText: { type: String, default: 'Limited Time' },
+    homePromoBannerTitle: { type: String, default: 'Fresh deals with a premium storefront feel' },
+    homePromoBannerDescription: {
+      type: String,
+      default: 'Curated sale picks, elevated visuals, and quick actions that keep the homepage polished without changing any shopping flow.'
+    },
+    homePromoBannerProductCount: { type: Number, default: 4 },
+    homePromoBannerProductIds: {
+      type: [String],
+      default: []
+    },
+    homePromoBannerBackgroundMode: {
+      type: String,
+      enum: ['gradient', 'image'],
+      default: 'gradient'
+    },
+    homePromoBannerBackgroundColor: { type: String, default: '#0f766e' },
+    homePromoBannerBackgroundAccentPrimary: { type: String, default: '#0ea5e9' },
+    homePromoBannerBackgroundAccentSecondary: { type: String, default: '#065f46' },
+    homePromoBannerBackgroundImage: { type: String, default: '' },
     homeHeroStats: {
       type: [statItemSchema],
       default: [

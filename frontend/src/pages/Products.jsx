@@ -60,7 +60,7 @@ const SORT_OPTIONS = [
    SKELETON
 ───────────────────────────────────────────────────────────── */
 const Skeleton = ({ className }) => (
-  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] ${className}`} />
+  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 bg-[length:200%_100%] ${className}`} />
 );
 
 /* ─────────────────────────────────────────────────────────────
@@ -181,7 +181,7 @@ const Products = () => {
   /* ─── Loading State ─── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-transparent">
+      <div className="min-h-screen bg-transparent dark:bg-slate-950">
         <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900 relative overflow-hidden">
           <AnimatedBackground />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
@@ -227,7 +227,7 @@ const Products = () => {
   }
 
   return (
-    <div className="min-h-screen bg-transparent pb-16 sm:pb-20">
+    <div className="products-page min-h-screen bg-transparent dark:bg-slate-950 pb-16 sm:pb-20">
       {/* ═══════════════════════════════════════════════════════════════
           HERO HEADER
       ═══════════════════════════════════════════════════════════════ */}
@@ -593,6 +593,41 @@ const Products = () => {
         .scrollbar-hide {
           -ms-overflow-style: none;
           scrollbar-width: none;
+        }
+        html.dark .products-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .products-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .products-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .products-page [class*="border-gray-100"],
+        html.dark .products-page [class*="border-gray-200"],
+        html.dark .products-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .products-page [class*="text-gray-900"],
+        html.dark .products-page [class*="text-gray-800"],
+        html.dark .products-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .products-page [class*="text-gray-600"],
+        html.dark .products-page [class*="text-gray-500"],
+        html.dark .products-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .products-page input,
+        html.dark .products-page select,
+        html.dark .products-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .products-page input::placeholder,
+        html.dark .products-page textarea::placeholder {
+          color: #64748b !important;
         }
       `}</style>
     </div>

@@ -74,6 +74,8 @@ function AppInner({ maintenanceMode }) {
     /^\/vendor(\/|$)/.test(location.pathname);
   const isFullBleedPage =
     location.pathname === '/' ||
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
     location.pathname === '/products' ||
     location.pathname === '/categories' ||
     location.pathname.startsWith('/category/') ||

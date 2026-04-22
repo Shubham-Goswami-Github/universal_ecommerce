@@ -1079,7 +1079,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="admin-dashboard-page min-h-screen bg-white dark:bg-slate-950 dark:text-slate-100">
       {/* Mobile Sidebar Overlay */}
       {mobileSidebarOpen && (
         <button
@@ -1339,6 +1339,49 @@ export default function AdminDashboard() {
         }
         .animate-fade-in {
           animation: fade-in 0.5s ease-out;
+        }
+        html.dark .admin-dashboard-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .admin-dashboard-page [class*="bg-gray-50"],
+        html.dark .admin-dashboard-page [class*="bg-slate-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .admin-dashboard-page [class*="bg-slate-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .admin-dashboard-page [class*="border-gray-200"],
+        html.dark .admin-dashboard-page [class*="border-gray-300"],
+        html.dark .admin-dashboard-page [class*="border-slate-100"],
+        html.dark .admin-dashboard-page [class*="border-slate-200"],
+        html.dark .admin-dashboard-page [class*="border-slate-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .admin-dashboard-page [class*="text-gray-900"],
+        html.dark .admin-dashboard-page [class*="text-slate-900"],
+        html.dark .admin-dashboard-page [class*="text-slate-800"] {
+          color: #f8fafc !important;
+        }
+        html.dark .admin-dashboard-page [class*="text-gray-700"],
+        html.dark .admin-dashboard-page [class*="text-gray-600"],
+        html.dark .admin-dashboard-page [class*="text-gray-500"],
+        html.dark .admin-dashboard-page [class*="text-gray-400"],
+        html.dark .admin-dashboard-page [class*="text-slate-700"],
+        html.dark .admin-dashboard-page [class*="text-slate-600"],
+        html.dark .admin-dashboard-page [class*="text-slate-500"],
+        html.dark .admin-dashboard-page [class*="text-slate-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .admin-dashboard-page input,
+        html.dark .admin-dashboard-page select,
+        html.dark .admin-dashboard-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .admin-dashboard-page input::placeholder,
+        html.dark .admin-dashboard-page textarea::placeholder {
+          color: #64748b !important;
         }
       `}</style>
     </div>

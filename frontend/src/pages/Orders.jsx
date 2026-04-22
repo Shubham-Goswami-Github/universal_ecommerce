@@ -101,17 +101,17 @@ const Orders = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading your orders...</p>
+          <p className="text-gray-500 dark:text-slate-400">Loading your orders...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="orders-page min-h-screen bg-gray-100 dark:bg-slate-950">
       {/* Success Banner */}
       {showNewOrderBanner && (
         <div className="bg-green-500 text-white py-3 px-4 animate-slide-down">
@@ -526,6 +526,30 @@ const Orders = () => {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+        }
+        html.dark .orders-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .orders-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .orders-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .orders-page [class*="border-gray-100"],
+        html.dark .orders-page [class*="border-gray-200"],
+        html.dark .orders-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .orders-page [class*="text-gray-900"],
+        html.dark .orders-page [class*="text-gray-800"],
+        html.dark .orders-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .orders-page [class*="text-gray-600"],
+        html.dark .orders-page [class*="text-gray-500"],
+        html.dark .orders-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
         }
       `}</style>
     </div>

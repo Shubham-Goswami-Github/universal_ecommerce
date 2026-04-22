@@ -229,11 +229,11 @@ const ProductDetails = () => {
   // Loading Skeleton
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Image Skeleton */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6 dark:bg-slate-900">
               <div className="animate-pulse">
                 <div className="h-[400px] bg-gray-200 rounded-xl mb-4"></div>
                 <div className="flex gap-3">
@@ -245,7 +245,7 @@ const ProductDetails = () => {
             </div>
             {/* Info Skeleton */}
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-sm p-6">
+              <div className="bg-white rounded-2xl shadow-sm p-6 dark:bg-slate-900">
                 <div className="animate-pulse space-y-4">
                   <div className="h-6 bg-gray-200 rounded-lg w-1/4"></div>
                   <div className="h-8 bg-gray-200 rounded-lg w-3/4"></div>
@@ -269,15 +269,15 @@ const ProductDetails = () => {
   // Product Not Found
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-24 h-24 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
-          <p className="text-gray-500 mb-6">The product you're looking for doesn't exist or has been removed.</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">Product Not Found</h2>
+          <p className="text-gray-500 dark:text-slate-400 mb-6">The product you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => navigate('/')}
             className="inline-flex items-center gap-2 bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600 transition-colors shadow-md"
@@ -310,7 +310,7 @@ const ProductDetails = () => {
   const canUseWishlist = !auth.user || auth.user.role === 'user';
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24 lg:pb-8">
+    <div className="product-details-page min-h-screen bg-gray-50 dark:bg-slate-950 pb-24 lg:pb-8">
       {/* Toast Message */}
       {message && (
         <div className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg animate-slide-down flex items-center gap-2 ${
@@ -1282,6 +1282,41 @@ const ProductDetails = () => {
         }
         .animate-slide-down {
           animation: slide-down 0.3s ease-out;
+        }
+        html.dark .product-details-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .product-details-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .product-details-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .product-details-page [class*="border-gray-100"],
+        html.dark .product-details-page [class*="border-gray-200"],
+        html.dark .product-details-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .product-details-page [class*="text-gray-900"],
+        html.dark .product-details-page [class*="text-gray-800"],
+        html.dark .product-details-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .product-details-page [class*="text-gray-600"],
+        html.dark .product-details-page [class*="text-gray-500"],
+        html.dark .product-details-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .product-details-page input,
+        html.dark .product-details-page select,
+        html.dark .product-details-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .product-details-page input::placeholder,
+        html.dark .product-details-page textarea::placeholder {
+          color: #64748b !important;
         }
       `}</style>
     </div>

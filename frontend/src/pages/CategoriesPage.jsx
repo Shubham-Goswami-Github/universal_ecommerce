@@ -29,11 +29,11 @@ const SORT_OPTIONS = [
    SKELETON COMPONENTS
 ───────────────────────────────────────────────────────────── */
 const Skeleton = ({ className }) => (
-  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] rounded ${className}`} />
+  <div className={`animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 bg-[length:200%_100%] rounded ${className}`} />
 );
 
 const CategoryCardSkeleton = () => (
-  <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+  <div className="bg-white rounded-2xl border border-gray-100 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
     <Skeleton className="h-40 w-full rounded-none" />
     <div className="p-4 space-y-3">
       <Skeleton className="h-4 w-3/4 rounded-lg" />
@@ -47,7 +47,7 @@ const CategoryCardSkeleton = () => (
 );
 
 const SubCategoryCardSkeleton = () => (
-  <div className="bg-white rounded-xl border border-gray-100 p-3">
+  <div className="bg-white rounded-xl border border-gray-100 dark:bg-slate-900 dark:border-slate-800 p-3">
     <Skeleton className="aspect-square w-full rounded-lg mb-3" />
     <Skeleton className="h-3 w-3/4 mx-auto rounded" />
   </div>
@@ -165,7 +165,7 @@ const CategoriesPage = () => {
   /* ─── Loading State ─── */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
         {/* Header Skeleton */}
         <div className="bg-white border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -210,7 +210,7 @@ const CategoriesPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="categories-page min-h-screen bg-gray-50 dark:bg-slate-950">
       {/* ═══════════════════════════════════════════════════════════════
           HERO HEADER
       ═══════════════════════════════════════════════════════════════ */}
@@ -950,6 +950,41 @@ const CategoriesPage = () => {
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
           background: #9ca3af;
         }
+        html.dark .categories-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .categories-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .categories-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .categories-page [class*="border-gray-100"],
+        html.dark .categories-page [class*="border-gray-200"],
+        html.dark .categories-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .categories-page [class*="text-gray-900"],
+        html.dark .categories-page [class*="text-gray-800"],
+        html.dark .categories-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .categories-page [class*="text-gray-600"],
+        html.dark .categories-page [class*="text-gray-500"],
+        html.dark .categories-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .categories-page input,
+        html.dark .categories-page select,
+        html.dark .categories-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .categories-page input::placeholder,
+        html.dark .categories-page textarea::placeholder {
+          color: #64748b !important;
+        }
       `}</style>
     </div>
   );
@@ -1101,6 +1136,41 @@ const MobileFilterDrawer = ({
         }
         .animate-slideInLeft {
           animation: slideInLeft 0.3s ease-out;
+        }
+        html.dark .categories-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .categories-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .categories-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .categories-page [class*="border-gray-100"],
+        html.dark .categories-page [class*="border-gray-200"],
+        html.dark .categories-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .categories-page [class*="text-gray-900"],
+        html.dark .categories-page [class*="text-gray-800"],
+        html.dark .categories-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .categories-page [class*="text-gray-600"],
+        html.dark .categories-page [class*="text-gray-500"],
+        html.dark .categories-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .categories-page input,
+        html.dark .categories-page select,
+        html.dark .categories-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .categories-page input::placeholder,
+        html.dark .categories-page textarea::placeholder {
+          color: #64748b !important;
         }
       `}</style>
     </div>

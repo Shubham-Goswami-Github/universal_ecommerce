@@ -49,6 +49,11 @@ const DEFAULT_HOME_FEATURE_ITEMS = [
   createContentItem({ icon: 'support', title: '24/7 Support', description: 'Round-the-clock customer support for all your queries.' })
 ];
 
+const DEFAULT_HOME_PROMO_BANNER_BADGE = 'Limited Time';
+const DEFAULT_HOME_PROMO_BANNER_TITLE = 'Fresh deals with a premium storefront feel';
+const DEFAULT_HOME_PROMO_BANNER_DESCRIPTION = 'Curated sale picks, elevated visuals, and quick actions that keep the homepage polished without changing any shopping flow.';
+const PROMO_PRODUCT_LIMIT_OPTIONS = [1, 2, 3, 4];
+
 const BACKGROUND_REPEAT_OPTIONS = [
   { value: 'no-repeat', label: 'No Repeat' },
   { value: 'repeat', label: 'Repeat' },
@@ -61,6 +66,25 @@ const BACKGROUND_SIZE_OPTIONS = [
   { value: 'contain', label: 'Contain' },
   { value: 'auto', label: 'Auto' }
 ];
+
+const getCategoryId = (category) => {
+  if (!category) return '';
+  if (typeof category === 'string') return category;
+  return category._id || '';
+};
+
+const getProductCategoryMeta = (product) => {
+  const category = product?.category;
+  const parent = category?.parent;
+  const hasParent = Boolean(parent);
+
+  return {
+    superId: hasParent ? getCategoryId(parent) : getCategoryId(category),
+    superName: hasParent ? parent?.name || 'Uncategorized' : category?.name || 'Uncategorized',
+    subId: hasParent ? getCategoryId(category) : '',
+    subName: hasParent ? category?.name || '' : '',
+  };
+};
 
 /* ── Redesigned Sub-components (Untitled UI Style) ── */
 
@@ -200,6 +224,17 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     homeNewsletterInputPlaceholder: 'Enter your email',
     homeNewsletterButtonLabel: 'Subscribe',
     homeNewsletterButtonLink: '',
+    homePromoBannerEnabled: true,
+    homePromoBannerBadgeText: DEFAULT_HOME_PROMO_BANNER_BADGE,
+    homePromoBannerTitle: DEFAULT_HOME_PROMO_BANNER_TITLE,
+    homePromoBannerDescription: DEFAULT_HOME_PROMO_BANNER_DESCRIPTION,
+    homePromoBannerProductCount: 4,
+    homePromoBannerProductIds: [],
+    homePromoBannerBackgroundMode: 'gradient',
+    homePromoBannerBackgroundColor: '#0f766e',
+    homePromoBannerBackgroundAccentPrimary: '#0ea5e9',
+    homePromoBannerBackgroundAccentSecondary: '#065f46',
+    homePromoBannerBackgroundImage: '',
     homeHeroStats: DEFAULT_HOME_HERO_STATS,
     homeHeroHighlights: DEFAULT_HOME_HERO_HIGHLIGHTS,
     homeTrustBadges: DEFAULT_HOME_TRUST_BADGES,
@@ -240,6 +275,7 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     logoUrl: false,
     tabIconUrl: false,
     heroBannerFallbackImage: false,
+    homePromoBannerBackgroundImage: false,
     homeBackgroundImage: false,
     restBackgroundImage: false,
     banner: false
@@ -249,6 +285,13 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
   const [unsavedChanges, setUnsavedChanges] = useState(false);
   const [uploadPopup, setUploadPopup] = useState({ show: false, imageUrl: '', type: '' });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [promoProducts, setPromoProducts] = useState([]);
+  const [promoCategories, setPromoCategories] = useState([]);
+  const [promoCatalogLoading, setPromoCatalogLoading] = useState(false);
+  const [promoFilters, setPromoFilters] = useState({
+    superCategoryId: 'all',
+    subCategoryId: 'all'
+  });
 
   useEffect(() => {
     if (initialSettings) {
@@ -289,6 +332,19 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
         homeNewsletterInputPlaceholder: initialSettings.homeNewsletterInputPlaceholder || 'Enter your email',
         homeNewsletterButtonLabel: initialSettings.homeNewsletterButtonLabel || 'Subscribe',
         homeNewsletterButtonLink: initialSettings.homeNewsletterButtonLink || '',
+        homePromoBannerEnabled: initialSettings.homePromoBannerEnabled ?? true,
+        homePromoBannerBadgeText: initialSettings.homePromoBannerBadgeText || DEFAULT_HOME_PROMO_BANNER_BADGE,
+        homePromoBannerTitle: initialSettings.homePromoBannerTitle || DEFAULT_HOME_PROMO_BANNER_TITLE,
+        homePromoBannerDescription: initialSettings.homePromoBannerDescription || DEFAULT_HOME_PROMO_BANNER_DESCRIPTION,
+        homePromoBannerProductCount: Number(initialSettings.homePromoBannerProductCount) || 4,
+        homePromoBannerProductIds: Array.isArray(initialSettings.homePromoBannerProductIds)
+          ? initialSettings.homePromoBannerProductIds
+          : [],
+        homePromoBannerBackgroundMode: initialSettings.homePromoBannerBackgroundMode || 'gradient',
+        homePromoBannerBackgroundColor: initialSettings.homePromoBannerBackgroundColor || '#0f766e',
+        homePromoBannerBackgroundAccentPrimary: initialSettings.homePromoBannerBackgroundAccentPrimary || '#0ea5e9',
+        homePromoBannerBackgroundAccentSecondary: initialSettings.homePromoBannerBackgroundAccentSecondary || '#065f46',
+        homePromoBannerBackgroundImage: initialSettings.homePromoBannerBackgroundImage || '',
         homeHeroStats: initialSettings.homeHeroStats?.length
           ? initialSettings.homeHeroStats.map(createStatItem)
           : DEFAULT_HOME_HERO_STATS,
@@ -333,6 +389,33 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
       });
     }
   }, [initialSettings]);
+
+  useEffect(() => {
+    const loadPromoCatalog = async () => {
+      try {
+        setPromoCatalogLoading(true);
+        const [productsRes, categoriesRes] = await Promise.all([
+          axiosClient.get('/api/products'),
+          axiosClient.get('/api/categories/public/all')
+        ]);
+
+        const approvedProducts = (productsRes.data?.products || []).filter(
+          (product) => product?.status === 'approved' && product?.isActive !== false
+        );
+
+        setPromoProducts(approvedProducts);
+        setPromoCategories(categoriesRes.data?.categories || []);
+      } catch (error) {
+        console.error('Promo catalog load error:', error);
+        setPromoProducts([]);
+        setPromoCategories([]);
+      } finally {
+        setPromoCatalogLoading(false);
+      }
+    };
+
+    loadPromoCatalog();
+  }, []);
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
@@ -412,6 +495,7 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
       logoUrl: { label: 'Logo', acceptSvgOnly: false },
       tabIconUrl: { label: 'Tab icon', acceptSvgOnly: true },
       heroBannerFallbackImage: { label: 'Hero banner background', acceptSvgOnly: false },
+      homePromoBannerBackgroundImage: { label: 'Promo banner background', acceptSvgOnly: false },
       homeBackgroundImage: { label: 'Home background', acceptSvgOnly: false },
       restBackgroundImage: { label: 'Rest pages background', acceptSvgOnly: false }
     };
@@ -531,6 +615,77 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
     setForm((f) => ({ ...f, [field]: '' }));
     setUnsavedChanges(true);
   };
+
+  const handlePromoFilterChange = (field, value) => {
+    setPromoFilters((current) => {
+      if (field === 'superCategoryId') {
+        return {
+          superCategoryId: value,
+          subCategoryId: 'all'
+        };
+      }
+
+      return {
+        ...current,
+        [field]: value
+      };
+    });
+  };
+
+  const handlePromoProductToggle = (productId) => {
+    setForm((current) => {
+      const selectedIds = current.homePromoBannerProductIds || [];
+      const isSelected = selectedIds.includes(productId);
+
+      return {
+        ...current,
+        homePromoBannerProductIds: isSelected
+          ? selectedIds.filter((id) => id !== productId)
+          : [...selectedIds, productId]
+      };
+    });
+    setUnsavedChanges(true);
+  };
+
+  const handlePromoProductCountChange = (event) => {
+    setForm((current) => ({
+      ...current,
+      homePromoBannerProductCount: Number(event.target.value) || 1
+    }));
+    setUnsavedChanges(true);
+  };
+
+  const selectedPromoProducts = (form.homePromoBannerProductIds || [])
+    .map((productId) => promoProducts.find((product) => String(product?._id) === String(productId)))
+    .filter(Boolean);
+
+  const superCategoryOptions = promoCategories
+    .filter((category) => category?.type === 'super')
+    .sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
+
+  const subCategoryOptions = promoCategories
+    .filter((category) => {
+      if (category?.type !== 'sub') return false;
+      if (promoFilters.superCategoryId === 'all') return true;
+      return getCategoryId(category?.parent) === promoFilters.superCategoryId;
+    })
+    .sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
+
+  const filteredPromoProducts = promoProducts
+    .filter((product) => {
+      const meta = getProductCategoryMeta(product);
+
+      if (promoFilters.superCategoryId !== 'all' && meta.superId !== promoFilters.superCategoryId) {
+        return false;
+      }
+
+      if (promoFilters.subCategoryId !== 'all' && meta.subId !== promoFilters.subCategoryId) {
+        return false;
+      }
+
+      return true;
+    })
+    .sort((first, second) => (first?.name || '').localeCompare(second?.name || ''));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -776,7 +931,7 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                 {/* Announcement Bar */}
                 <div className="pt-6 pb-1 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900">Promo Sections</h2>
-                  <p className="text-sm text-gray-500 mt-0.5 mb-4">Control the announcement bar and newsletter content</p>
+                  <p className="text-sm text-gray-500 mt-0.5 mb-4">Control the announcement bar, compact promo banner, and newsletter content</p>
                 </div>
 
                 <SectionRow title="Announcement Bar" subtitle="Homepage top promo message.">
@@ -805,6 +960,314 @@ const SettingsForm = ({ token, settings: initialSettings, onSaved }) => {
                         className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
                       />
                     </div>
+                  </div>
+                </SectionRow>
+
+                <SectionRow title="Promo Banner Section" subtitle="Compact featured products block shown on the homepage.">
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">Enable promo banner section</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="homePromoBannerEnabled"
+                          checked={form.homePromoBannerEnabled}
+                          onChange={handleChange}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:shadow-sm after:transition-all peer-checked:bg-indigo-600"></div>
+                      </label>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <InputField
+                        label="Top Badge Text"
+                        name="homePromoBannerBadgeText"
+                        value={form.homePromoBannerBadgeText}
+                        onChange={handleChange}
+                        placeholder="Limited Time"
+                      />
+
+                      <div className="space-y-1.5">
+                        <label className="block text-sm font-medium text-gray-700">Products on Right Side</label>
+                        <select
+                          value={form.homePromoBannerProductCount}
+                          onChange={handlePromoProductCountChange}
+                          className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        >
+                          {PROMO_PRODUCT_LIMIT_OPTIONS.map((count) => (
+                            <option key={count} value={count}>
+                              {count} product{count > 1 ? 's' : ''}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-gray-500">Homepage par selected products me se itne cards show honge.</p>
+                      </div>
+                    </div>
+
+                    <InputField
+                      label="Heading"
+                      name="homePromoBannerTitle"
+                      value={form.homePromoBannerTitle}
+                      onChange={handleChange}
+                      placeholder="Fresh deals with a premium storefront feel"
+                    />
+
+                    <div className="space-y-1.5">
+                      <label className="block text-sm font-medium text-gray-700">Description</label>
+                      <textarea
+                        name="homePromoBannerDescription"
+                        value={form.homePromoBannerDescription}
+                        onChange={handleChange}
+                        rows={3}
+                        placeholder="Curated sale picks, elevated visuals, and quick actions that keep the homepage polished without changing any shopping flow."
+                        className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+                      />
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900">Background Control</h4>
+                          <p className="text-xs text-gray-500 mt-1">Gradient ya image background admin panel se switch kar sakte ho.</p>
+                        </div>
+                        <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1">
+                          {[
+                            { value: 'gradient', label: 'Gradient' },
+                            { value: 'image', label: 'Image' }
+                          ].map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => {
+                                setForm((current) => ({ ...current, homePromoBannerBackgroundMode: option.value }));
+                                setUnsavedChanges(true);
+                              }}
+                              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                                form.homePromoBannerBackgroundMode === option.value
+                                  ? 'bg-indigo-600 text-white shadow-sm'
+                                  : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Base Color</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              name="homePromoBannerBackgroundColor"
+                              value={form.homePromoBannerBackgroundColor}
+                              onChange={handleChange}
+                              className="h-10 w-12 rounded-lg border border-gray-300 bg-white p-1 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              name="homePromoBannerBackgroundColor"
+                              value={form.homePromoBannerBackgroundColor}
+                              onChange={handleChange}
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Primary Accent</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              name="homePromoBannerBackgroundAccentPrimary"
+                              value={form.homePromoBannerBackgroundAccentPrimary}
+                              onChange={handleChange}
+                              className="h-10 w-12 rounded-lg border border-gray-300 bg-white p-1 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              name="homePromoBannerBackgroundAccentPrimary"
+                              value={form.homePromoBannerBackgroundAccentPrimary}
+                              onChange={handleChange}
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Secondary Accent</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="color"
+                              name="homePromoBannerBackgroundAccentSecondary"
+                              value={form.homePromoBannerBackgroundAccentSecondary}
+                              onChange={handleChange}
+                              className="h-10 w-12 rounded-lg border border-gray-300 bg-white p-1 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              name="homePromoBannerBackgroundAccentSecondary"
+                              value={form.homePromoBannerBackgroundAccentSecondary}
+                              onChange={handleChange}
+                              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {form.homePromoBannerBackgroundMode === 'image' && (
+                        <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_180px]">
+                          <UploadBox
+                            id="promo-banner-bg-upload"
+                            label="Click to upload promo banner background"
+                            hint="Recommended: wide banner image"
+                            uploading={uploading.homePromoBannerBackgroundImage}
+                            onUpload={(e) => handleUpload(e, 'homePromoBannerBackgroundImage')}
+                          />
+                          <PreviewBox
+                            label="promo banner background"
+                            hasImage={!!form.homePromoBannerBackgroundImage}
+                            imageUrl={form.homePromoBannerBackgroundImage}
+                            onRemove={() => handleRemoveImage('homePromoBannerBackgroundImage')}
+                            aspectRatio="aspect-[16/10]"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-white">
+                      <div className="flex flex-col gap-3 border-b border-gray-200 p-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-900">Select Products</h4>
+                          <p className="text-xs text-gray-500 mt-1">Super category aur sub category ke hisaab se products filter karke choose karo.</p>
+                        </div>
+                        <div className="text-xs font-medium text-indigo-600">
+                          Selected: {selectedPromoProducts.length}
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 border-b border-gray-100 p-4 sm:grid-cols-2">
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Super Category</label>
+                          <select
+                            value={promoFilters.superCategoryId}
+                            onChange={(event) => handlePromoFilterChange('superCategoryId', event.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="all">All Super Categories</option>
+                            {superCategoryOptions.map((category) => (
+                              <option key={category._id} value={category._id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-gray-700">Sub Category</label>
+                          <select
+                            value={promoFilters.subCategoryId}
+                            onChange={(event) => handlePromoFilterChange('subCategoryId', event.target.value)}
+                            className="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          >
+                            <option value="all">All Sub Categories</option>
+                            {subCategoryOptions.map((category) => (
+                              <option key={category._id} value={category._id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="max-h-[360px] overflow-y-auto p-4">
+                        {promoCatalogLoading ? (
+                          <div className="flex items-center justify-center py-10 text-sm text-gray-500">
+                            Loading approved products...
+                          </div>
+                        ) : filteredPromoProducts.length === 0 ? (
+                          <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+                            Is filter me koi approved product nahi mila.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {filteredPromoProducts.map((product) => {
+                              const meta = getProductCategoryMeta(product);
+                              const isSelected = (form.homePromoBannerProductIds || []).some(
+                                (productId) => String(productId) === String(product._id)
+                              );
+
+                              return (
+                                <label
+                                  key={product._id}
+                                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors ${
+                                    isSelected
+                                      ? 'border-indigo-300 bg-indigo-50'
+                                      : 'border-gray-200 hover:border-indigo-200 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handlePromoProductToggle(product._id)}
+                                    className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  />
+                                  <div className="h-16 w-16 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 flex-shrink-0">
+                                    {product.images?.[0] ? (
+                                      <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-xs font-medium text-gray-400">
+                                        No Image
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                                      <span>{meta.superName}</span>
+                                      {meta.subName && <span>{meta.subName}</span>}
+                                    </div>
+                                    <p className="mt-1 truncate text-sm font-semibold text-gray-900">{product.name}</p>
+                                    <p className="mt-1 text-xs text-gray-500">
+                                      {product.brandName || 'No brand'} • Rs{Number(product.finalPrice || product.sellingPrice || 0).toLocaleString('en-IN')}
+                                    </p>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedPromoProducts.length > 0 && (
+                      <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-900">Selected Products Preview</h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Homepage par inme se first {form.homePromoBannerProductCount} product{form.homePromoBannerProductCount > 1 ? 's' : ''} show honge.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {selectedPromoProducts.map((product) => (
+                            <button
+                              key={`selected-${product._id}`}
+                              type="button"
+                              onClick={() => handlePromoProductToggle(product._id)}
+                              className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-red-200 hover:text-red-600"
+                            >
+                              <span className="max-w-[180px] truncate">{product.name}</span>
+                              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </SectionRow>
 

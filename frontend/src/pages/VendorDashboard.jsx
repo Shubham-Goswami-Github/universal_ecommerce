@@ -204,7 +204,7 @@ const VendorDashboard = () => {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="vendor-dashboard-page min-h-screen bg-slate-100 dark:bg-slate-950 dark:text-slate-100">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
@@ -1035,6 +1035,43 @@ const VendorDashboard = () => {
           )}
         </main>
       </div>
+
+      <style>{`
+        html.dark .vendor-dashboard-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .vendor-dashboard-page [class*="bg-slate-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .vendor-dashboard-page [class*="bg-slate-100"] {
+          background-color: #020617 !important;
+        }
+        html.dark .vendor-dashboard-page [class*="border-slate-200"],
+        html.dark .vendor-dashboard-page [class*="border-slate-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .vendor-dashboard-page [class*="text-slate-900"],
+        html.dark .vendor-dashboard-page [class*="text-slate-800"] {
+          color: #f8fafc !important;
+        }
+        html.dark .vendor-dashboard-page [class*="text-slate-700"],
+        html.dark .vendor-dashboard-page [class*="text-slate-600"],
+        html.dark .vendor-dashboard-page [class*="text-slate-500"],
+        html.dark .vendor-dashboard-page [class*="text-slate-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .vendor-dashboard-page input,
+        html.dark .vendor-dashboard-page select,
+        html.dark .vendor-dashboard-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .vendor-dashboard-page input::placeholder,
+        html.dark .vendor-dashboard-page textarea::placeholder {
+          color: #64748b !important;
+        }
+      `}</style>
     </div>
   );
 };

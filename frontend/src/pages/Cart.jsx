@@ -384,13 +384,13 @@ const Cart = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="relative w-16 h-16 mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
           </div>
-          <p className="text-gray-600 font-medium">Loading your cart...</p>
+          <p className="text-gray-600 dark:text-slate-300 font-medium">Loading your cart...</p>
         </div>
       </div>
     );
@@ -398,9 +398,9 @@ const Cart = () => {
 
   if (!items.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-950 dark:to-slate-900 py-12">
         <div className="max-w-2xl mx-auto px-4">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden dark:bg-slate-900">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 h-2"></div>
             <div className="p-12 text-center">
               <div className="w-40 h-40 mx-auto mb-8 relative">
@@ -409,8 +409,8 @@ const Cart = () => {
                   <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">Your Cart is Empty</h2>
-              <p className="text-gray-500 mb-8 text-lg">Looks like you haven't added anything to your cart yet.</p>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-3">Your Cart is Empty</h2>
+              <p className="text-gray-500 dark:text-slate-400 mb-8 text-lg">Looks like you haven't added anything to your cart yet.</p>
               <button 
                 onClick={() => navigate('/')}
                 className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-4 rounded-xl font-semibold shadow-lg shadow-blue-200 hover:shadow-xl hover:shadow-blue-300 transform hover:-translate-y-0.5 transition-all duration-200"
@@ -514,7 +514,7 @@ const Cart = () => {
       )}
 
       {/* MAIN CONTENT */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="cart-page min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-950 dark:to-slate-900">
         {/* Enhanced Progress Steps */}
         <div className="bg-white shadow-md sticky top-0 z-40 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 py-6">
@@ -1324,6 +1324,41 @@ const Cart = () => {
         
         .animate-bounce-slow {
           animation: bounce-slow 2s ease-in-out infinite;
+        }
+        html.dark .cart-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .cart-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .cart-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .cart-page [class*="border-gray-100"],
+        html.dark .cart-page [class*="border-gray-200"],
+        html.dark .cart-page [class*="border-gray-300"] {
+          border-color: #334155 !important;
+        }
+        html.dark .cart-page [class*="text-gray-900"],
+        html.dark .cart-page [class*="text-gray-800"],
+        html.dark .cart-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .cart-page [class*="text-gray-600"],
+        html.dark .cart-page [class*="text-gray-500"],
+        html.dark .cart-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .cart-page input,
+        html.dark .cart-page select,
+        html.dark .cart-page textarea {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .cart-page input::placeholder,
+        html.dark .cart-page textarea::placeholder {
+          color: #64748b !important;
         }
         
         /* Smooth scrollbar */

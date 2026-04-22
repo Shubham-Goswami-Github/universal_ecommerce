@@ -787,11 +787,50 @@ const Register = () => {
         .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
         .animate-scaleIn { animation: scaleIn 0.4s ease-out; }
         .animate-slideUp { animation: slideUp 0.4s ease-out; }
+        html.dark .register-page {
+          background: linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%);
+        }
+        html.dark .register-page [class*="bg-white"] {
+          background-color: #0f172a !important;
+        }
+        html.dark .register-page [class*="bg-gray-50"] {
+          background-color: #111827 !important;
+        }
+        html.dark .register-page [class*="bg-gray-100"] {
+          background-color: #1f2937 !important;
+        }
+        html.dark .register-page [class*="border-gray-100"],
+        html.dark .register-page [class*="border-gray-200"],
+        html.dark .register-page [class*="border-gray-300"],
+        html.dark .register-page [class*="border-blue-100"] {
+          border-color: #334155 !important;
+        }
+        html.dark .register-page [class*="text-gray-800"],
+        html.dark .register-page [class*="text-gray-700"] {
+          color: #f8fafc !important;
+        }
+        html.dark .register-page [class*="text-gray-600"],
+        html.dark .register-page [class*="text-gray-500"],
+        html.dark .register-page [class*="text-gray-400"] {
+          color: #94a3b8 !important;
+        }
+        html.dark .register-page input,
+        html.dark .register-page select,
+        html.dark .register-page textarea,
+        html.dark .register-page button[type="button"][class*="bg-gray-50"] {
+          background-color: #111827 !important;
+          border-color: #334155 !important;
+          color: #f8fafc !important;
+        }
+        html.dark .register-page input::placeholder,
+        html.dark .register-page textarea::placeholder {
+          color: #64748b !important;
+        }
       `}</style>
 
       {showSuccessModal && <SuccessModal />}
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 px-4">
+      <div className="register-page min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 py-8 px-4">
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl"></div>

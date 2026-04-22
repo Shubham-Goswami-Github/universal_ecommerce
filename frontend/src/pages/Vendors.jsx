@@ -12,11 +12,11 @@ const Vendors = () => {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-3xl p-1 dark:bg-slate-950">
       <h1 className="text-xl font-semibold text-slate-100">Vendors</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {vendors.map(v => (
-          <Link key={v._id} to={`/vendor-store/${v._id}`} className="block bg-slate-900 border border-slate-800 p-4 rounded-lg hover:shadow">
+          <Link key={v._id} to={`/vendor-store/${v._id}`} className="block bg-slate-900 border border-slate-800 p-4 rounded-lg hover:shadow dark:border-slate-700 dark:bg-slate-900/90">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 bg-slate-800 rounded-md overflow-hidden flex items-center justify-center">
                 {v.logoUrl ? <img src={v.logoUrl} alt={v.storeName||v.name} className="object-cover h-full w-full" /> : <div className="text-slate-400">{(v.name || 'V').charAt(0)}</div>}
