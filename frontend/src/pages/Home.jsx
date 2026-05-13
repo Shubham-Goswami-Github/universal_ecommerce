@@ -1488,18 +1488,24 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
       : 0;
 
   const price = product.finalPrice || product.sellingPrice;
+  const openQuickView = () => onQuickView?.(product);
+  const handleCardKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      openQuickView();
+    }
+  };
 
   return (
     <article
       data-product-card="true"
-      className="group relative flex w-[62vw] min-w-[210px] max-w-[235px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_22px_46px_rgba(15,23,42,0.13)] dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 xs:w-[48vw] sm:w-[242px] sm:min-w-[242px] sm:max-w-[242px] lg:w-[258px] lg:min-w-[258px] lg:max-w-[258px]"
+      role="button"
+      tabIndex={0}
+      onClick={openQuickView}
+      onKeyDown={handleCardKeyDown}
+      aria-label={`Open quick view for ${product.name}`}
+      className="group relative flex w-[62vw] min-w-[210px] max-w-[235px] flex-shrink-0 snap-start cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_22px_46px_rgba(15,23,42,0.13)] dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 xs:w-[48vw] sm:w-[242px] sm:min-w-[242px] sm:max-w-[242px] lg:w-[258px] lg:min-w-[258px] lg:max-w-[258px]"
     >
-      <Link
-        to={`/products/${product._id}`}
-        aria-label={`Open details for ${product.name}`}
-        className="absolute inset-0 z-10 rounded-2xl"
-      />
-
       {/* Image Container */}
       <div className="relative z-0 block overflow-hidden bg-slate-50 p-3 dark:bg-gray-800/70 sm:p-4">
         <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-white">
@@ -1556,7 +1562,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
 
         {/* Quick View Button */}
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); openQuickView(); }}
           type="button"
           aria-label={`Quick view ${product.name}`}
           className="absolute bottom-3 right-3 z-20 hidden h-10 w-10 items-center justify-center rounded-lg border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 dark:border-gray-700 dark:bg-gray-900/95 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
@@ -1632,8 +1638,9 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
 
         <div className="relative z-20 mt-3 grid grid-cols-[44px_minmax(0,1fr)] gap-2.5">
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); openQuickView(); }}
             type="button"
+            aria-label={`Quick view ${product.name}`}
             className="flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

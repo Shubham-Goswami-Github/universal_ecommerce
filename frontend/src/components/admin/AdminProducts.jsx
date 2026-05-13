@@ -177,7 +177,7 @@ function InlinePhotoEditor({
   }
 
   return (
-    <div className="rounded-xl sm:rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50/90 via-white to-slate-50 p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 shadow-sm">
+    <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50/90 via-white to-slate-50 p-3 shadow-sm space-y-3 sm:rounded-2xl sm:p-4 md:p-5 lg:p-6 lg:space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex items-start gap-2.5 sm:gap-3">
@@ -202,8 +202,8 @@ function InlinePhotoEditor({
       </div>
 
       {/* Upload Area */}
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-        <label className="cursor-pointer rounded-xl border border-dashed border-blue-300 bg-white px-3 sm:px-4 py-3 text-xs sm:text-sm text-slate-600 hover:border-blue-400 hover:bg-blue-50/50 transition-all duration-200 group">
+      <div className="space-y-3">
+        <label className="block cursor-pointer rounded-xl border border-dashed border-blue-300 bg-white px-3 py-3 text-xs text-slate-600 transition-all duration-200 hover:border-blue-400 hover:bg-blue-50/50 sm:px-4 sm:text-sm group lg:px-5 lg:py-4">
           <input
             type="file"
             accept="image/*"
@@ -211,21 +211,21 @@ function InlinePhotoEditor({
             className="hidden"
             onChange={(e) => onFileChange(product, e)}
           />
-          <span className="flex items-center gap-2.5 font-medium text-slate-700 group-hover:text-blue-600 transition-colors">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
-              <Icons.Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+          <span className="flex items-center gap-3 font-medium text-slate-700 transition-colors group-hover:text-blue-600 lg:gap-4">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 transition-colors group-hover:bg-blue-200 lg:h-14 lg:w-14">
+              <Icons.Plus className="w-3.5 h-3.5 text-blue-600 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
             </div>
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold">Choose Photo(s)</span>
-              <span className="block text-[11px] text-slate-500 mt-0.5">PNG, JPG, WEBP up to 5MB each</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-base font-semibold leading-none text-slate-800 lg:text-lg">Choose Photo(s)</span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-slate-500 lg:text-xs">PNG, JPG, WEBP up to 5MB each</span>
             </span>
           </span>
         </label>
-        <div className="flex flex-wrap items-center gap-2 text-[11px] sm:text-xs text-slate-500">
-          <span className="px-2.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 sm:text-xs">
+          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1.5 shadow-sm lg:px-3 lg:py-2">
             Current: <span className="font-semibold text-slate-700">{product.images?.length || 0}</span>
           </span>
-          <span className="px-2.5 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow-sm">
+          <span className="rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-2.5 py-1.5 font-semibold text-white shadow-sm lg:px-3 lg:py-2">
             New: {previewImages.length}
           </span>
         </div>
@@ -233,8 +233,8 @@ function InlinePhotoEditor({
 
       {/* Image Preview Grid */}
       {(previewImages.length > 0 || (product.images?.length > 0)) && (
-        <div className="rounded-xl border border-slate-200/80 bg-white/80 p-2 sm:p-3">
-          <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        <div className="rounded-xl border border-slate-200/80 bg-white/80 p-2 sm:p-3 lg:p-4">
+          <div className="grid grid-cols-3 gap-2 xs:grid-cols-4 sm:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6">
           {(previewImages.length > 0 ? previewImages : (product.images?.slice(0, 6) || [])).map((image, index) => (
             <div 
               key={`${image}-${index}`} 
@@ -257,12 +257,12 @@ function InlinePhotoEditor({
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+      <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-end lg:gap-3">
         <button
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="sm:min-w-[96px] px-3.5 sm:px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-60 transition-all duration-200"
+          className="px-3.5 py-2.5 text-xs font-medium text-slate-700 transition-all duration-200 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60 sm:min-w-[96px] sm:px-4 sm:text-sm"
         >
           Cancel
         </button>
@@ -270,7 +270,7 @@ function InlinePhotoEditor({
           type="button"
           onClick={() => onSave(product)}
           disabled={previewImages.length === 0 || saving}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs sm:text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/25"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[148px] sm:w-auto sm:text-sm"
         >
           {saving ? (
             <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
@@ -312,7 +312,7 @@ function ProductCardGrid({
     : 0;
 
   return (
-    <div className="group h-full bg-white border border-slate-200/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300 flex flex-col">
+    <div className={`group h-full bg-white border border-slate-200/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300 flex flex-col ${photoEditorOpen ? "sm:col-span-2 xl:col-span-2 2xl:col-span-2" : ""}`}>
       {/* Image Container */}
       <div className="relative aspect-square bg-gradient-to-br from-slate-100 to-slate-50 overflow-hidden cursor-pointer" onClick={() => onView(product)}>
         <img
