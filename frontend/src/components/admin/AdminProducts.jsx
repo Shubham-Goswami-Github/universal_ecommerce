@@ -1,5 +1,5 @@
 // src/components/admin/AdminProducts.jsx
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { useAuth } from "../../context/AuthContext";
 import ProductForm from "../vendor/ProductForm";
@@ -157,10 +157,16 @@ function InlinePhotoEditor({
   isOpen,
   previewImages,
   saving,
+  queuedCount,
+  dragActive,
   onToggle,
   onFileChange,
-  onSave,
+  onDropFiles,
   onCancel,
+  onDone,
+  onDragEnter,
+  onDragLeave,
+  onDragOver,
 }) {
   if (!isOpen) {
     return (
@@ -172,6 +178,11 @@ function InlinePhotoEditor({
         <Icons.Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         <span className="hidden xs:inline">Update Photo</span>
         <span className="xs:hidden">Photo</span>
+        {queuedCount > 0 && (
+          <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            {queuedCount}
+          </span>
+        )}
       </button>
     );
   }
@@ -193,7 +204,7 @@ function InlinePhotoEditor({
         </div>
         <button
           type="button"
-          onClick={onCancel}
+          onClick={() => onCancel(product)}
           className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-white rounded-lg transition-colors flex-shrink-0"
           title="Close"
         >
@@ -203,7 +214,13 @@ function InlinePhotoEditor({
 
       {/* Upload Area */}
       <div className="space-y-3">
-        <label className="block cursor-pointer rounded-xl border border-dashed border-blue-300 bg-white px-3 py-3 text-xs text-slate-600 transition-all duration-200 hover:border-blue-400 hover:bg-blue-50/50 sm:px-4 sm:text-sm group lg:px-5 lg:py-4">
+        <label
+          className={`block cursor-pointer rounded-xl border border-dashed bg-white px-3 py-3 text-xs text-slate-600 transition-all duration-200 sm:px-4 sm:text-sm group lg:px-5 lg:py-4 ${dragActive ? "border-blue-500 bg-blue-50/70 ring-2 ring-blue-100" : "border-blue-300 hover:border-blue-400 hover:bg-blue-50/50"}`}
+          onDragEnter={(e) => onDragEnter(product, e)}
+          onDragOver={onDragOver}
+          onDragLeave={(e) => onDragLeave(product, e)}
+          onDrop={(e) => onDropFiles(product, e)}
+        >
           <input
             type="file"
             accept="image/*"
@@ -217,7 +234,9 @@ function InlinePhotoEditor({
             </div>
             <span className="min-w-0 flex-1">
               <span className="block text-base font-semibold leading-none text-slate-800 lg:text-lg">Choose Photo(s)</span>
-              <span className="mt-1 block text-[11px] leading-relaxed text-slate-500 lg:text-xs">PNG, JPG, WEBP up to 5MB each</span>
+              <span className="mt-1 block text-[11px] leading-relaxed text-slate-500 lg:text-xs">
+                PNG, JPG, WEBP up to 5MB each. Drag and drop also works here.
+              </span>
             </span>
           </span>
         </label>
@@ -260,7 +279,7 @@ function InlinePhotoEditor({
       <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-end lg:gap-3">
         <button
           type="button"
-          onClick={onCancel}
+          onClick={() => onCancel(product)}
           disabled={saving}
           className="px-3.5 py-2.5 text-xs font-medium text-slate-700 transition-all duration-200 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60 sm:min-w-[96px] sm:px-4 sm:text-sm"
         >
@@ -268,8 +287,8 @@ function InlinePhotoEditor({
         </button>
         <button
           type="button"
-          onClick={() => onSave(product)}
-          disabled={previewImages.length === 0 || saving}
+          onClick={() => onDone(product)}
+          disabled={saving}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-500/25 disabled:cursor-not-allowed disabled:opacity-60 sm:min-w-[148px] sm:w-auto sm:text-sm"
         >
           {saving ? (
@@ -277,7 +296,7 @@ function InlinePhotoEditor({
           ) : (
             <Icons.Save className="w-4 h-4" />
           )}
-          {saving ? "Saving..." : "Save Photos"}
+          {saving ? "Saving..." : previewImages.length > 0 ? "Keep Queued" : "Done"}
         </button>
       </div>
     </div>
@@ -299,6 +318,13 @@ function ProductCardGrid({
   onPhotoFileChange,
   onPhotoSave,
   onPhotoCancel,
+  onPhotoDone,
+  onPhotoDrop,
+  onPhotoDragEnter,
+  onPhotoDragLeave,
+  onPhotoDragOver,
+  queuedPhotoCount,
+  dragActive,
 }) {
   const image =
     product.images && product.images.length > 0
@@ -433,10 +459,16 @@ function ProductCardGrid({
             isOpen={photoEditorOpen}
             previewImages={photoPreviews}
             saving={photoSaving}
+            queuedCount={queuedPhotoCount}
+            dragActive={dragActive}
             onToggle={onTogglePhotoEditor}
             onFileChange={onPhotoFileChange}
-            onSave={onPhotoSave}
+            onDropFiles={onPhotoDrop}
             onCancel={onPhotoCancel}
+            onDone={onPhotoDone}
+            onDragEnter={onPhotoDragEnter}
+            onDragLeave={onPhotoDragLeave}
+            onDragOver={onPhotoDragOver}
           />
         </div>
       </div>
@@ -459,6 +491,13 @@ function ProductCardList({
   onPhotoFileChange,
   onPhotoSave,
   onPhotoCancel,
+  onPhotoDone,
+  onPhotoDrop,
+  onPhotoDragEnter,
+  onPhotoDragLeave,
+  onPhotoDragOver,
+  queuedPhotoCount,
+  dragActive,
 }) {
   const image =
     product.images && product.images.length > 0
@@ -579,10 +618,16 @@ function ProductCardList({
         isOpen={photoEditorOpen}
         previewImages={photoPreviews}
         saving={photoSaving}
+        queuedCount={queuedPhotoCount}
+        dragActive={dragActive}
         onToggle={onTogglePhotoEditor}
         onFileChange={onPhotoFileChange}
-        onSave={onPhotoSave}
+        onDropFiles={onPhotoDrop}
         onCancel={onPhotoCancel}
+        onDone={onPhotoDone}
+        onDragEnter={onPhotoDragEnter}
+        onDragLeave={onPhotoDragLeave}
+        onDragOver={onPhotoDragOver}
       />
     </div>
   );
@@ -605,6 +650,13 @@ function VendorSection({
   onPhotoFileChange,
   onPhotoSave,
   onPhotoCancel,
+  onPhotoDone,
+  onPhotoDrop,
+  onPhotoDragEnter,
+  onPhotoDragLeave,
+  onPhotoDragOver,
+  photoQueuedCounts,
+  dragActivePhotoId,
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -660,12 +712,19 @@ function VendorSection({
                   onDelete={onDelete}
                   onView={onView}
                   photoEditorOpen={activePhotoEditorId === p._id}
-                  photoPreviews={activePhotoEditorId === p._id ? photoPreviews : []}
-                  photoSaving={photoSavingId === p._id}
+                  photoPreviews={photoPreviews[p._id] || []}
+                  photoSaving={Boolean(photoSavingId[p._id])}
                   onTogglePhotoEditor={onTogglePhotoEditor}
                   onPhotoFileChange={onPhotoFileChange}
                   onPhotoSave={onPhotoSave}
                   onPhotoCancel={onPhotoCancel}
+                  onPhotoDone={onPhotoDone}
+                  onPhotoDrop={onPhotoDrop}
+                  onPhotoDragEnter={onPhotoDragEnter}
+                  onPhotoDragLeave={onPhotoDragLeave}
+                  onPhotoDragOver={onPhotoDragOver}
+                  queuedPhotoCount={photoQueuedCounts[p._id] || 0}
+                  dragActive={dragActivePhotoId === p._id}
                 />
               ))}
             </div>
@@ -679,12 +738,19 @@ function VendorSection({
                   onDelete={onDelete}
                   onView={onView}
                   photoEditorOpen={activePhotoEditorId === p._id}
-                  photoPreviews={activePhotoEditorId === p._id ? photoPreviews : []}
-                  photoSaving={photoSavingId === p._id}
+                  photoPreviews={photoPreviews[p._id] || []}
+                  photoSaving={Boolean(photoSavingId[p._id])}
                   onTogglePhotoEditor={onTogglePhotoEditor}
                   onPhotoFileChange={onPhotoFileChange}
                   onPhotoSave={onPhotoSave}
                   onPhotoCancel={onPhotoCancel}
+                  onPhotoDone={onPhotoDone}
+                  onPhotoDrop={onPhotoDrop}
+                  onPhotoDragEnter={onPhotoDragEnter}
+                  onPhotoDragLeave={onPhotoDragLeave}
+                  onPhotoDragOver={onPhotoDragOver}
+                  queuedPhotoCount={photoQueuedCounts[p._id] || 0}
+                  dragActive={dragActivePhotoId === p._id}
                 />
               ))}
             </div>
@@ -856,9 +922,11 @@ export default function AdminProducts({ token: tokenProp }) {
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [activePhotoEditorId, setActivePhotoEditorId] = useState(null);
-  const [photoFiles, setPhotoFiles] = useState([]);
-  const [photoPreviews, setPhotoPreviews] = useState([]);
-  const [photoSavingId, setPhotoSavingId] = useState(null);
+  const [photoEdits, setPhotoEdits] = useState({});
+  const [photoSavingIds, setPhotoSavingIds] = useState({});
+  const [savingAllPhotos, setSavingAllPhotos] = useState(false);
+  const [dragActivePhotoId, setDragActivePhotoId] = useState(null);
+  const photoEditsRef = useRef({});
 
   // Fetch Products
   const fetchAll = async () => {
@@ -896,10 +964,16 @@ export default function AdminProducts({ token: tokenProp }) {
   }, [token]);
 
   useEffect(() => {
+    photoEditsRef.current = photoEdits;
+  }, [photoEdits]);
+
+  useEffect(() => {
     return () => {
-      photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+      Object.values(photoEditsRef.current).forEach((edit) => {
+        (edit?.previews || []).forEach((url) => URL.revokeObjectURL(url));
+      });
     };
-  }, [photoPreviews]);
+  }, []);
 
   // Handlers
   const handleEdit = (p) => {
@@ -907,102 +981,217 @@ export default function AdminProducts({ token: tokenProp }) {
     setShowEditor(true);
   };
 
+  const revokePreviewUrls = (urls = []) => {
+    urls.forEach((url) => URL.revokeObjectURL(url));
+  };
+
+  const getQueuedEdit = (productId) => photoEdits[productId] || { files: [], previews: [] };
+
+  const clearPhotoEdit = (productId, shouldClose = true) => {
+    setPhotoEdits((prev) => {
+      const next = { ...prev };
+      revokePreviewUrls(next[productId]?.previews || []);
+      delete next[productId];
+      return next;
+    });
+    if (shouldClose && activePhotoEditorId === productId) {
+      setActivePhotoEditorId(null);
+    }
+    if (dragActivePhotoId === productId) {
+      setDragActivePhotoId(null);
+    }
+  };
+
   const resetPhotoEditor = () => {
-    photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+    Object.keys(photoEditsRef.current).forEach((productId) => {
+      revokePreviewUrls(photoEditsRef.current[productId]?.previews || []);
+    });
     setActivePhotoEditorId(null);
-    setPhotoFiles([]);
-    setPhotoPreviews([]);
+    setPhotoEdits({});
+    setPhotoSavingIds({});
+    setSavingAllPhotos(false);
+    setDragActivePhotoId(null);
   };
 
   const handleTogglePhotoEditor = (product) => {
     if (activePhotoEditorId === product._id) {
-      resetPhotoEditor();
+      setActivePhotoEditorId(null);
       return;
     }
 
     setActivePhotoEditorId(product._id);
-    setPhotoFiles([]);
-    setPhotoPreviews([]);
   };
 
-  const handlePhotoFileChange = (product, e) => {
-    const files = Array.from(e.target.files || []);
+  const normalizePhotoFiles = (product, files) => {
     if (!files.length) return;
 
     const invalidFile = files.find((file) => !file.type.startsWith("image/"));
     if (invalidFile) {
       alert("Please select only image files.");
-      e.target.value = "";
       return;
     }
 
     const oversizedFile = files.find((file) => file.size > 5 * 1024 * 1024);
     if (oversizedFile) {
       alert("Each image must be less than 5MB.");
-      e.target.value = "";
       return;
     }
 
-    if ((product.images?.length || 0) + files.length > 10) {
+    const currentQueuedFiles = getQueuedEdit(product._id).files.length;
+    if ((product.images?.length || 0) + currentQueuedFiles + files.length > 10) {
       alert("Maximum 10 images allowed per product.");
-      e.target.value = "";
       return;
     }
 
-    photoPreviews.forEach((url) => URL.revokeObjectURL(url));
+    setPhotoEdits((prev) => {
+      const currentEdit = prev[product._id] || { files: [], previews: [] };
+      return {
+        ...prev,
+        [product._id]: {
+          files: [...currentEdit.files, ...files],
+          previews: [...currentEdit.previews, ...files.map((file) => URL.createObjectURL(file))],
+        },
+      };
+    });
 
     setActivePhotoEditorId(product._id);
-    setPhotoFiles(files);
-    setPhotoPreviews(files.map((file) => URL.createObjectURL(file)));
+  };
+
+  const handlePhotoFileChange = (product, e) => {
+    const files = Array.from(e.target.files || []);
+    normalizePhotoFiles(product, files);
     e.target.value = "";
   };
 
-  const handlePhotoSave = async (product) => {
-    if (!photoFiles.length || activePhotoEditorId !== product._id) {
+  const handlePhotoDrop = (product, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActivePhotoId(null);
+    const files = Array.from(e.dataTransfer?.files || []);
+    normalizePhotoFiles(product, files);
+  };
+
+  const handlePhotoDragEnter = (product, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActivePhotoId(product._id);
+  };
+
+  const handlePhotoDragLeave = (product, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    if (dragActivePhotoId === product._id) {
+      setDragActivePhotoId(null);
+    }
+  };
+
+  const handlePhotoDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handlePhotoDone = (product) => {
+    setActivePhotoEditorId((currentId) => (currentId === product._id ? null : currentId));
+    setDragActivePhotoId((currentId) => (currentId === product._id ? null : currentId));
+  };
+
+  const handlePhotoCancel = (product) => {
+    clearPhotoEdit(product._id);
+  };
+
+  const handlePhotoSave = async () => {
+    const pendingEntries = Object.entries(photoEdits).filter(([, edit]) => edit.files.length > 0);
+    if (!pendingEntries.length) {
       alert("Please choose image files first.");
       return;
     }
 
-    try {
-      setPhotoSavingId(product._id);
-
-      const uploadData = new FormData();
-      photoFiles.forEach((file) => uploadData.append("images", file));
-
-      const uploadRes = await axiosClient.post("/api/upload/product-images", uploadData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+    const productMap = {};
+    grouped.forEach((group) => {
+      group.products.forEach((product) => {
+        productMap[product._id] = product;
       });
+    });
 
-      const uploadedImages = uploadRes.data?.images || uploadRes.data?.urls || [];
-      if (!uploadedImages.length) {
-        throw new Error("Image upload failed.");
+    const failedProducts = [];
+    const successfulProductIds = [];
+
+    try {
+      setSavingAllPhotos(true);
+
+      for (const [productId, edit] of pendingEntries) {
+        const product = productMap[productId];
+        if (!product) {
+          failedProducts.push("Unknown product");
+          continue;
+        }
+
+        try {
+          setPhotoSavingIds((prev) => ({ ...prev, [productId]: true }));
+
+          const uploadData = new FormData();
+          edit.files.forEach((file) => uploadData.append("images", file));
+
+          const uploadRes = await axiosClient.post("/api/upload/product-images", uploadData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          });
+
+          const uploadedImages = uploadRes.data?.images || uploadRes.data?.urls || [];
+          if (!uploadedImages.length) {
+            throw new Error("Image upload failed.");
+          }
+
+          const reorderedImages = [
+            ...uploadedImages,
+            ...(Array.isArray(product.images) ? product.images.filter((img) => img && !uploadedImages.includes(img)) : []),
+          ];
+
+          const formData = new FormData();
+          formData.append("existingImages", JSON.stringify(reorderedImages));
+
+          await axiosClient.put(`/api/products/${product._id}`, formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          });
+
+          successfulProductIds.push(productId);
+        } catch (err) {
+          console.error(`Error updating product photo for ${product.name}:`, err);
+          failedProducts.push(product.name);
+        } finally {
+          setPhotoSavingIds((prev) => {
+            const next = { ...prev };
+            delete next[productId];
+            return next;
+          });
+        }
       }
 
-      const reorderedImages = [
-        ...uploadedImages,
-        ...(Array.isArray(product.images) ? product.images.filter((img) => img && !uploadedImages.includes(img)) : []),
-      ];
-
-      const formData = new FormData();
-      formData.append("existingImages", JSON.stringify(reorderedImages));
-
-      await axiosClient.put(`/api/products/${product._id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
       await fetchAll();
-      resetPhotoEditor();
-    } catch (err) {
-      console.error("Error updating product photo:", err);
-      alert(err.response?.data?.message || err.message || "Failed to update product photo.");
+
+      if (failedProducts.length === pendingEntries.length) {
+        alert("Failed to update queued product photos.");
+        return;
+      }
+
+      const successCount = pendingEntries.length - failedProducts.length;
+      successfulProductIds.forEach((productId) => clearPhotoEdit(productId, false));
+      setActivePhotoEditorId((currentId) => (successfulProductIds.includes(currentId) ? null : currentId));
+      setDragActivePhotoId((currentId) => (successfulProductIds.includes(currentId) ? null : currentId));
+
+      if (failedProducts.length) {
+        alert(`Saved ${successCount} queued photo updates. Failed: ${failedProducts.join(", ")}`);
+      } else {
+        alert(`Saved ${successCount} queued photo update${successCount > 1 ? "s" : ""}.`);
+      }
     } finally {
-      setPhotoSavingId(null);
+      setSavingAllPhotos(false);
     }
   };
 
@@ -1059,6 +1248,14 @@ export default function AdminProducts({ token: tokenProp }) {
   const totalProducts = grouped.reduce((acc, g) => acc + g.products.length, 0);
   const filteredProducts = filteredGrouped.reduce((acc, g) => acc + g.products.length, 0);
   const hasFilters = searchQuery || categoryFilter || statusFilter;
+  const photoQueuedCounts = Object.fromEntries(
+    Object.entries(photoEdits).map(([productId, edit]) => [productId, edit.files.length])
+  );
+  const photoPreviewMap = Object.fromEntries(
+    Object.entries(photoEdits).map(([productId, edit]) => [productId, edit.previews || []])
+  );
+  const queuedPhotoProductCount = Object.values(photoQueuedCounts).filter((count) => count > 0).length;
+  const queuedPhotoFileCount = Object.values(photoQueuedCounts).reduce((acc, count) => acc + count, 0);
 
   return (
     <div className="space-y-4 sm:space-y-5 md:space-y-6 p-1">
@@ -1205,6 +1402,38 @@ export default function AdminProducts({ token: tokenProp }) {
           filteredProducts={filteredProducts}
         />
 
+        {queuedPhotoProductCount > 0 && (
+          <div className="flex flex-col gap-3 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 via-white to-indigo-50 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-900">
+                {queuedPhotoFileCount} photo{queuedPhotoFileCount !== 1 ? "s" : ""} queued across {queuedPhotoProductCount} product{queuedPhotoProductCount !== 1 ? "s" : ""}
+              </p>
+              <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+                You can keep switching products, add more photos, and save all queued changes once.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={resetPhotoEditor}
+                disabled={savingAllPhotos}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
+              >
+                Discard Queue
+              </button>
+              <button
+                type="button"
+                onClick={handlePhotoSave}
+                disabled={savingAllPhotos}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingAllPhotos ? <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : <Icons.Save className="w-4 h-4" />}
+                {savingAllPhotos ? "Saving queued photos..." : "Save All Photo Changes"}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* FILTERS PANEL */}
         {showFilters && (
           <div className="mt-4 sm:mt-5 pt-4 sm:pt-5 border-t border-slate-200">
@@ -1278,12 +1507,19 @@ export default function AdminProducts({ token: tokenProp }) {
               onDelete={handleDelete}
               onView={handleView}
               activePhotoEditorId={activePhotoEditorId}
-              photoPreviews={photoPreviews}
-              photoSavingId={photoSavingId}
+              photoPreviews={photoPreviewMap}
+              photoSavingId={photoSavingIds}
               onTogglePhotoEditor={handleTogglePhotoEditor}
               onPhotoFileChange={handlePhotoFileChange}
               onPhotoSave={handlePhotoSave}
-              onPhotoCancel={resetPhotoEditor}
+              onPhotoCancel={handlePhotoCancel}
+              onPhotoDone={handlePhotoDone}
+              onPhotoDrop={handlePhotoDrop}
+              onPhotoDragEnter={handlePhotoDragEnter}
+              onPhotoDragLeave={handlePhotoDragLeave}
+              onPhotoDragOver={handlePhotoDragOver}
+              photoQueuedCounts={photoQueuedCounts}
+              dragActivePhotoId={dragActivePhotoId}
             />
           ))}
         </div>
