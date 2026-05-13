@@ -303,7 +303,7 @@ const Navbar = () => {
           TOP BAR (Optional - For announcements, etc.)
       ═══════════════════════════════════════════════════════════════ */}
       {!isDashboardRoute && (
-      <div className="hidden lg:block bg-gray-900 dark:bg-gray-950 text-gray-300 text-xs">
+      <div className="hidden bg-gray-900 dark:bg-gray-950 text-gray-300 text-xs">
         <div className="w-full px-3 sm:px-4 lg:px-5 py-2 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5">
@@ -352,12 +352,12 @@ const Navbar = () => {
         }}
         className={`navbar-theme sticky top-0 z-[80] transition-all duration-300 ${
           scrolled
-            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg shadow-gray-200/50 dark:shadow-black/20 border-b border-gray-100 dark:border-gray-800'
-            : 'bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800'
+            ? 'bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl shadow-[0_18px_50px_rgba(15,23,42,0.08)] dark:shadow-black/30 border-b border-gray-200/80 dark:border-gray-800'
+            : 'bg-white dark:bg-gray-950 border-b border-gray-200/80 dark:border-gray-800'
         }`}
       >
-        <div className="w-full px-3 sm:px-4 lg:px-5">
-          <div className="flex h-16 lg:h-[72px] items-center gap-4 lg:gap-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-4 lg:h-20">
             
             {/* ─────────────────────────────────────────────
                 LOGO / BRAND
@@ -368,7 +368,7 @@ const Navbar = () => {
             >
               <div className="relative">
                 {logoUrl ? (
-                  <div className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center group-hover:shadow-md transition-all duration-300">
+                  <div className="h-10 w-10 rounded-md overflow-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-center group-hover:shadow-md transition-all duration-300">
                     <img
                       src={logoUrl}
                       alt={siteName}
@@ -377,19 +377,18 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <div
-                    className="h-10 w-10 lg:h-11 lg:w-11 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg transition-all duration-300 group-hover:scale-105"
-                    style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})`, boxShadow: `0 12px 28px ${accentShadow}` }}
+                    className="h-9 w-9 rounded-md flex items-center justify-center bg-white dark:bg-gray-950 font-black text-lg border-2 transition-all duration-300 group-hover:scale-105"
+                    style={{ borderColor: accentPrimary, color: accentPrimary }}
                   >
                     {siteName?.charAt(0) || 'S'}
                   </div>
                 )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-gray-900" style={{ backgroundColor: accentPrimary }}></span>
               </div>
               <div className="hidden sm:block">
-                <span className="font-bold text-xl tracking-tight transition-colors group-hover:opacity-90" style={{ color: accentPrimary }}>
+                <span className="font-semibold text-xl tracking-normal text-gray-950 dark:text-white transition-colors group-hover:opacity-80">
                   {siteName}
                 </span>
-                <div className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                <div className="hidden">
                   <span className="flex items-center gap-0.5">
                     <svg className="w-2.5 h-2.5" style={{ color: accentPrimary }} fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -407,17 +406,17 @@ const Navbar = () => {
             ───────────────────────────────────────────── */}
             <form 
               onSubmit={handleSearch}
-              className="hidden lg:flex flex-1 max-w-2xl"
+              className="order-3 hidden max-w-xs flex-1 xl:flex"
             >
               <div className={`relative w-full flex items-center transition-all duration-300 ${
                 searchFocused ? 'scale-[1.02]' : ''
               }`}>
                 {/* Category Dropdown */}
-                <div className="relative" ref={categoryRef}>
+                <div className="relative">
                   <button
                     type="button"
                     onClick={() => setShowCategoryMenu(!showCategoryMenu)}
-                    className={`h-11 px-4 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 border border-r-0 rounded-l-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors ${
+                    className={`h-11 px-4 flex items-center gap-2 bg-gray-50 dark:bg-gray-900 border border-r-0 rounded-l-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
                       searchFocused ? '' : 'border-gray-200 dark:border-gray-700'
                     }`}
                     style={searchFocused ? { borderColor: accentPrimary, backgroundColor: accentSoft } : undefined}
@@ -425,16 +424,16 @@ const Navbar = () => {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
-                    <span className="hidden xl:inline">All Categories</span>
+                    <span className="hidden xl:inline">Shop</span>
                     <svg className={`w-3 h-3 transition-transform ${showCategoryMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
 
                   {/* Category Mega Menu */}
-                  {showCategoryMenu && (
-                    <div className="absolute top-full left-0 mt-2 w-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-black/30 border border-gray-100 dark:border-gray-700 p-6 animate-dropdown-in z-50">
-                      <div className="flex items-center justify-between mb-4">
+                  {false && showCategoryMenu && (
+                    <div className="sf-category-menu absolute top-full left-0 mt-[18px] w-[860px] bg-white dark:bg-gray-900 shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:shadow-black/40 border border-gray-200/80 dark:border-gray-800 animate-dropdown-in z-50">
+                      <div className="flex items-center justify-between mb-4 px-6 pt-6">
                         <h3 className="font-bold text-gray-900 dark:text-gray-100">Shop by Category</h3>
                         <Link 
                           to="/categories" 
@@ -448,15 +447,15 @@ const Navbar = () => {
                           </svg>
                         </Link>
                       </div>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-3 gap-0 border-t border-gray-100 dark:border-gray-800">
                         {superCategories.slice(0, 9).map((cat) => (
                           <Link
                             key={cat._id}
                             to={`/category/${cat._id}`}
                             onClick={() => setShowCategoryMenu(false)}
-                            className="group flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                            className="group flex items-center gap-3 border-r border-b border-gray-100 p-4 hover:bg-gray-50 transition-colors dark:border-gray-800 dark:hover:bg-gray-800/70"
                           >
-                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center overflow-hidden">
+                            <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
                               {cat.image ? (
                                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                               ) : (
@@ -485,7 +484,7 @@ const Navbar = () => {
                     onFocus={() => setSearchFocused(true)}
                     onBlur={() => setSearchFocused(false)}
                     placeholder="Search for products, brands and more..."
-                    className={`w-full h-11 pl-4 pr-12 bg-gray-50 dark:bg-gray-800 border text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none transition-all ${
+                    className={`w-full h-11 pl-4 pr-12 bg-gray-50 dark:bg-gray-900 border text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none transition-all ${
                       searchFocused 
                         ? 'bg-white dark:bg-gray-800' 
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -494,8 +493,8 @@ const Navbar = () => {
                   />
                   <button
                     type="submit"
-                    className="absolute right-0 top-0 h-11 w-12 rounded-r-xl flex items-center justify-center text-white transition-colors"
-                    style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})` }}
+                    className="absolute right-0 top-0 h-11 w-12 rounded-r-md flex items-center justify-center text-white transition-colors"
+                    style={{ backgroundColor: accentPrimary }}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -508,41 +507,115 @@ const Navbar = () => {
             {/* ─────────────────────────────────────────────
                 NAVIGATION LINKS (Desktop)
             ───────────────────────────────────────────── */}
-            <div className="hidden xl:flex items-center gap-1">
+            <div className="order-2 hidden flex-1 items-center justify-center gap-1 lg:flex">
               <NavLink
                 to="/"
                 end
                 className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    `relative flex h-20 items-center px-4 text-sm font-medium transition-all duration-200 border-b-2 ${
                     isActive
-                      ? 'bg-gray-50 dark:bg-gray-800/80'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/70'
+                      ? 'border-current'
+                      : 'border-transparent text-gray-600 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white'
                   }`
                 }
-                style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
+                style={({ isActive }) => (isActive ? { color: accentPrimary } : undefined)}
               >
                 Home
               </NavLink>
               <NavLink
                 to="/products"
                 className={({ isActive }) =>
-                    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    `relative flex h-20 items-center px-4 text-sm font-medium transition-all duration-200 border-b-2 ${
                     isActive
-                      ? 'bg-gray-50 dark:bg-gray-800/80'
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/70'
+                      ? 'border-current'
+                      : 'border-transparent text-gray-600 dark:text-gray-300 hover:text-gray-950 dark:hover:text-white'
                   }`
                 }
-                style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
+                style={({ isActive }) => (isActive ? { color: accentPrimary } : undefined)}
               >
                 Products
               </NavLink>
+              <div className="relative h-20" ref={categoryRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+                  className={`flex h-20 items-center gap-1.5 border-b-2 px-4 text-sm font-medium transition-colors ${
+                    showCategoryMenu
+                      ? 'border-current'
+                      : 'border-transparent text-gray-600 hover:text-gray-950 dark:text-gray-300 dark:hover:text-white'
+                  }`}
+                  style={showCategoryMenu ? { color: accentPrimary } : undefined}
+                >
+                  Categories
+                  <svg className={`h-3.5 w-3.5 transition-transform ${showCategoryMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {showCategoryMenu && (
+                  <div className="absolute left-1/2 top-full z-50 w-[min(860px,calc(100vw-48px))] -translate-x-1/2 overflow-hidden bg-white shadow-[0_24px_70px_rgba(15,23,42,0.14)] ring-1 ring-gray-200/80 animate-dropdown-in dark:bg-gray-900 dark:ring-gray-800">
+                    <div className="grid min-h-[330px] grid-cols-[240px_1fr_250px]">
+                      <div className="border-r border-gray-100 p-6 dark:border-gray-800">
+                        <h3 className="text-lg font-semibold text-gray-950 dark:text-white">Categories</h3>
+                        <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                          Explore departments, trending products, and fresh arrivals from {siteName}.
+                        </p>
+                      </div>
+                      <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                        {superCategories.slice(0, 6).map((cat) => (
+                          <Link
+                            key={cat._id}
+                            to={`/category/${cat._id}`}
+                            onClick={() => setShowCategoryMenu(false)}
+                            className="group flex min-h-[55px] items-center justify-between px-6 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800/70"
+                          >
+                            <span>
+                              <span className="block font-medium text-gray-900 dark:text-white">{cat.name}</span>
+                              <span className="text-xs text-gray-400">{getSubCategories(cat._id).length} sub categories</span>
+                            </span>
+                            <svg className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        ))}
+                        <Link
+                          to="/categories"
+                          onClick={() => setShowCategoryMenu(false)}
+                          className="flex min-h-[55px] items-center justify-between px-6 text-sm font-semibold"
+                          style={{ color: accentPrimary }}
+                        >
+                          View All Categories
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      </div>
+                      <div className="flex flex-col justify-between p-6 text-gray-950" style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})` }}>
+                        <p className="text-2xl font-semibold leading-tight">Ready for something new?</p>
+                        <Link
+                          to="/products"
+                          onClick={() => setShowCategoryMenu(false)}
+                          className="inline-flex h-11 items-center justify-center gap-3 rounded-md bg-gray-950 px-5 text-xs font-bold uppercase tracking-[0.18em] text-white transition-transform hover:-translate-y-0.5"
+                        >
+                          Shop Now
+                          <span className="flex h-6 w-6 items-center justify-center rounded bg-white/10">
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <NavLink
                 to="/products?sale=true"
                 className={({ isActive }) =>
-                  `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5 ${
+                  `relative flex h-20 items-center gap-1.5 px-4 text-sm font-medium transition-all duration-200 border-b-2 ${
                     isActive
-                      ? 'text-rose-600 bg-rose-50 dark:bg-rose-500/10'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10'
+                      ? 'text-rose-600 border-current'
+                      : 'border-transparent text-gray-600 dark:text-gray-300 hover:text-rose-600'
                   }`
                 }
               >
@@ -557,12 +630,12 @@ const Navbar = () => {
             {/* ─────────────────────────────────────────────
                 RIGHT ACTIONS
             ───────────────────────────────────────────── */}
-            <div className="flex items-center gap-2 lg:gap-3 ml-auto">
+            <div className="order-4 flex items-center gap-2 lg:gap-3 ml-auto">
               
               {/* Dark Mode Toggle */}
               <button
                 onClick={toggleDarkMode}
-                className="flex items-center justify-center p-2.5 rounded-xl border border-transparent text-gray-500 dark:text-amber-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800/80 dark:border-gray-700 transition-all duration-200"
+                className="flex h-11 w-11 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-500 dark:text-amber-300 hover:bg-gray-50 dark:bg-gray-900 dark:hover:bg-gray-800 dark:border-gray-800 transition-all duration-200"
                 title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {darkMode ? (
@@ -579,7 +652,7 @@ const Navbar = () => {
               {/* Mobile Search Toggle */}
               <button
                 onClick={() => setShowSearch(!showSearch)}
-                className="lg:hidden p-2.5 rounded-xl text-gray-500 transition-all"
+                className="xl:hidden flex h-11 w-11 items-center justify-center rounded-md text-gray-500 transition-all"
                 style={{ color: showSearch ? accentPrimary : undefined, backgroundColor: showSearch ? accentSoft : undefined }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -592,10 +665,10 @@ const Navbar = () => {
                 <NavLink
                   to="/wishlist"
                   className={({ isActive }) =>
-                    `relative p-2.5 rounded-xl transition-all duration-200 hidden sm:flex ${
+                    `relative h-11 w-11 items-center justify-center rounded-md border transition-all duration-200 hidden sm:flex ${
                       isActive
-                        ? 'text-rose-500 bg-rose-50 dark:bg-rose-500/10'
-                        : 'text-gray-500 dark:text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10'
+                        ? 'border-rose-200 text-rose-500 bg-rose-50 dark:bg-rose-500/10'
+                        : 'border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10'
                     }`
                   }
                 >
@@ -615,10 +688,10 @@ const Navbar = () => {
                 <NavLink
                   to="/cart"
                   className={({ isActive }) =>
-                    `relative p-2.5 rounded-xl transition-all duration-200 group ${
+                    `relative h-11 w-11 items-center justify-center rounded-md border transition-all duration-200 group flex ${
                       isActive
                         ? ''
-                        : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/70'
+                        : 'border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/70'
                     }`
                   }
                   style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
@@ -639,10 +712,10 @@ const Navbar = () => {
                 <NavLink
                   to="/orders"
                   className={({ isActive }) =>
-                    `relative p-2.5 rounded-xl transition-all duration-200 hidden md:flex ${
+                    `relative h-11 w-11 items-center justify-center rounded-md border transition-all duration-200 hidden md:flex ${
                       isActive
                         ? ''
-                        : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/70'
+                        : 'border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/70'
                     }`
                   }
                   style={({ isActive }) => (isActive ? { color: accentPrimary, backgroundColor: accentSoft } : undefined)}
@@ -661,17 +734,16 @@ const Navbar = () => {
                 <div className="flex items-center gap-2">
                   <NavLink
                     to="/login"
-                    className="hidden sm:flex px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 transition-all"
-                    style={{ color: location.pathname === '/login' ? accentPrimary : undefined, backgroundColor: location.pathname === '/login' ? accentSoft : undefined }}
+                    className="hidden sm:flex h-11 items-center rounded-md bg-gray-50 px-5 text-xs font-bold uppercase tracking-[0.16em] text-gray-950 shadow-sm transition-all hover:bg-gray-100 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800"
+                    style={{ color: location.pathname === '/login' ? accentPrimary : undefined }}
                   >
                     Login
                   </NavLink>
                   <NavLink
                     to="/register"
-                    className="hidden sm:flex px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-                    style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})`, boxShadow: `0 12px 28px ${accentShadow}` }}
+                    className="hidden sm:flex h-11 items-center rounded-md bg-gray-950 px-5 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 dark:bg-white dark:text-gray-950"
                   >
-                    Sign Up
+                    Get Started
                   </NavLink>
                 </div>
               ) : (
@@ -679,14 +751,14 @@ const Navbar = () => {
                   {/* Profile Button */}
                   <button
                     onClick={() => setShowUserDropdown(!showUserDropdown)}
-                    className={`flex items-center gap-2 p-1.5 pr-3 rounded-xl border transition-all duration-200 ${
+                    className={`flex h-11 items-center gap-2 p-1.5 pr-3 rounded-md border transition-all duration-200 ${
                       showUserDropdown
                         ? ''
-                        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                        : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
                     }`}
                     style={showUserDropdown ? { backgroundColor: accentSoft, borderColor: accentSoftBorder } : undefined}
                   >
-                    <div className="h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow-sm" style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})` }}>
+                    <div className="h-8 w-8 rounded-md overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow-sm" style={{ background: `linear-gradient(135deg, ${accentPrimary}, ${accentSecondary})` }}>
                       {user.profilePicture ? (
                         <img
                           src={user.profilePicture}
@@ -732,7 +804,7 @@ const Navbar = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden p-2.5 rounded-xl text-gray-600 dark:text-gray-300 transition-all"
+                className="lg:hidden flex h-11 w-11 items-center justify-center rounded-md text-gray-600 dark:text-gray-300 transition-all"
                 style={{ color: isOpen ? accentPrimary : undefined, backgroundColor: isOpen ? accentSoft : undefined }}
               >
                 {isOpen ? (
@@ -753,7 +825,7 @@ const Navbar = () => {
             MOBILE SEARCH BAR
         ───────────────────────────────────────────── */}
         {showSearch && (
-          <div className="lg:hidden px-4 pb-4 animate-slide-down">
+          <div className="xl:hidden px-4 pb-4 animate-slide-down">
             <form onSubmit={handleSearch} className="relative">
               <input
                 ref={searchRef}

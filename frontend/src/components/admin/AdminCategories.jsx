@@ -506,22 +506,22 @@ export default function AdminCategories({ token }) {
   const pendingChangesCount = Object.keys(editedCategories).length;
 
   return (
-    <div className="min-h-screen bg-white -m-8 p-4 sm:p-8">
+    <div className="min-h-screen bg-slate-50 -m-4 p-4 sm:-m-6 sm:p-6">
       {/* Notification Toast */}
       {notification.show && (
-        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl transform transition-all duration-500 animate-slide-in max-w-md ${notification.type === 'success'
-            ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white'
-            : 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
+        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 rounded-2xl border px-5 py-4 shadow-xl backdrop-blur-xl transition-all duration-500 animate-slide-in max-w-md ${notification.type === 'success'
+            ? 'border-emerald-200 bg-white text-emerald-700'
+            : 'border-red-200 bg-white text-red-700'
           }`}>
           <div className="flex-shrink-0">
             {notification.type === 'success' ? (
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             ) : (
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -543,15 +543,15 @@ export default function AdminCategories({ token }) {
       {/* Floating Save All Button */}
       {pendingChangesCount > 0 && (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 animate-scale-in">
-          <div className="bg-white rounded-2xl shadow-2xl border-2 border-indigo-200 p-4 max-w-xs">
+          <div className="max-w-xs rounded-2xl border border-amber-200 bg-white p-4 shadow-xl">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center flex-shrink-0 animate-pulse">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-black text-slate-900">Unsaved Changes</p>
+                <p className="text-sm font-semibold text-slate-900">Unsaved Changes</p>
                 <p className="text-xs text-slate-600 mt-0.5">
                   {pendingChangesCount} {pendingChangesCount === 1 ? 'category' : 'categories'} edited
                 </p>
@@ -560,14 +560,14 @@ export default function AdminCategories({ token }) {
             <div className="flex gap-2 mt-4">
               <button
                 onClick={cancelAllEdits}
-                className="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition-all"
+                className="flex-1 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200"
               >
                 Discard
               </button>
               <button
                 onClick={saveAllChanges}
                 disabled={submitting}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl text-sm font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:opacity-50"
               >
                 {submitting ? (
                   <>
@@ -611,7 +611,7 @@ export default function AdminCategories({ token }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-3xl">
+            <div className="absolute bottom-0 left-0 right-0 rounded-b-3xl bg-black/70 p-6">
               <h3 className="text-white font-bold text-xl">{imagePreviewModal.title}</h3>
             </div>
           </div>
@@ -628,7 +628,7 @@ export default function AdminCategories({ token }) {
                   <img src={deleteModal.category.image} alt="" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-rose-100 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg">
+                <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl border border-red-100 bg-red-50 shadow-sm">
                   <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
@@ -667,7 +667,7 @@ export default function AdminCategories({ token }) {
                 <button
                   onClick={handleDelete}
                   disabled={submitting}
-                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold shadow-lg shadow-red-500/30 hover:shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3.5 font-bold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? (
                     <>
@@ -692,11 +692,11 @@ export default function AdminCategories({ token }) {
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-black bg-gradient-to-r from-slate-900 via-indigo-800 to-purple-800 bg-clip-text text-transparent mb-2">
+              <h1 className="mb-2 text-3xl font-semibold tracking-tight text-slate-900">
                 Category Management
               </h1>
-              <p className="text-slate-600 font-medium flex items-center gap-2">
-                <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="flex items-center gap-2 text-sm text-slate-500">
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
                 Edit multiple categories, then save all at once
@@ -705,28 +705,28 @@ export default function AdminCategories({ token }) {
 
             {/* Stats Cards */}
             <div className="flex flex-wrap gap-3">
-              <div className="flex-1 min-w-[140px] bg-white rounded-2xl px-6 py-4 shadow-lg border-2 border-indigo-100 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-all">
-                <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex min-w-[140px] flex-1 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-slate-900">{superCategories.length}</div>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wide">Categories</div>
+                  <div className="text-2xl font-semibold text-slate-900">{superCategories.length}</div>
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Categories</div>
                 </div>
               </div>
-              <div className="flex-1 min-w-[140px] bg-white rounded-2xl px-6 py-4 shadow-lg border-2 border-purple-100 flex items-center gap-4 hover:shadow-xl hover:scale-105 transition-all">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex min-w-[140px] flex-1 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                   </svg>
                 </div>
                 <div>
-                  <div className="text-3xl font-black text-slate-900">
+                  <div className="text-2xl font-semibold text-slate-900">
                     {categories.filter(c => c.type === 'sub').length}
                   </div>
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wide">Sub-categories</div>
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">Sub-categories</div>
                 </div>
               </div>
             </div>
@@ -734,13 +734,13 @@ export default function AdminCategories({ token }) {
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/50 mb-8 p-2 border-2 border-white/50">
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveTab('list')}
-              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === 'list'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
-                  : 'text-slate-600 hover:bg-slate-100 hover:scale-105'
+              className={`flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-colors sm:flex-none ${activeTab === 'list'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -748,16 +748,16 @@ export default function AdminCategories({ token }) {
               </svg>
               <span>All Categories</span>
               {pendingChangesCount > 0 && (
-                <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-xs font-black">
+                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
                   {pendingChangesCount}
                 </span>
               )}
             </button>
             <button
               onClick={() => { setActiveTab('create'); setCreateMode('super'); }}
-              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === 'create' && createMode === 'super'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30 scale-105'
-                  : 'text-slate-600 hover:bg-slate-100 hover:scale-105'
+              className={`flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-colors sm:flex-none ${activeTab === 'create' && createMode === 'super'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -768,9 +768,9 @@ export default function AdminCategories({ token }) {
             </button>
             <button
               onClick={() => { setActiveTab('create'); setCreateMode('sub'); }}
-              className={`flex-1 min-w-[140px] sm:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all duration-300 ${activeTab === 'create' && createMode === 'sub'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30 scale-105'
-                  : 'text-slate-600 hover:bg-slate-100 hover:scale-105'
+              className={`flex flex-1 min-w-[140px] items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition-colors sm:flex-none ${activeTab === 'create' && createMode === 'sub'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -784,17 +784,17 @@ export default function AdminCategories({ token }) {
 
         {/* Create Forms - Same as before */}
         {activeTab === 'create' && createMode === 'super' && (
-          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border-2 border-slate-100 overflow-hidden animate-fade-in mb-8">
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-8 py-6">
+          <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-fade-in">
+            <div className="border-b border-slate-200 px-8 py-6">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white">Create Super Category</h2>
-                  <p className="text-emerald-100 text-sm mt-1">Main category that can contain multiple sub-categories</p>
+                  <h2 className="text-xl font-semibold text-slate-900">Create Super Category</h2>
+                  <p className="mt-1 text-sm text-slate-500">Main category that can contain multiple sub-categories</p>
                 </div>
               </div>
             </div>
@@ -803,8 +803,8 @@ export default function AdminCategories({ token }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <div className="space-y-3">
-                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                      <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <span className="h-2 w-2 rounded-full bg-red-500"></span>
                       Category Name
                       <span className="text-red-500">*</span>
                     </label>
@@ -812,14 +812,14 @@ export default function AdminCategories({ token }) {
                       value={superCategoryName}
                       onChange={(e) => setSuperCategoryName(e.target.value)}
                       placeholder="e.g., Electronics, Clothing, Books..."
-                      className="w-full rounded-2xl border-2 border-slate-300 px-5 py-4 text-slate-700 placeholder-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200 font-medium"
+                      className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 placeholder-slate-400 transition-colors duration-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                       required
                     />
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                       </svg>
                       Description
@@ -830,7 +830,7 @@ export default function AdminCategories({ token }) {
                       onChange={(e) => setSuperCategoryDescription(e.target.value)}
                       placeholder="Brief description of this category..."
                       rows={5}
-                      className="w-full rounded-2xl border-2 border-slate-300 px-5 py-4 text-slate-700 placeholder-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-200 resize-none font-medium"
+                      className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 placeholder-slate-400 transition-colors duration-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                     />
                   </div>
                 </div>
@@ -846,18 +846,18 @@ export default function AdminCategories({ token }) {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-2 border-slate-100">
+              <div className="flex flex-col gap-4 border-t border-slate-200 pt-6 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => setActiveTab('list')}
-                  className="sm:w-auto px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-all hover:scale-105 active:scale-95"
+                  className="rounded-xl bg-slate-100 px-6 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200 sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting || uploadingSuperImage}
-                  className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
+                  className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-slate-900 px-8 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? (
                     <>
@@ -883,32 +883,32 @@ export default function AdminCategories({ token }) {
 
         {/* Bulk Add Sub Categories - Same as before but with CompactImageUploader */}
         {activeTab === 'create' && createMode === 'sub' && (
-          <div className="bg-white rounded-3xl shadow-2xl shadow-slate-200/50 border-2 border-slate-100 overflow-hidden animate-fade-in mb-8">
-            <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 px-8 py-6">
+          <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm animate-fade-in">
+            <div className="border-b border-slate-200 px-8 py-6">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-white">Bulk Add Sub-Categories</h2>
-                  <p className="text-purple-100 text-sm mt-1">Add multiple sub-categories at once with images</p>
+                  <h2 className="text-xl font-semibold text-slate-900">Bulk Add Sub-Categories</h2>
+                  <p className="mt-1 text-sm text-slate-500">Add multiple sub-categories at once with images</p>
                 </div>
               </div>
             </div>
 
             <form onSubmit={handleCreateSubCategories} className="p-8 space-y-8">
               <div className="space-y-3">
-                <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <span className="h-2 w-2 rounded-full bg-red-500"></span>
                   Select Parent Category
                   <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={selectedParent}
                   onChange={(e) => setSelectedParent(e.target.value)}
-                  className="w-full rounded-2xl border-2 border-slate-300 px-5 py-4 text-slate-700 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all duration-200 font-medium bg-white"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 transition-colors duration-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                   required
                 >
                   <option value="">Choose a super category...</option>
@@ -922,19 +922,19 @@ export default function AdminCategories({ token }) {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <svg className="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                     Sub-Categories
-                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-black">
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
                       {subCategoryInputs.filter(s => s.name.trim()).length} added
                     </span>
                   </label>
                   <button
                     type="button"
                     onClick={addSubCategoryInput}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-xl text-sm font-bold hover:bg-purple-200 transition-all hover:scale-105"
+                    className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -947,9 +947,9 @@ export default function AdminCategories({ token }) {
                   {subCategoryInputs.map((input, index) => (
                     <div
                       key={index}
-                      className="flex flex-col sm:flex-row gap-4 p-5 bg-gradient-to-r from-slate-50 to-purple-50/30 rounded-2xl border-2 border-slate-200 group hover:border-purple-300 hover:shadow-lg transition-all"
+                      className="group flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 transition-colors hover:border-slate-300 sm:flex-row"
                     >
-                      <div className="flex items-center justify-center sm:items-start sm:justify-center w-full sm:w-10 h-10 bg-purple-100 text-purple-600 rounded-xl font-black text-base flex-shrink-0">
+                      <div className="flex h-10 w-full flex-shrink-0 items-center justify-center rounded-xl bg-slate-200 text-base font-semibold text-slate-700 sm:w-10 sm:items-start sm:justify-center">
                         {index + 1}
                       </div>
 
@@ -968,13 +968,13 @@ export default function AdminCategories({ token }) {
                           value={input.name}
                           onChange={(e) => updateSubCategoryInput(index, 'name', e.target.value)}
                           placeholder="Sub-category name (e.g., Smartphones, T-Shirts)"
-                          className="w-full rounded-xl border-2 border-slate-300 px-4 py-3 text-slate-700 placeholder-slate-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 transition-all duration-200 font-medium"
+                          className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 placeholder-slate-400 transition-colors duration-200 focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                         />
                         <input
                           value={input.description}
                           onChange={(e) => updateSubCategoryInput(index, 'description', e.target.value)}
                           placeholder="Description (optional)"
-                          className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-purple-400 transition-all duration-200"
+                          className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 transition-colors duration-200 focus:border-slate-400"
                         />
                       </div>
 
@@ -1018,19 +1018,19 @@ export default function AdminCategories({ token }) {
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-2 border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('list')}
-                  className="sm:w-auto px-8 py-4 bg-slate-100 text-slate-700 rounded-2xl font-bold hover:bg-slate-200 transition-all hover:scale-105 active:scale-95"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || superCategories.length === 0 || !selectedParent || Object.values(uploadingSubImage).some(v => v)}
-                  className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-2xl font-bold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
-                >
+                <div className="flex flex-col gap-4 border-t border-slate-200 pt-6 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('list')}
+                    className="rounded-xl bg-slate-100 px-6 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200 sm:w-auto"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting || superCategories.length === 0 || !selectedParent || Object.values(uploadingSubImage).some(v => v)}
+                    className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-slate-900 px-8 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
                   {submitting ? (
                     <>
                       <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -1058,9 +1058,9 @@ export default function AdminCategories({ token }) {
           <div className="space-y-6 animate-fade-in">
             {/* Search & View Toggle */}
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 bg-white rounded-2xl shadow-lg border-2 border-slate-100 p-2">
+              <div className="flex-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
                 <div className="relative">
-                  <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -1068,15 +1068,15 @@ export default function AdminCategories({ token }) {
                     placeholder="Search categories..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-14 pr-5 py-4 rounded-xl border-0 text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-200 font-medium"
+                    className="w-full rounded-xl border-0 py-3 pl-12 pr-4 text-sm text-slate-700 placeholder-slate-400 transition-all duration-200 focus:ring-2 focus:ring-slate-900/5"
                   />
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border-2 border-slate-100 p-2 flex gap-1">
+              <div className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
                 <button
                   onClick={() => setViewMode('tree')}
-                  className={`px-5 py-3 rounded-xl font-bold transition-all ${viewMode === 'tree' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-100'
+                  className={`rounded-xl px-4 py-3 transition-colors ${viewMode === 'tree' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'
                     }`}
                   title="Tree View"
                 >
@@ -1086,7 +1086,7 @@ export default function AdminCategories({ token }) {
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`px-5 py-3 rounded-xl font-bold transition-all ${viewMode === 'grid' ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-500 hover:bg-slate-100'
+                  className={`rounded-xl px-4 py-3 transition-colors ${viewMode === 'grid' ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'
                     }`}
                   title="Grid View"
                 >
@@ -1098,24 +1098,24 @@ export default function AdminCategories({ token }) {
             </div>
 
             {loading ? (
-              <div className="bg-white rounded-3xl shadow-lg border-2 border-slate-100 p-16">
+              <div className="rounded-2xl border border-slate-200 bg-white p-16 shadow-sm">
                 <div className="flex flex-col items-center justify-center gap-6">
                   <div className="relative">
-                    <div className="w-20 h-20 border-4 border-indigo-200 rounded-full"></div>
-                    <div className="w-20 h-20 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
+                    <div className="h-16 w-16 rounded-full border-4 border-slate-200"></div>
+                    <div className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-4 border-slate-900 border-t-transparent"></div>
                   </div>
-                  <p className="text-slate-600 font-semibold text-lg">Loading categories...</p>
+                  <p className="text-lg font-medium text-slate-600">Loading categories...</p>
                 </div>
               </div>
             ) : filteredSuperCategories.length === 0 ? (
-              <div className="bg-white rounded-3xl shadow-lg border-2 border-slate-100 p-16">
+              <div className="rounded-2xl border border-slate-200 bg-white p-16 shadow-sm">
                 <div className="text-center">
-                  <div className="w-32 h-32 bg-gradient-to-br from-slate-100 to-indigo-100 rounded-3xl mx-auto mb-8 flex items-center justify-center">
+                  <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-3xl bg-slate-100">
                     <svg className="w-16 h-16 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900 mb-3">
+                  <h3 className="mb-3 text-2xl font-semibold text-slate-900">
                     {searchTerm ? 'No categories found' : 'No categories yet'}
                   </h3>
                   <p className="text-slate-500 mb-8 max-w-md mx-auto">
@@ -1124,7 +1124,7 @@ export default function AdminCategories({ token }) {
                   {!searchTerm && (
                     <button
                       onClick={() => { setActiveTab('create'); setCreateMode('super'); }}
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:scale-105 transition-all"
+                      className="inline-flex items-center gap-3 rounded-xl bg-slate-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-slate-800"
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1144,7 +1144,7 @@ export default function AdminCategories({ token }) {
                   return (
                     <div
                       key={superCat._id}
-                      className={`bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 group ${editing ? 'border-amber-500 ring-4 ring-amber-200' : 'border-slate-100'
+                      className={`group overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md ${editing ? 'border-amber-400 ring-2 ring-amber-100' : 'border-slate-200'
                         }`}
                     >
                       {/* Category Image Header */}
@@ -1157,12 +1157,12 @@ export default function AdminCategories({ token }) {
                             onClick={() => setImagePreviewModal({ show: true, image: getEditValue(superCat, 'image'), title: getEditValue(superCat, 'name') })}
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600" />
+                          <div className="h-full w-full bg-slate-200" />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                        <div className="absolute inset-0 bg-slate-950/40" />
 
                         {editing && (
-                          <div className="absolute top-4 left-4 px-3 py-1.5 bg-amber-500 text-white rounded-full text-xs font-black flex items-center gap-1">
+                          <div className="absolute top-4 left-4 flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-700">
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
@@ -1263,7 +1263,7 @@ export default function AdminCategories({ token }) {
                           </span>
                           <button
                             onClick={() => quickAddSubCategories(superCat._id)}
-                            className="text-purple-600 hover:text-purple-700 text-sm font-bold flex items-center gap-1 hover:scale-110 transition-all"
+                            className="flex items-center gap-1 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1282,7 +1282,7 @@ export default function AdminCategories({ token }) {
                                   onClick={() => !subEditing && startEditCategory(sub)}
                                   className={`flex items-center gap-2 px-3 py-2 rounded-xl group/sub transition-all cursor-pointer ${subEditing
                                       ? 'bg-amber-100 border-2 border-amber-500'
-                                      : 'bg-gradient-to-r from-slate-50 to-purple-50 border border-slate-200 hover:border-purple-300 hover:shadow-md'
+                                      : 'border border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white hover:shadow-sm'
                                     }`}
                                 >
                                   {sub.image && !subEditing && (
@@ -1298,7 +1298,7 @@ export default function AdminCategories({ token }) {
                               );
                             })}
                             {subCategories.length > 6 && (
-                              <span className="px-3 py-2 bg-purple-100 text-purple-700 text-xs font-black rounded-xl">
+                              <span className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600">
                                 +{subCategories.length - 6} more
                               </span>
                             )}
@@ -1322,15 +1322,15 @@ export default function AdminCategories({ token }) {
                   return (
                     <div
                       key={superCat._id}
-                      className={`bg-white rounded-3xl shadow-lg border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 ${editing ? 'border-amber-500 ring-4 ring-amber-200' : 'border-slate-100'
+                      className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md ${editing ? 'border-amber-400 ring-2 ring-amber-100' : 'border-slate-200'
                         }`}
                     >
                       {/* Category Header */}
-                      <div className="p-6 bg-gradient-to-r from-slate-50 via-white to-indigo-50/30 border-b-2 border-slate-100">
+                      <div className="border-b border-slate-200 bg-slate-50/70 p-6">
                         <div className="flex items-center gap-5">
                           <button
                             onClick={() => toggleExpand(superCat._id)}
-                            className={`w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`}
+                            className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition-transform duration-300 hover:bg-slate-200 ${isExpanded ? 'rotate-90' : ''}`}
                           >
                             <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
@@ -1366,8 +1366,8 @@ export default function AdminCategories({ token }) {
                               )}
                             </div>
                           ) : (
-                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
-                              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 shadow-sm sm:h-20 sm:w-20">
+                              <svg className="h-8 w-8 text-slate-500 sm:h-10 sm:w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                               </svg>
                             </div>
@@ -1401,14 +1401,14 @@ export default function AdminCategories({ token }) {
                               </>
                             )}
                             <div className="flex flex-wrap items-center gap-3">
-                              <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 text-xs font-black rounded-full">
+                              <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-700">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                 </svg>
                                 {subCategories.length} Sub-categories
                               </span>
                               {editing && (
-                                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 text-white text-xs font-black rounded-full">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-black text-amber-700">
                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                   </svg>
@@ -1434,7 +1434,7 @@ export default function AdminCategories({ token }) {
                               <>
                                 <button
                                   onClick={() => quickAddSubCategories(superCat._id)}
-                                  className="flex items-center gap-2 px-4 py-3 bg-purple-100 text-purple-700 rounded-xl text-sm font-bold hover:bg-purple-200 transition-all hover:scale-105 whitespace-nowrap"
+                                  className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-200"
                                 >
                                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1465,7 +1465,7 @@ export default function AdminCategories({ token }) {
 
                       {/* Sub Categories */}
                       {isExpanded && (
-                        <div className="p-6 bg-gradient-to-b from-slate-50/50 to-white">
+                        <div className="bg-white p-6">
                           {subCategories.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                               {subCategories.map((subCat) => {
@@ -1474,9 +1474,9 @@ export default function AdminCategories({ token }) {
                                 return (
                                   <div
                                     key={subCat._id}
-                                    className={`relative p-5 rounded-2xl border-2 transition-all duration-300 group ${subEditing
-                                        ? 'border-amber-400 bg-amber-50 shadow-lg'
-                                        : 'border-slate-200 bg-white hover:border-purple-300 hover:shadow-xl'
+                                    className={`group relative rounded-2xl border p-5 transition-all duration-300 ${subEditing
+                                        ? 'border-amber-300 bg-amber-50'
+                                        : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'
                                       }`}
                                   >
                                     {subEditing ? (
@@ -1540,8 +1540,8 @@ export default function AdminCategories({ token }) {
                                               <img src={subCat.image} alt={subCat.name} className="w-full h-full object-cover" />
                                             </div>
                                           ) : (
-                                            <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                                              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+                                              <svg className="h-8 w-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                               </svg>
                                             </div>
@@ -1589,7 +1589,7 @@ export default function AdminCategories({ token }) {
                               <p className="text-slate-500 text-sm mb-4 font-medium">No sub-categories yet</p>
                               <button
                                 onClick={() => quickAddSubCategories(superCat._id)}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-lg transition-all hover:scale-105"
+                                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-3 font-bold text-white transition-colors hover:bg-slate-800"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -1636,11 +1636,11 @@ export default function AdminCategories({ token }) {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+          background: #cbd5e1;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #4f46e5, #7c3aed);
+          background: #94a3b8;
         }
       `}</style>
     </div>

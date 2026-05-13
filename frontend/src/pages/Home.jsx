@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import ProductQuickView from "../components/product/ProductQuickView";
 
-const DEFAULT_HOME_HERO_TAGLINE = "New Collection 2024";
+const DEFAULT_HOME_HERO_TAGLINE = "New Season Edit";
 const DEFAULT_HOME_ANNOUNCEMENT_TEXT = "🎉 Free shipping on orders over ₹499 | Use code: WELCOME10 for 10% off";
 const DEFAULT_HOME_NEWSLETTER_BADGE = "Join 10,000+ subscribers";
 const DEFAULT_HOME_NEWSLETTER_TITLE = "Stay Updated";
@@ -14,7 +14,7 @@ const DEFAULT_HOME_NEWSLETTER_DESCRIPTION = "Subscribe to get exclusive offers, 
 const DEFAULT_HOME_NEWSLETTER_INPUT_PLACEHOLDER = "Enter your email";
 const DEFAULT_HOME_NEWSLETTER_BUTTON_LABEL = "Subscribe";
 const DEFAULT_HOME_PROMO_BANNER_BADGE = "Limited Time";
-const DEFAULT_HOME_PROMO_BANNER_TITLE = "Fresh deals with a premium storefront feel";
+const DEFAULT_HOME_PROMO_BANNER_TITLE = "Fresh deals, handpicked for you";
 const DEFAULT_HOME_PROMO_BANNER_DESCRIPTION = "Curated sale picks, elevated visuals, and quick actions that keep the homepage polished without changing any shopping flow.";
 const DEFAULT_HOME_HERO_STATS = [
   { value: "50K+", label: "Happy Customers" },
@@ -77,16 +77,16 @@ const clampNumber = (value, min, max) => {
 
 const getHomeTheme = (settings) => {
   const primary = normalizeHex(settings?.homeAccentPrimary, "#0f766e");
-  const secondary = normalizeHex(settings?.homeAccentSecondary, "#db2777");
+  const secondary = normalizeHex(settings?.homeAccentSecondary, "#e11d48");
   return {
     primary,
     secondary,
-    soft: rgba(primary, 0.06),
-    softStrong: rgba(primary, 0.12),
-    border: rgba(primary, 0.15),
-    shadow: rgba(primary, 0.15),
-    glow: rgba(secondary, 0.2),
-    heroBackground: `linear-gradient(180deg, ${rgba(primary, 0.06)} 0%, #ffffff 58%, ${rgba(secondary, 0.05)} 100%)`,
+    soft: rgba(primary, 0.07),
+    softStrong: rgba(primary, 0.13),
+    border: rgba(primary, 0.18),
+    shadow: rgba(primary, 0.16),
+    glow: rgba(secondary, 0.22),
+    heroBackground: `linear-gradient(180deg, ${rgba(primary, 0.07)} 0%, #ffffff 55%, ${rgba(secondary, 0.06)} 100%)`,
     accentGradient: `linear-gradient(135deg, ${primary}, ${secondary})`,
   };
 };
@@ -95,9 +95,9 @@ const buildHomeBackgroundStyle = (settings) => {
   const backgroundSize = settings?.homeBackgroundSize === "custom"
     ? `${settings?.homeBackgroundWidth || "auto"} ${settings?.homeBackgroundHeight || "auto"}`
     : settings?.homeBackgroundSize || "cover";
-  const accentPrimary = settings?.homeBackgroundAccentPrimary || settings?.homeAccentPrimary || "#0ea5e9";
-  const accentSecondary = settings?.homeBackgroundAccentSecondary || settings?.homeAccentSecondary || "#8b5cf6";
-  const overlay = `linear-gradient(135deg, ${accentPrimary}40 0%, ${accentSecondary}30 100%)`;
+  const accentPrimary = settings?.homeBackgroundAccentPrimary || settings?.homeAccentPrimary || "#0f766e";
+  const accentSecondary = settings?.homeBackgroundAccentSecondary || settings?.homeAccentSecondary || "#e11d48";
+  const overlay = `linear-gradient(135deg, ${accentPrimary}24 0%, rgba(255,255,255,0.82) 44%, ${accentSecondary}20 100%)`;
 
   return {
     backgroundColor: settings?.homeBackgroundColor || undefined,
@@ -179,11 +179,7 @@ const buildPromoBannerBackgroundStyle = (settings, theme) => {
 
   return {
     backgroundColor: baseColor,
-    backgroundImage: `
-      radial-gradient(circle at top left, ${rgba(accentPrimary, 0.28)} 0%, transparent 34%),
-      radial-gradient(circle at bottom right, ${rgba(accentSecondary, 0.24)} 0%, transparent 30%),
-      linear-gradient(135deg, ${accentPrimary} 0%, ${baseColor} 52%, ${accentSecondary} 100%)
-    `,
+    backgroundImage: `linear-gradient(135deg, ${accentPrimary} 0%, ${baseColor} 52%, ${accentSecondary} 100%)`,
   };
 };
 
@@ -257,31 +253,31 @@ const SectionHeader = ({
   theme,
 }) => (
   <div className={`mb-6 ${centered ? "text-center" : "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"}`}>
-    <div className="space-y-2">
+    <div className="max-w-2xl space-y-2">
       {subtitle && (
         <span
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 shadow-sm dark:border-gray-800 dark:bg-gray-900"
           style={{ color: theme.primary }}
         >
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: theme.primary }} />
           {subtitle}
         </span>
       )}
-      <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-[2rem]">
+      <h2 className="text-2xl font-bold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-[2rem]">
         {title}
       </h2>
     </div>
     {(viewAllLink || count !== null) && !centered && (
       <div className="flex items-center gap-3 self-start sm:self-auto">
         {count !== null && (
-          <span className="hidden rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:inline-flex">
+          <span className="hidden rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-500 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:inline-flex">
             {count} picks
           </span>
         )}
         {viewAllLink && (
           <Link
             to={viewAllLink}
-            className="group inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 transition-colors hover:text-slate-900 dark:text-gray-300 dark:hover:text-white"
+            className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm transition-all hover:-translate-y-0.5 hover:text-slate-900 hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:text-white"
             style={{ color: theme.primary }}
           >
             {viewAllLabel}
@@ -586,7 +582,7 @@ const Home = () => {
 
   return (
     <div
-      className="home-page relative min-h-screen bg-white dark:bg-gray-950"
+      className="home-page relative min-h-screen overflow-hidden bg-[#f7faf9] text-slate-900 dark:bg-gray-950 dark:text-white"
       style={{
         "--home-accent-primary": homeTheme.primary,
         "--home-accent-secondary": homeTheme.secondary,
@@ -600,16 +596,16 @@ const Home = () => {
       />
       <div
         aria-hidden="true"
-        className="fixed inset-0 -z-10 hidden bg-gray-950/90 pointer-events-none dark:block"
+        className="fixed inset-0 -z-10 hidden bg-gray-950/92 pointer-events-none dark:block"
       />
 
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div
-          className="absolute inset-0 opacity-[0.035]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "linear-gradient(90deg, #111827 1px, transparent 1px), linear-gradient(180deg, #111827 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
+              "linear-gradient(90deg, #0f172a 1px, transparent 1px), linear-gradient(180deg, #0f172a 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
           }}
         />
       </div>
@@ -635,8 +631,8 @@ const Home = () => {
       <div className="relative z-10">
         <AnnouncementBar settings={settings} theme={homeTheme} />
 
-        <div className="mx-auto w-full max-w-[1540px] px-0 pt-3 pb-4 sm:px-3 sm:pt-4 sm:pb-6 lg:px-4 lg:pt-5 lg:pb-8">
-          <div className="overflow-hidden rounded-none border-x-0 border-b border-white/70 bg-white/90 px-0 pb-4 pt-0 shadow-[0_28px_90px_rgba(148,163,184,0.22)] backdrop-blur-xl dark:border-gray-800 dark:bg-gray-950/90 dark:shadow-black/25 sm:rounded-[24px] sm:border sm:pb-6 lg:rounded-[26px] lg:pb-8">
+        <div className="mx-auto w-full max-w-[1560px] px-0 pb-4 pt-3 sm:px-3 sm:pb-6 sm:pt-4 lg:px-5 lg:pb-8 lg:pt-5">
+          <div className="overflow-hidden rounded-none border-x-0 border-b border-white/80 bg-white/92 px-0 pb-4 pt-0 shadow-[0_30px_100px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-gray-800 dark:bg-gray-950/92 dark:shadow-black/30 sm:rounded-[28px] sm:border sm:pb-6 lg:rounded-[32px] lg:pb-8">
             <HeroBanner settings={settings} theme={homeTheme} />
             <div className="px-4 sm:px-6 lg:px-8">
               <TrustBadges settings={settings} theme={homeTheme} />
@@ -743,7 +739,12 @@ const Home = () => {
 ------------------------------------------------------------- */
 const AnnouncementBar = ({ settings, theme }) => {
   const [isVisible, setIsVisible] = useState(true);
-  const announcementText = (settings?.homeAnnouncementText || DEFAULT_HOME_ANNOUNCEMENT_TEXT).trim();
+  const defaultAnnouncementText = "Free shipping on orders over Rs499 | Use code: WELCOME10 for 10% off";
+  const announcementText = (
+    typeof settings?.homeAnnouncementText === "string"
+      ? settings.homeAnnouncementText
+      : defaultAnnouncementText
+  ).trim();
 
   useEffect(() => {
     setIsVisible(true);
@@ -867,9 +868,9 @@ const HeroBanner = ({ settings, theme }) => {
 
   return (
     <section className="pb-6 sm:pb-7 lg:pb-8">
-      <div className="grid items-stretch gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.72fr)_minmax(320px,0.88fr)] xl:gap-6">
+      <div className="grid items-stretch gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.66fr)_minmax(320px,0.9fr)] xl:gap-6">
         <div
-          className="relative overflow-hidden rounded-[20px] border border-slate-200 shadow-[0_20px_60px_rgba(15,23,42,0.12)] dark:border-gray-800 dark:shadow-black/30 sm:rounded-[24px] lg:rounded-[26px]"
+          className="relative overflow-hidden rounded-[22px] border border-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.14)] dark:border-gray-800 dark:shadow-black/35 sm:rounded-[28px] lg:rounded-[30px]"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -895,52 +896,49 @@ const HeroBanner = ({ settings, theme }) => {
               <div
                 className="absolute inset-0"
                 style={{
-                  background: `linear-gradient(90deg, ${rgba(overlayColor, Math.min(overlayOpacity + 0.45, 0.92))} 0%, ${rgba(overlayColor, Math.max(overlayOpacity + 0.08, 0.2))} 55%, ${rgba(overlayColor, Math.max(overlayOpacity - 0.14, 0.04))} 100%)`,
+                  background: `linear-gradient(90deg, ${rgba(overlayColor, Math.min(overlayOpacity + 0.52, 0.94))} 0%, ${rgba(overlayColor, Math.max(overlayOpacity + 0.16, 0.26))} 52%, ${rgba(overlayColor, Math.max(overlayOpacity - 0.08, 0.08))} 100%)`,
                 }}
               />
             </div>
           ))}
 
-          <div className="relative z-20 flex min-h-[340px] flex-col justify-between p-5 sm:min-h-[410px] sm:p-7 lg:min-h-[520px] lg:p-10">
-            <div className="max-w-2xl space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-slate-700 shadow-lg backdrop-blur">
+          <div className="relative z-20 flex min-h-[380px] flex-col justify-between p-5 sm:min-h-[430px] sm:p-7 lg:min-h-[540px] lg:p-10">
+            <div className="max-w-2xl space-y-5">
+              <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] shadow-lg backdrop-blur ${hasImages ? "bg-white/90 text-slate-800" : "bg-white text-slate-700"}`}>
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: theme.primary }} />
                 {heroTagline}
               </div>
 
               <div className="space-y-3 text-white">
-                <h1 className={`max-w-xl font-bold leading-[1.02] tracking-tight ${hasImages ? "text-3xl sm:text-4xl lg:text-5xl xl:text-[3.6rem]" : "text-slate-900 dark:text-white text-3xl sm:text-4xl lg:text-5xl"}`}>
+                <h1 className={`max-w-2xl font-bold leading-[1.02] tracking-tight ${hasImages ? "text-3xl text-white sm:text-4xl lg:text-5xl xl:text-[3.7rem]" : "text-3xl text-slate-950 dark:text-white sm:text-4xl lg:text-5xl xl:text-[3.4rem]"}`}>
                   {heroTitle}
                 </h1>
-                <p className={`max-w-xl text-sm leading-relaxed sm:text-base lg:text-lg ${hasImages ? "text-white/85" : "text-slate-600 dark:text-gray-300"}`}>
+                <p className={`max-w-xl text-sm leading-7 sm:text-base lg:text-lg ${hasImages ? "text-white/86" : "text-slate-600 dark:text-gray-300"}`}>
                   {heroSubtitle}
                 </p>
               </div>
 
-              {!hasImages && (
-                <form onSubmit={handleSearch} className="max-w-xl">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search for any product or brand"
-                      className="w-full rounded-full border border-white/70 bg-white/92 py-4 pl-14 pr-32 text-sm text-slate-900 shadow-lg backdrop-blur placeholder:text-slate-400 focus:outline-none focus:ring-2 dark:border-gray-700 dark:bg-gray-900/90 dark:text-white sm:text-base"
-                      style={{ "--tw-ring-color": theme.primary }}
-                    />
-                    <svg className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <button
-                      type="submit"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
-                      style={{ background: theme.accentGradient }}
-                    >
-                      Search
-                    </button>
-                  </div>
-                </form>
-              )}
+              <form onSubmit={handleSearch} className="max-w-xl">
+                <div className="relative rounded-full bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.16)] ring-1 ring-white/70 dark:bg-gray-900 dark:ring-gray-800">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search products, brands, styles"
+                    className="w-full rounded-full border-0 bg-transparent py-3.5 pl-12 pr-28 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none dark:text-white sm:pr-32 sm:text-base"
+                  />
+                  <svg className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <button
+                    type="submit"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full px-4 py-2.5 text-xs font-semibold text-white shadow-lg transition-transform hover:scale-[1.02] sm:px-5 sm:text-sm"
+                    style={{ background: theme.accentGradient }}
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
 
               <div className="flex flex-wrap gap-3 pb-4 sm:pb-5 lg:pb-6">
                 <Link
@@ -955,7 +953,7 @@ const HeroBanner = ({ settings, theme }) => {
                 </Link>
                 <Link
                   to="/categories"
-                  className={`inline-flex min-h-[46px] items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition-colors sm:px-6 ${hasImages ? "border-white/35 bg-white/10 text-white backdrop-blur hover:bg-white/20" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"}`}
+                  className={`inline-flex min-h-[46px] items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold shadow-sm transition-colors sm:px-6 ${hasImages ? "border-white/35 bg-white/12 text-white backdrop-blur hover:bg-white/22" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800"}`}
                 >
                   Browse Categories
                 </Link>
@@ -1023,7 +1021,7 @@ const HeroBanner = ({ settings, theme }) => {
           {heroFeatureCards.map((item, index) => (
             <div
               key={`${item.title}-${index}`}
-              className={`relative overflow-hidden rounded-[20px] border p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] dark:border-gray-800 dark:shadow-black/20 sm:rounded-[24px] sm:p-6 ${index === 0 ? "min-h-[220px] xl:min-h-[248px]" : "min-h-[220px]"}`}
+              className={`relative overflow-hidden rounded-2xl border p-5 shadow-[0_18px_45px_rgba(15,23,42,0.08)] dark:border-gray-800 dark:shadow-black/20 sm:p-6 ${index === 0 ? "min-h-[220px] xl:min-h-[248px]" : "min-h-[220px]"}`}
               style={{
                 background: index === 0
                   ? `linear-gradient(135deg, ${rgba(theme.primary, 0.96)} 0%, ${rgba(theme.secondary, 0.92)} 100%)`
@@ -1032,11 +1030,9 @@ const HeroBanner = ({ settings, theme }) => {
                 borderColor: index === 0 ? "transparent" : theme.border,
               }}
             >
-              <div className="absolute right-[-20px] top-[-24px] h-32 w-32 rounded-full bg-white/12" />
-              <div className="absolute bottom-[-36px] right-[-8px] h-24 w-24 rounded-full bg-white/10" />
               <div className="relative z-10 flex h-full flex-col justify-between">
                 <div className="space-y-3">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${index === 0 ? "bg-white/18 text-white" : "bg-white text-slate-700 shadow-md"}`}>
+                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-lg ${index === 0 ? "bg-white/18 text-white" : "bg-white text-slate-700 shadow-md"}`}>
                     {renderHomeIcon(item.icon, "h-6 w-6")}
                   </div>
                   <div>
@@ -1064,14 +1060,14 @@ const HeroBanner = ({ settings, theme }) => {
             </div>
           ))}
 
-          <div className="rounded-[20px] border border-slate-200 bg-slate-50 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] dark:border-gray-800 dark:bg-gray-900 sm:rounded-[24px] sm:p-6">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] dark:border-gray-800 dark:bg-gray-900 sm:p-6">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Popular now</p>
                 <h3 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">Store Highlights</h3>
               </div>
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-lg"
+                className="flex h-12 w-12 items-center justify-center rounded-lg text-white shadow-lg"
                 style={{ background: theme.accentGradient }}
               >
                 {renderHomeIcon("sparkles", "h-6 w-6")}
@@ -1079,7 +1075,7 @@ const HeroBanner = ({ settings, theme }) => {
             </div>
             <div className="mt-5 space-y-3">
               {heroStats.slice(0, 3).map((stat, index) => (
-                <div key={`${stat.label}-${index}`} className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm shadow-sm dark:bg-gray-950">
+                <div key={`${stat.label}-${index}`} className="flex items-center justify-between rounded-lg bg-white px-4 py-3 text-sm shadow-sm dark:bg-gray-950">
                   <span className="font-medium text-slate-500 dark:text-gray-400">{stat.label}</span>
                   <span className="font-bold text-slate-900 dark:text-white" style={{ color: theme.primary }}>
                     {stat.value}
@@ -1102,15 +1098,15 @@ const TrustBadges = ({ settings, theme }) => {
 
   return (
     <div className="relative z-20 py-6 sm:py-7">
-      <div className="rounded-[24px] border border-slate-200 bg-slate-50/90 p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/80 sm:p-5">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/90 p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900/80 sm:p-5">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {badges.slice(0, 4).map((badge, index) => (
             <div
               key={`${badge.title}-${index}`}
-              className="group flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-sm transition-transform duration-300 hover:-translate-y-0.5 dark:bg-gray-950"
+              className="group flex items-center gap-3 rounded-lg bg-white px-4 py-4 shadow-sm transition-transform duration-300 hover:-translate-y-0.5 dark:bg-gray-950"
             >
               <div
-                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-105"
+                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-105"
                 style={{ background: theme.softStrong, color: theme.primary }}
               >
                 {typeof badge.icon === "string" ? renderHomeIcon(badge.icon, "h-5 w-5") : badge.icon}
@@ -1145,7 +1141,7 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
 
   return (
     <div className="relative">
-      <div className="flex gap-5 overflow-x-auto pb-3 scrollbar-hide sm:gap-6">
+      <div className="grid grid-cols-3 gap-x-3 gap-y-6 sm:grid-cols-4 sm:gap-x-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
         {categories.slice(0, 12).map((category, index) => {
           const gradient = gradients[index % gradients.length];
           const subCount = getSubCategoryCount(category._id);
@@ -1154,30 +1150,34 @@ const CategoryGrid = ({ categories, allCategories, theme }) => {
             <Link
               key={category._id}
               to={`/category/${category._id}`}
-              className="group min-w-[112px] flex-shrink-0 text-center sm:min-w-[132px]"
+              className="group flex min-w-0 flex-col items-center text-center"
             >
-              <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.08)] transition-all duration-500 group-hover:-translate-y-1 group-hover:border-slate-300 group-hover:shadow-[0_18px_40px_rgba(15,23,42,0.12)] dark:border-gray-800 dark:bg-gray-900 sm:h-28 sm:w-28">
-                <div className="relative h-full w-full overflow-hidden rounded-full">
+              <div className="relative flex h-[74px] w-[74px] items-center justify-center rounded-full bg-white p-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.10)] ring-1 ring-slate-200 transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_18px_38px_rgba(15,23,42,0.14)] dark:bg-gray-900 dark:ring-gray-800 sm:h-[84px] sm:w-[84px]">
+                <div
+                  className="absolute inset-0 rounded-full opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-25"
+                  style={{ background: theme.accentGradient }}
+                />
+                <div className="relative h-full w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-100 dark:bg-gray-800 dark:ring-gray-800">
                   {category.image ? (
                     <img
                       src={category.image}
                       alt={category.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-                      <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${gradient}`}>
+                      <svg className="h-9 w-9 text-white/85 sm:h-10 sm:w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
                     </div>
                   )}
                 </div>
               </div>
-              <div className="mt-3 space-y-1">
-                <h3 className="truncate text-sm font-semibold text-slate-900 transition-colors group-hover:text-slate-700 dark:text-white dark:group-hover:text-gray-200 sm:text-[15px]">
+              <div className="mt-3 w-full min-w-0">
+                <h3 className="truncate text-xs font-semibold leading-tight text-slate-900 transition-colors group-hover:text-slate-700 dark:text-white dark:group-hover:text-gray-200 sm:text-sm">
                   {category.name}
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-gray-400">
+                <p className="mt-1 truncate text-[11px] font-medium text-slate-500 dark:text-gray-400">
                   {subCount > 0 ? `${subCount} collections` : "Explore"}
                 </p>
               </div>
@@ -1412,8 +1412,8 @@ const ProductGrid = ({ products, theme, onQuickView, onAddToCart, addingToCartId
         ))}
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex items-center gap-2 self-start rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:text-sm">
+      <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-500 shadow-sm dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 sm:text-sm">
           <span className={`h-2 w-2 rounded-full ${showRightArrow ? "bg-emerald-500" : "bg-gray-300"}`} />
           {showLeftArrow || showRightArrow ? scrollHint : "All cards visible"}
         </div>
@@ -1492,17 +1492,17 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
   return (
     <article
       data-product-card="true"
-      className="group relative flex w-[44vw] min-w-[170px] max-w-[205px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_20px_40px_rgba(15,23,42,0.12)] dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 sm:w-[235px] sm:min-w-[235px] sm:max-w-[235px] lg:w-[250px] lg:min-w-[250px] lg:max-w-[250px]"
+      className="group relative flex w-[62vw] min-w-[210px] max-w-[235px] flex-shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_32px_rgba(15,23,42,0.08)] transition-all duration-500 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_22px_46px_rgba(15,23,42,0.13)] dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700 xs:w-[48vw] sm:w-[242px] sm:min-w-[242px] sm:max-w-[242px] lg:w-[258px] lg:min-w-[258px] lg:max-w-[258px]"
     >
       <Link
         to={`/products/${product._id}`}
         aria-label={`Open details for ${product.name}`}
-        className="absolute inset-0 z-10 rounded-[24px]"
+        className="absolute inset-0 z-10 rounded-2xl"
       />
 
       {/* Image Container */}
-      <div className="relative z-0 block overflow-hidden bg-slate-50 p-4 dark:bg-gray-800/70">
-        <div className="relative h-32 overflow-hidden rounded-[20px] bg-white sm:h-48">
+      <div className="relative z-0 block overflow-hidden bg-slate-50 p-3 dark:bg-gray-800/70 sm:p-4">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-white">
           {image ? (
             <img
               src={image}
@@ -1518,7 +1518,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           )}
 
         {/* Badges */}
-        <div className="absolute left-2 top-2 flex flex-col gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
+          <div className="absolute left-2 top-2 flex flex-col gap-1.5 sm:left-3 sm:top-3 sm:gap-2">
           {discount > 0 && (
             <span className="rounded-md bg-red-500 px-2 py-1 text-[10px] font-bold text-white shadow-lg sm:rounded-lg sm:px-2.5 sm:text-[11px]">
               -{discount}%
@@ -1559,7 +1559,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
           type="button"
           aria-label={`Quick view ${product.name}`}
-          className="absolute bottom-3 right-3 z-20 hidden h-10 w-10 items-center justify-center rounded-full border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 dark:border-gray-700 dark:bg-gray-900/95 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
+          className="absolute bottom-3 right-3 z-20 hidden h-10 w-10 items-center justify-center rounded-lg border border-white bg-white/95 shadow-lg transition-all duration-300 hover:scale-110 dark:border-gray-700 dark:bg-gray-900/95 sm:flex sm:translate-y-2 sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100"
         >
           <svg className="w-5 h-5 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1634,7 +1634,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickView?.(product); }}
             type="button"
-            className="flex h-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="flex h-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700 transition-all duration-300 hover:bg-slate-100 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1646,7 +1646,7 @@ const ProductCard = ({ product, theme, onQuickView, onAddToCart, isAddingToCart 
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAddToCart?.(product); }}
             type="button"
             disabled={isAddingToCart || !inventory.canAddToCart}
-            className="flex h-11 items-center justify-center gap-2 rounded-full px-4 text-[11px] font-semibold text-white transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+            className="flex h-11 items-center justify-center gap-2 rounded-lg px-3 text-[11px] font-semibold text-white transition-all duration-300 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 sm:px-4 sm:text-sm"
             style={{ background: inventory.canAddToCart ? theme.accentGradient : "#9ca3af" }}
           >
             {isAddingToCart ? (
@@ -1685,13 +1685,9 @@ const PromoBanner = ({ settings, theme, products = [] }) => {
   return (
     <section className="py-8 sm:py-10">
       <div
-        className="relative overflow-hidden rounded-[28px] border border-white/10 p-5 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:p-6 lg:p-7"
+        className="relative overflow-hidden rounded-2xl border border-white/10 p-5 text-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] sm:p-6 lg:p-7"
         style={backgroundStyle}
       >
-        <div
-          className="absolute inset-0 opacity-[0.16]"
-          style={{ backgroundImage: "radial-gradient(circle at 18% 18%, rgba(255,255,255,0.24) 0, transparent 24%), radial-gradient(circle at 86% 82%, rgba(255,255,255,0.14) 0, transparent 22%)" }}
-        />
         <div className="absolute inset-y-0 right-0 hidden w-[34%] bg-gradient-to-l from-black/15 via-transparent to-transparent lg:block" />
 
         <div className="relative z-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
@@ -1734,10 +1730,10 @@ const PromoBanner = ({ settings, theme, products = [] }) => {
                 <Link
                   key={product._id}
                   to={`/products/${product._id}`}
-                  className="group rounded-[22px] border border-white/10 bg-white/10 p-3 shadow-lg backdrop-blur-sm transition-transform duration-300 hover:-translate-y-1 hover:bg-white/14"
+                  className="group rounded-lg border border-white/10 bg-white/10 p-3 shadow-lg backdrop-blur-sm transition-transform duration-300 hover:-translate-y-1 hover:bg-white/14"
                 >
                   <div className="grid grid-cols-[88px_minmax(0,1fr)] items-center gap-3">
-                    <div className="overflow-hidden rounded-[16px] bg-white/90 shadow-inner">
+                    <div className="overflow-hidden rounded-lg bg-white/90 shadow-inner">
                       {getProductPrimaryImage(product) ? (
                         <img
                           src={getProductPrimaryImage(product)}
@@ -1773,18 +1769,18 @@ const PromoBanner = ({ settings, theme, products = [] }) => {
             {Array.from({ length: fallbackSlots }).map((_, index) => (
               <div
                 key={`promo-placeholder-${index}`}
-                className="rounded-[22px] border border-dashed border-white/15 bg-white/8 p-3 backdrop-blur-sm"
+                className="rounded-lg border border-dashed border-white/15 bg-white/8 p-3 backdrop-blur-sm"
               >
                 <div className="grid grid-cols-[88px_minmax(0,1fr)] items-center gap-3">
                   <div
-                    className="flex h-[88px] w-[88px] items-center justify-center rounded-[16px] text-white"
+                    className="flex h-[88px] w-[88px] items-center justify-center rounded-lg text-white"
                     style={{ background: `linear-gradient(135deg, ${rgba(theme.secondary, 0.4)} 0%, ${rgba(theme.primary, 0.82)} 100%)` }}
                   >
                     {renderHomeIcon(index % 2 === 0 ? "sparkles" : "gift", "h-8 w-8")}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/50">Selected Product</p>
-                    <p className="mt-1 text-sm font-semibold text-white/82">Choose more items from admin settings</p>
+                    <p className="mt-1 text-sm font-semibold text-white/82">More picks will appear here</p>
                     <p className="mt-2 text-xs text-white/60">This slot fills automatically after selection.</p>
                   </div>
                 </div>
@@ -1874,28 +1870,28 @@ const Newsletter = ({ settings, theme }) => {
   };
 
   return (
-    <section className="py-16 sm:py-20">
-      <div className="relative overflow-hidden rounded-[30px] border border-slate-200 bg-slate-950 p-8 text-center shadow-[0_24px_60px_rgba(15,23,42,0.2)] sm:p-12 lg:p-16 dark:border-gray-800">
+    <section className="py-14 sm:py-20">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 text-center text-slate-900 shadow-[0_24px_60px_rgba(15,23,42,0.10)] sm:p-10 lg:p-14 dark:border-gray-800 dark:bg-slate-950 dark:text-white dark:shadow-black/30">
         <div className="absolute inset-x-0 top-0 h-1" style={{ background: theme.accentGradient }} />
         <div
-          className="absolute inset-0 opacity-[0.08]"
+          className="absolute inset-0 text-slate-900 opacity-[0.045] dark:text-white dark:opacity-[0.08]"
           style={{
-            backgroundImage: "linear-gradient(135deg, #ffffff 1px, transparent 1px)",
+            backgroundImage: "linear-gradient(135deg, currentColor 1px, transparent 1px)",
             backgroundSize: "32px 32px",
           }}
         />
 
         <div className="relative z-10 max-w-2xl mx-auto">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 backdrop-blur-sm dark:border-white/20 dark:bg-white/10">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: theme.secondary }} />
               <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: theme.secondary }} />
             </span>
-            <span className="text-sm font-medium text-white/80">{badgeText}</span>
+            <span className="text-sm font-medium text-slate-600 dark:text-white/80">{badgeText}</span>
           </div>
 
-          <h3 className="text-3xl sm:text-4xl font-bold text-white mb-4">{title}</h3>
-          <p className="text-white/60 text-lg mb-8 max-w-lg mx-auto">{description}</p>
+          <h3 className="mb-4 text-3xl font-bold text-slate-950 sm:text-4xl dark:text-white">{title}</h3>
+          <p className="mx-auto mb-8 max-w-lg text-base leading-7 text-slate-500 sm:text-lg dark:text-white/65">{description}</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <div className="flex-1 relative">
@@ -1907,7 +1903,8 @@ const Newsletter = ({ settings, theme }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={inputPlaceholder}
-                className="w-full rounded-lg border border-white/20 bg-white/10 py-4 pl-12 pr-4 text-white placeholder-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 placeholder-slate-400 backdrop-blur-sm focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-white/10 dark:text-white dark:placeholder-white/50 dark:focus:ring-white/30"
+                style={{ "--tw-ring-color": theme.primary }}
                 required
               />
             </div>
@@ -1922,7 +1919,7 @@ const Newsletter = ({ settings, theme }) => {
           </form>
 
           {status === "success" && (
-            <div className="mt-4 inline-flex items-center gap-2 text-emerald-400 text-sm bg-emerald-500/10 px-4 py-2 rounded-lg">
+            <div className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -1942,7 +1939,7 @@ const FeaturesSection = ({ settings, theme }) => {
   const features = getContentItems(settings?.homeFeatureItems, DEFAULT_HOME_FEATURE_ITEMS);
 
   return (
-    <section className="border-t border-slate-200 bg-[#eef3f8] py-16 dark:border-gray-800 dark:bg-gray-950 sm:py-20">
+    <section className="border-t border-slate-200 bg-[#edf4f2] py-16 dark:border-gray-800 dark:bg-gray-950 sm:py-20">
       <div className="mx-auto max-w-[1400px] px-3 sm:px-5 lg:px-8">
         <div className="max-w-2xl mx-auto text-center mb-12 lg:mb-16">
           <span
@@ -1964,10 +1961,10 @@ const FeaturesSection = ({ settings, theme }) => {
           {features.slice(0, 4).map((feature, index) => (
             <div
               key={`${feature.title}-${index}`}
-              className="group rounded-[24px] border border-slate-200 bg-white p-8 text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.1)] dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-900/80"
+              className="group rounded-2xl border border-slate-200 bg-white p-8 text-center transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(15,23,42,0.1)] dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-gray-900/80"
             >
               <div
-                className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl text-white shadow-lg transition-transform group-hover:scale-105"
+                className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-lg text-white shadow-lg transition-transform group-hover:scale-105"
                 style={{ background: theme.accentGradient }}
               >
                 {typeof feature.icon === "string" ? renderHomeIcon(feature.icon, "w-8 h-8") : feature.icon}
@@ -1985,6 +1982,7 @@ const FeaturesSection = ({ settings, theme }) => {
 /* -------------------------------------------------------------
    CUSTOM STYLES
 ------------------------------------------------------------- */
+/* These styles are injected directly into the document head to ensure they are applied globally and take precedence over other styles. */
 const styles = `
 .home-page {
   width: 100%;
@@ -1995,7 +1993,7 @@ const styles = `
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
+  0%, 100% { transform: translateY(0px); }j
   50% { transform: translateY(-10px); }
 }
 

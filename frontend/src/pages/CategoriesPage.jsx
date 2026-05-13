@@ -1284,4 +1284,4 @@ const HelpSection = () => (
   </div>
 );
 
-export default CategoriesPage;
+export default CategoriesPage; 
